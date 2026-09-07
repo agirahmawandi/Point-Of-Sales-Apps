@@ -1,0 +1,61 @@
+import type { Supplier } from '@/types';
+
+export const suppliers: Supplier[] = [
+  {
+    id: 'sup-1',
+    name: 'PT Indofood Sukses Makmur',
+    contactPerson: 'Hendra Wijaya',
+    phone: '021-57958822',
+    email: 'sales@indofood.co.id',
+    address: 'Sudirman Plaza, Indofood Tower Lt. 23, Jl. Jend. Sudirman Kav. 76-78, Jakarta Selatan',
+    totalPurchases: 18500000,
+    totalDebt: 3200000,
+    createdAt: '2023-11-10T10:00:00Z',
+  },
+  {
+    id: 'sup-2',
+    name: 'PT Wings Surya',
+    contactPerson: 'Dewi Lestari',
+    phone: '031-5321888',
+    email: 'order@wingscorp.com',
+    address: 'Jl. Kalisosok Kidul No. 2, Krembangan, Surabaya',
+    totalPurchases: 12800000,
+    totalDebt: 1492500,
+    createdAt: '2023-11-15T11:00:00Z',
+  },
+  {
+    id: 'sup-3',
+    name: 'PT Unilever Indonesia',
+    contactPerson: 'Bambang Irawan',
+    phone: '021-80827000',
+    email: 'distribution@unilever.co.id',
+    address: 'Grha Unilever, Green Office Park Kav. 3, BSD City, Tangerang',
+    totalPurchases: 22400000,
+    totalDebt: 910000,
+    createdAt: '2023-10-20T09:00:00Z',
+  },
+  {
+    id: 'sup-4',
+    name: 'CV Sumber Rejeki',
+    contactPerson: 'Agus Pratama',
+    phone: '0812-3456-7890',
+    email: 'sumberrejeki.dist@gmail.com',
+    address: 'Komp. Pergudangan Daan Mogot Prima Blok B3 No. 12, Jakarta Barat',
+    totalPurchases: 34500000,
+    totalDebt: 2840000,
+    createdAt: '2023-09-05T08:30:00Z',
+  },
+  {
+    id: 'sup-5',
+    name: 'UD Jaya Abadi',
+    contactPerson: 'Haji Supardi',
+    phone: '0857-1234-5678',
+    email: 'jayaabadi.grosir@yahoo.com',
+    address: 'Pasar Induk Kramat Jati Blok C No. 45-47, Jakarta Timur',
+    totalPurchases: 15200000,
+    totalDebt: 1320000,
+    createdAt: '2023-12-01T14:00:00Z',
+  },
+];
+
+export const mockSuppliers = suppliers;

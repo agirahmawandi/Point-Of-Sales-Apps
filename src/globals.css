@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #254222;
+  --color-brand-primary: #99cc66;
+  --color-brand-cream: #ece2b1;
+  --color-brand-sage: #cae4c5;
+
+  --color-primary-900: #254222;
+  --color-primary-800: #2c4d29;
+  --color-primary-700: #386134;
+  --color-primary-600: #497a44;
+  --color-primary-500: #99cc66;
+
+  --color-background: #F9FAF8;
+  --color-surface: #FFFFFF;
+
+  --color-success: #16A34A;
+  --color-warning: #F59E0B;
+  --color-danger: #DC2626;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Montserrat', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-slate-900 font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+/* Hide number input spin buttons */
+.hide-spin-button::-webkit-inner-spin-button,
+.hide-spin-button::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
