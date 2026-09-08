@@ -27,7 +27,11 @@ export default function ProfitLossReportPage() {
     else startDate = new Date(0); // all time
 
     return {
-      filteredSales: transactions.filter(t => dateFilter(t.date || t.createdAt, startDate, endOfDay(now))),
+      filteredSales: transactions.filter(t => 
+        dateFilter(t.date || t.createdAt, startDate, endOfDay(now)) &&
+        (t.status === 'success' || t.status === 'sukses') &&
+        t.paymentStatus !== 'tertunda'
+      ),
       filteredExpenses: expenses.filter(e => dateFilter(e.date, startDate, endOfDay(now)))
     };
   }, [transactions, expenses, dateRange]);

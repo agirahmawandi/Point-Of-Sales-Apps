@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { useProductStore } from '@/stores/productStore';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { useFinanceStore } from '@/stores/financeStore';
 import PageContainer from '@/components/layout/PageContainer';
-import { ArrowLeft, CheckCircle2, AlertTriangle, PackageCheck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertTriangle, PackageCheck, Banknote, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 
@@ -12,6 +14,8 @@ export default function ReceiveGoodsPage() {
   const navigate = useNavigate();
   const { getPurchaseOrder, updatePurchaseOrder, purchaseOrders } = usePurchaseStore();
   const { addStock, updatePurchasePrice, products } = useProductStore();
+  const { bankAccounts, updateBankBalance } = useSettingsStore();
+  const { updateCashBalance } = useFinanceStore();
 
   const po = id ? getPurchaseOrder(id) : undefined;
   
@@ -28,6 +32,8 @@ export default function ReceiveGoodsPage() {
   
   const [receiveNotes, setReceiveNotes] = useState('');
   const [markPaidNow, setMarkPaidNow] = useState(false);
+  const [payMethod, setPayMethod] = useState<'cash' | 'transfer'>('cash');
+  const [payBankId, setPayBankId] = useState(() => bankAccounts[0]?.id || '');
 
   // JIKA DIAKSES TANPA ID (DARI SIDEBAR)
   if (!id) {
@@ -150,6 +156,16 @@ export default function ReceiveGoodsPage() {
       return;
     }
 
+    // Jika bayar lunas sekarang, update saldo
+    if (markPaidNow) {
+      const payAmount = po.totalAmount - (po.paidAmount || 0);
+      if (payMethod === 'cash') {
+        updateCashBalance(-payAmount);
+      } else if (payBankId) {
+        updateBankBalance(payBankId, -payAmount);
+      }
+    }
+
     updatePurchaseOrder(po.id, {
       items: updatedItems,
       status: isPartial ? 'diterima_sebagian' : 'diterima',
@@ -247,20 +263,72 @@ export default function ReceiveGoodsPage() {
                   </div>
                 </div>
 
-                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-[#eff4ff] border border-[#d3e4fe] cursor-pointer hover:bg-[#e5eeff] transition-colors">
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-[#cae4c5]/20 border border-[#cae4c5] cursor-pointer hover:bg-[#cae4c5]/30 transition-colors">
                   <input 
                     type="checkbox" 
                     checked={markPaidNow} 
                     onChange={e => setMarkPaidNow(e.target.checked)}
-                    className="mt-0.5 rounded text-[#3755c3] focus:ring-[#3755c3] w-4 h-4"
+                    className="mt-0.5 rounded text-[#254222] focus:ring-[#99cc66] w-4 h-4"
                   />
                   <div className="text-xs">
-                    <span className="font-bold text-[#0b1c30]">Bayar Lunas Sekarang (COD/Tunai)</span>
+                    <span className="font-bold text-[#254222]">Bayar Lunas Sekarang</span>
                     <p className="text-[11px] text-[#45464d] mt-1 leading-relaxed">
-                      Centang untuk melunasi tagihan saat barang tiba. <strong>Harga beli master produk akan langsung diperbarui ke harga PO baru</strong> (misal Rp 2.900).
+                      Centang untuk melunasi tagihan saat barang tiba. Harga beli master produk akan langsung diperbarui.
                     </p>
                   </div>
                 </label>
+
+                {/* Payment method selector — muncul jika markPaidNow */}
+                {markPaidNow && (
+                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                    <p className="text-[11px] font-bold text-[#254222] uppercase tracking-wider">Metode Pembayaran</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPayMethod('cash')}
+                        className={`flex items-center gap-2 p-2.5 rounded-xl border-2 text-xs font-bold transition-all ${
+                          payMethod === 'cash'
+                            ? 'border-[#254222] bg-[#cae4c5]/30 text-[#254222]'
+                            : 'border-slate-200 text-[#76777d] hover:border-[#cae4c5]'
+                        }`}
+                      >
+                        <Banknote size={15} /> Tunai / Kas
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPayMethod('transfer')}
+                        className={`flex items-center gap-2 p-2.5 rounded-xl border-2 text-xs font-bold transition-all ${
+                          payMethod === 'transfer'
+                            ? 'border-[#254222] bg-[#cae4c5]/30 text-[#254222]'
+                            : 'border-slate-200 text-[#76777d] hover:border-[#cae4c5]'
+                        }`}
+                      >
+                        <Building2 size={15} /> Transfer Bank
+                      </button>
+                    </div>
+
+                    {payMethod === 'transfer' && (
+                      <div className="animate-in fade-in slide-in-from-top-2">
+                        <label className="block text-[11px] font-semibold text-[#254222] mb-1">Rekening Sumber Dana</label>
+                        <select
+                          value={payBankId}
+                          onChange={e => setPayBankId(e.target.value)}
+                          className="w-full h-9 px-3 border border-[#cae4c5] rounded-lg text-xs font-semibold text-[#254222] focus:outline-none focus:border-[#99cc66] bg-white"
+                        >
+                          {bankAccounts.map(b => (
+                            <option key={b.id} value={b.id}>
+                              {b.bank} — {b.accountNumber} (Saldo: Rp {(b.balance || 0).toLocaleString('id-ID')})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="p-2 bg-[#ece2b1]/40 border border-[#ece2b1] rounded-lg text-[11px] text-[#254222] font-semibold">
+                      💳 Saldo akan berkurang: Rp {(po.totalAmount - (po.paidAmount || 0)).toLocaleString('id-ID')}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

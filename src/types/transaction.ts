@@ -25,6 +25,8 @@ export interface TransactionItem {
 export interface Transaction {
   id: string;
   invoiceNumber?: string;
+  customerId?: string;
+  customerName?: string;
   date?: Date | string;
   createdAt?: string;
   updatedAt?: string;
@@ -42,6 +44,7 @@ export interface Transaction {
   hpp?: number;
   profit?: number;
   paymentMethod: PaymentMethod;
+  bankAccountId?: string;
   amountPaid?: number;
   paid?: number;
   change?: number;

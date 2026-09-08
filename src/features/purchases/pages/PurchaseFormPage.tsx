@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { useProductStore } from '@/stores/productStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import PageContainer from '@/components/layout/PageContainer';
 import { Search, Plus, Trash2, ArrowLeft, Save, Send, PackagePlus, CheckCircle2 } from 'lucide-react';
 import type { PurchaseOrderItem, PurchaseOrder } from '@/types/purchase';
@@ -11,10 +12,13 @@ export default function PurchaseFormPage() {
   const navigate = useNavigate();
   const { suppliers, addPurchaseOrder } = usePurchaseStore();
   const { products, addStock, updatePurchasePrice } = useProductStore();
+  const { bankAccounts, updateBankBalance } = useSettingsStore();
   
   const [supplierId, setSupplierId] = useState('');
   const [notes, setNotes] = useState('');
   const [paymentStatusOption, setPaymentStatusOption] = useState<'utang' | 'lunas'>('utang');
+  const [paymentMethodOption, setPaymentMethodOption] = useState<'tunai' | 'transfer'>('tunai');
+  const [selectedBankId, setSelectedBankId] = useState(bankAccounts[0]?.id || '');
   const [items, setItems] = useState<Partial<PurchaseOrderItem>[]>([]);
   const [searchProduct, setSearchProduct] = useState('');
 
@@ -78,10 +82,17 @@ export default function PurchaseFormPage() {
       status,
       paymentStatus: isPaid ? 'lunas' : 'utang',
       paidAmount: isPaid ? totalAmount : 0,
+      paymentMethod: paymentMethodOption,
+      bankAccountId: (paymentMethodOption === 'transfer' && isPaid) ? selectedBankId : undefined,
       notes
     };
 
     addPurchaseOrder(newPo);
+    
+    // Potong saldo bank jika langsung lunas via transfer
+    if (isPaid && paymentMethodOption === 'transfer' && selectedBankId) {
+      updateBankBalance(selectedBankId, -totalAmount);
+    }
 
     // Jika langsung diterima & masuk stok:
     if (status === 'diterima') {
@@ -187,6 +198,52 @@ export default function PurchaseFormPage() {
                     : '💡 Status Hutang: Harga beli master produk akan diperbarui saat hutang tagihan PO ini dilunasi nanti.'}
                 </p>
               </div>
+
+              {/* Pilihan Metode Pembayaran (Hanya jika Lunas) */}
+              {paymentStatusOption === 'lunas' && (
+                <div className="pt-3 border-t border-[#eff4ff] animate-in fade-in slide-in-from-top-2">
+                  <label className="block text-[13px] font-semibold text-[#0b1c30] mb-2">Metode Pembayaran</label>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethodOption('tunai')}
+                      className={`p-2.5 rounded-xl border text-xs font-semibold text-center transition-all ${
+                        paymentMethodOption === 'tunai'
+                          ? 'border-[#3755c3] bg-[#eff4ff] text-[#3755c3]'
+                          : 'border-slate-200 bg-white text-[#76777d] hover:bg-slate-50'
+                      }`}
+                    >
+                      Tunai (Kas)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethodOption('transfer')}
+                      className={`p-2.5 rounded-xl border text-xs font-semibold text-center transition-all ${
+                        paymentMethodOption === 'transfer'
+                          ? 'border-[#3755c3] bg-[#eff4ff] text-[#3755c3]'
+                          : 'border-slate-200 bg-white text-[#76777d] hover:bg-slate-50'
+                      }`}
+                    >
+                      Transfer Bank / Debit
+                    </button>
+                  </div>
+                  
+                  {paymentMethodOption === 'transfer' && (
+                    <div className="mt-2">
+                      <label className="block text-[12px] font-semibold text-[#0b1c30] mb-1.5">Pilih Rekening Sumber Dana</label>
+                      <select
+                        value={selectedBankId}
+                        onChange={(e) => setSelectedBankId(e.target.value)}
+                        className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-[#0b1c30] focus:outline-none focus:border-[#3755c3]"
+                      >
+                        {bankAccounts.map(b => (
+                          <option key={b.id} value={b.id}>{b.bank} - {b.accountNumber} (Saldo: Rp {(b.balance || 0).toLocaleString('id-ID')})</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

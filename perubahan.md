@@ -409,3 +409,239 @@ Membuat tiga halaman utama dalam sub-menu Pengaturan yang mematuhi standar palet
   - Memperbarui menu "Pengaturan" menjadi submenu terkelompok (*collapsible*) yang mencakup: Profil Toko, Pajak & Biaya, dan Metode Pembayaran.
 - **Routing Sistem (`routes.tsx`)**:
   - Menggantikan rute statis `PlaceholderPage` dengan tautan pemanggilan komponen *Settings* yang sesungguhnya.
+
+---
+
+## 21. Sesi Perubahan — 7 September 2026
+
+### 1. Sistem Saldo Rekening Bank (Dashboard & Semua Modul)
+Melengkapi sistem bank account agar saldo bisa berubah secara otomatis dari setiap modul transaksi:
+
+- **`settingsStore.ts`**:
+  - Menambahkan field `balance?: number` pada interface `BankAccount`.
+  - Menambahkan fungsi `updateBankBalance(id, amount)` untuk menambah/mengurangi saldo rekening secara inkremental.
+  - Menambahkan fungsi `resetBankBalances()` untuk mengenolkan saldo semua rekening sekaligus.
+
+- **`transaction.ts`, `purchase.ts`, `expense.ts`**:
+  - Menambahkan field `bankAccountId?: string` pada masing-masing tipe data agar dapat melacak rekening mana yang terlibat dalam setiap transaksi.
+
+- **`PaymentMethodSummary.tsx`** (Dashboard):
+  - Merubah nama bagian dari *"Saldo per Metode Bayar"* menjadi **"SALDO"**.
+  - Menggantikan tampilan generik Debit/Kredit dengan **kartu per rekening bank** yang menampilkan nama bank, nomor rekening, dan saldo real-time.
+
+---
+
+### 2. Integrasi Saldo di Terminal Kasir (POS)
+
+**`PaymentModal.tsx`**:
+- Menambahkan dropdown **"Pilih Rekening Penerima"** yang muncul ketika metode pembayaran adalah *Kartu/EDC/Transfer Bank*.
+- Saat kasir menyelesaikan pembayaran, saldo rekening yang dipilih **otomatis bertambah** sebesar nominal transaksi.
+- `bankAccountId` disimpan bersama data transaksi untuk keperluan audit.
+
+---
+
+### 3. Integrasi Saldo di Modul Pembelian (Purchase Orders)
+
+**`PurchaseFormPage.tsx`**:
+- Menambahkan opsi pilihan rekening pada form pembuatan PO baru saat metode bayar menggunakan Transfer Bank.
+- Saldo rekening yang dipilih langsung berkurang saat PO disimpan.
+
+**`PurchaseDetailPage.tsx`** (Modal Bayar Tagihan PO):
+- Menambahkan dropdown **"Pilih Rekening Sumber Dana"** pada modal pembayaran hutang dagang PO saat metode "Transfer Bank" dipilih.
+- Saldo rekening yang dipilih otomatis **berkurang** sebesar pembayaran yang dilakukan.
+- Nama bank dicatat pada riwayat pembayaran PO.
+
+---
+
+### 4. Integrasi Saldo di Modul Pengeluaran (Expenses)
+
+**`ExpenseListPage.tsx`**:
+- Menambahkan pilihan rekening bank pada form pencatatan pengeluaran ketika metode bayar menggunakan "Transfer Bank".
+- Saldo rekening yang dipilih langsung berkurang saat pengeluaran disimpan.
+
+---
+
+### 5. Perbaikan List Penjualan — Pelunasan Tertunda
+
+**`SalesListPage.tsx`**:
+- Pada modal konfirmasi **"Tandai Lunas"** untuk transaksi tertunda/piutang, ditambahkan:
+  - Selector **"Terima Pembayaran Via"** (Tunai, Transfer Bank, QRIS).
+  - Jika dipilih Transfer Bank, muncul dropdown **"Rekening Penerima"** beserta saldo terkini.
+- Setelah dikonfirmasi lunas, metode bayar dan rekening terpilih disimpan ke data transaksi dan saldo rekening otomatis bertambah.
+
+---
+
+### 6. Perbaikan Modal "Bayar Tagihan PO" — Pilihan Rekening
+
+**`PurchaseDetailPage.tsx`**:
+- Melengkapi fitur yang sebelumnya belum ada: saat memilih "Transfer Bank" di modal Bayar Tagihan PO, kini ditampilkan dropdown rekening bank dengan saldo real-time.
+
+---
+
+### 7. Reset Saldo Rekening Masuk ke Tombol Reset Data
+
+**`DashboardPage.tsx`**:
+- Menambahkan pemanggilan `resetBankBalances()` di dalam fungsi `handleExecuteReset`.
+- Sekarang ketika Admin melakukan **Reset Total Data Sistem**, seluruh saldo rekening bank juga ikut direset menjadi **Rp 0**, konsisten dengan data transaksi yang dikosongkan.
+- Deskripsi di modal konfirmasi dan banner sukses belum diubah (dapat disesuaikan di kemudian hari).
+
+---
+
+### 8. Sinkronisasi Saldo & Stok Saat Edit Transaksi
+
+**`EditTransactionModal.tsx`**:
+- **Metode Pembayaran**: Ditambahkan opsi *"Transfer Bank / EDC"* yang memunculkan dropdown rekening bank beserta saldo.
+- **Sinkronisasi Saldo Otomatis saat Edit**:
+  - Sistem mendeteksi rekening lama yang terdampak dan **mengurangi** saldo dari rekening tersebut.
+  - Sistem kemudian **menambahkan** saldo ke rekening baru (atau rekening yang sama jika tidak diubah) sesuai total baru.
+  - Logika ini mencakup perubahan metode bayar (misal dari Tunai menjadi Transfer, atau sebaliknya).
+- **Sinkronisasi Stok Sudah Ada Sebelumnya**: Perubahan kuantitas item saat edit sudah terhubung ke `productStore` (stok bertambah jika qty dikurangi, stok berkurang jika qty ditambah).
+
+---
+
+### 9. Sinkronisasi HPP ke Laporan Laba Rugi Saat Edit
+
+**`EditTransactionModal.tsx`**:
+- Menambahkan kalkulasi ulang **HPP (Harga Pokok Penjualan)** dan **Laba Bersih** setiap kali transaksi diedit.
+- Formula: `HPP Baru = Σ (buyPrice × quantity)` untuk setiap item yang diedit.
+- Field `hpp` dan `profit` pada data transaksi di-update bersama saat menekan "Simpan Perubahan".
+- **`ProfitLossReportPage.tsx`** sudah membaca field `hpp` ini, sehingga laporan Laba Rugi kini **otomatis sinkron** dengan perubahan di List Penjualan tanpa perlu modifikasi tambahan.
+
+---
+
+## 22. Modul Keuangan Baru — 7 September 2026
+
+### 1. Store Keuangan Baru (`financeStore.ts`)
+
+File baru: `src/stores/financeStore.ts` (Zustand persist `pos-finance-storage`).
+
+Mengelola seluruh data keuangan yang sebelumnya tidak memiliki wadah:
+
+- **`investors[]`**: Data investor (nama, telepon, catatan, total investasi, total bagi hasil).
+- **`investorDeposits[]`**: Riwayat setiap setoran dana dari investor.
+- **`profitShares[]`**: Riwayat setiap pembagian hasil usaha beserta distribusinya per investor.
+- **`balanceTransfers[]`**: Riwayat setiap pemindahan saldo antar kantong (kas ↔ QRIS ↔ rekening bank).
+- **`cashBalance`** & **`qrisBalance`**: Saldo kas tunai dan QRIS yang dikelola terpisah dari bank.
+- Fungsi: `addInvestor`, `addInvestorDeposit`, `addProfitShare`, `addBalanceTransfer`, `updateCashBalance`, `updateQrisBalance`, `resetFinanceBalances`.
+
+---
+
+### 2. Menu Sidebar Baru: Keuangan
+
+**`Sidebar.tsx`**:
+- Menambahkan grup menu **Keuangan** (ikon 🏦 `Landmark`) di bawah menu Pengeluaran.
+- Berisi 5 submenu: Histori Transaksi, Pindah Saldo, Daftar Bank, Investor, Bagi Hasil.
+- Menu hanya terlihat oleh user dengan role selain kasir (admin/owner).
+
+---
+
+### 3. Halaman Baru: Histori Transaksi (`FinanceHistoryPage.tsx`)
+
+Rute: `/finance/history`
+
+- Menampilkan **semua transaksi keuangan dari seluruh modul** dalam satu tabel terpadu.
+- Sumber data yang digabung: Penjualan (Sales), Purchase Orders, Pengeluaran (Expenses), Pindah Saldo, Setoran Investor.
+- Setiap baris menampilkan: waktu, tipe transaksi (badge warna), keterangan, metode, status, dan jumlah (hijau = masuk, merah = keluar).
+- Diurutkan berdasarkan waktu terbaru di atas.
+
+---
+
+### 4. Halaman Baru: Pindah Saldo (`BalanceTransferPage.tsx`)
+
+Rute: `/finance/transfer`
+
+- Form interaktif untuk memindahkan saldo antar sumber: **Kas / Tunai**, **QRIS / E-Wallet**, dan **Rekening Bank** (pilih dari daftar).
+- Menampilkan saldo tersedia dari masing-masing sumber secara real-time.
+- Validasi: tidak bisa memindahkan lebih dari saldo yang tersedia.
+- Saat dikonfirmasi, saldo sumber berkurang dan saldo tujuan bertambah secara otomatis.
+- Riwayat semua pemindahan saldo ditampilkan di panel kanan halaman.
+
+---
+
+### 5. Halaman Daftar Bank Dipindahkan
+
+Rute lama `/settings/payments` tetap berfungsi, namun rute baru **`/finance/banks`** mengarah ke halaman yang sama (`PaymentMethodsPage.tsx`).
+
+Menu "Metode Pembayaran" di Pengaturan sudah ada, kini juga dapat diakses dari **Keuangan → Daftar Bank** untuk kemudahan navigasi.
+
+---
+
+### 6. Halaman Baru: Investor (`InvestorPage.tsx`)
+
+Rute: `/finance/investors`
+
+- Kartu ringkasan: Total Dana Masuk, Total Bagi Hasil, Dana Bersih.
+- **Daftar Investor**: Tambah, lihat detail, dan hapus investor.
+- **Form Tambah Investor**: Nama (wajib), Nomor Telepon, Catatan.
+- **Catat Dana Masuk** per investor:
+  - Pilih jumlah dana.
+  - Pilih metode penyetoran: **Tunai** (saldo kas bertambah) atau **Transfer Bank** (pilih rekening, saldo rekening bertambah otomatis).
+  - Riwayat setoran per investor dapat dilihat dengan expand accordion.
+- Total investasi dan total bagi hasil per investor diperbarui otomatis.
+
+---
+
+### 7. Halaman Baru: Bagi Hasil (`ProfitSharePage.tsx`)
+
+Rute: `/finance/profit-share`
+
+- Kartu ringkasan: Total Pendapatan, Total HPP+Biaya, Laba Bersih, Total Dibagikan.
+- Membaca data keuangan real-time dari `transactionStore` dan `expenseStore`.
+- **Form Catat Bagi Hasil**:
+  - Input periode (misal: "September 2026").
+  - Ringkasan laba bersih otomatis terisi.
+  - Per investor: input persentase (%), estimasi jumlah rupiah tampil otomatis, pilih metode pembayaran (Tunai / Transfer Bank + pilih rekening).
+  - Validasi: total persentase tidak boleh melebihi 100%.
+  - Saat disimpan, saldo kas/rekening yang dipilih **otomatis berkurang** sebesar jumlah bagi hasil per investor.
+  - Total bagi hasil per investor di data investor otomatis bertambah.
+- Riwayat semua bagi hasil ditampilkan dengan detail distribusi per investor.
+
+---
+
+### 8. Perluasan Tombol Reset Dashboard — Modul Keuangan
+
+**`DashboardPage.tsx`**:
+
+Tombol reset merah 🔴 di Dashboard kini juga mereset **seluruh data modul Keuangan**:
+
+- **Saldo Kas & QRIS → Rp 0** (via `resetFinanceBalances()`).
+- **Riwayat Pindah Saldo** dikosongkan (`balanceTransfers: []`).
+- **Riwayat Setoran Investor** dikosongkan (`investorDeposits: []`).
+- **Riwayat Bagi Hasil** dikosongkan (`profitShares: []`).
+- **Total Investasi & Total Bagi Hasil per Investor** direset ke 0, namun **data nama investor tetap tersimpan**.
+
+Modal konfirmasi reset diperluas dengan 2 item baru:
+- 🏦 *Saldo Keuangan (Rekening, Kas, QRIS = 0)*
+- 💵 *Data Keuangan (Pindah Saldo, Setoran Investor, Bagi Hasil)*
+ 
+ # #   1 8 .   M o d u l   M a n a j e m e n   P e l a n g g a n   ( C u s t o m e r )   &   M e n u   S a l e s  
+ -   * * S t r u k t u r   M e n u   B a r u : * *   M e n g u b a h   m e n u   \  
+ L i s t  
+ P e n j u a l a n \   m e n j a d i   g r u p   \ S a l e s \   y a n g   t e r d i r i   d a r i   \ L i s t  
+ P e n j u a l a n \   d a n   \ L i s t  
+ P e l a n g g a n \ .  
+ -   * * P e n y i m p a n a n   D a t a   ( Z u s t a n d ) : * *   M e m b u a t   \ c u s t o m e r S t o r e . t s \   u n t u k   m e n y i m p a n   d a t a   p r o f i l   p e l a n g g a n   ( N a m a ,   T e l e p o n ,   A l a m a t ,   P l a t f o r m )   s e r t a   m e n g a k u m u l a s i k a n   \ 	 o t a l T r a n s a c t i o n s \   d a n   \ 	 o t a l S p e n t \ .  
+ -   * * H a l a m a n   D a f t a r   P e l a n g g a n : * *   M e n a m b a h k a n   r u t e   \ / s a l e s / c u s t o m e r s \   u n t u k   m e n a m p i l k a n   t a b e l   d a f t a r   p e l a n g g a n .  
+ -   * * I n t e g r a s i   K a s i r   O f f l i n e : * *   M e n a m b a h k a n   f i t u r   P o p u p   I n p u t   P e l a n g g a n   ( \ O f f l i n e C u s t o m e r M o d a l \ )   s a a t   a k a n   m e n y e l e s a i k a n   p e m b a y a r a n   o f f l i n e .   M e n c a k u p   p e n c a r i a n   n a m a / n o   h p   ( a n t i   d u p l i k a t )   a t a u   o p s i   * L e w a t i *   ( P e l a n g g a n   U m u m ) .  
+ -   * * I n t e g r a s i   K a s i r   O n l i n e : * *   O t o m a t i s   m e n y i m p a n   n a m a ,   a l a m a t ,   d a n   p l a t f o r m   ( S h o p e e ,   T o k o p e d i a ,   d l l )   p e m b e l i   o n l i n e   k e   d a l a m   M a s t e r   D a t a   P e l a n g g a n .  
+ -   * * T a b e l   L i s t   P e n j u a l a n : * *   K i n i   k o l o m   \  
+ N o .  
+ S t r u k \   j u g a   m e n a m p i l k a n   n a m a   P e l a n g g a n   y a n g   b e r t r a n s a k s i .  
+  
+ # #   1 9 .   F i t u r   U p l o a d   F o t o   P r o d u k  
+ -   M e n a m b a h k a n   f i t u r   u p l o a d   f o t o   ( o p s i o n a l ,   m a k s   1 M B )   p a d a   h a l a m a n   T a m b a h / E d i t   P r o d u k   ( \ P r o d u c t F o r m P a g e . t s x \ ) .  
+ -   F o t o   p r o d u k   o t o m a t i s   d i k o n v e r s i   k e   f o r m a t   b a s e 6 4   d a n   d i s i m p a n   d i   d a t a b a s e   l o k a l .  
+ -   M e n a m p i l k a n   t h u m b n a i l   f o t o   p r o d u k   p a d a   t a b e l   D a f t a r   P r o d u k   ( \ P r o d u c t L i s t P a g e . t s x \ ) .  
+ -   M e n a m p i l k a n   f o t o   p r o d u k   ( a t a u   i c o n   d e f a u l t   j i k a   k o s o n g )   p a d a   g r i d   p r o d u k   d i   h a l a m a n   P O S   T e r m i n a l   ( \ P r o d u c t G r i d . t s x \ ) .  
+  
+ # #   2 0 .   F i l t e r   R e n t a n g   W a k t u   D a s h b o a r d  
+ -   M e n g a k t i f k a n   t o m b o l   f i l t e r   t a n g g a l   p a d a   h a l a m a n   D a s h b o a r d   ( \ D a s h b o a r d P a g e . t s x \ ) .  
+ -   M e m b u a t   S t a t e   G l o b a l   b a r u   ( \ d a s h b o a r d S t o r e . t s \ )   u n t u k   m e n y i m p a n   f i l t e r   t a n g g a l   ( H a r i   I n i ,   K e m a r i n ,   M i n g g u   I n i ,   B u l a n   I n i ) .  
+ -   F i l t e r   w a k t u   i n i   s e k a r a n g   m e m e n g a r u h i   k o m p o n e n - k o m p o n e n   b e r i k u t :  
+     -   R i n g k a s a n   K a r t u   K P I   ( O m z e t ,   H P P ,   L a b a   B e r s i h ) .  
+     -   G r a f i k   O m z e t   &   K u n j u n g a n   K a s i r   ( \ R e v e n u e C h a r t \ ) .  
+     -   G r a f i k   P r o d u k   T e r l a r i s   ( \ T o p P r o d u c t s C h a r t \ ) .  
+     -   R i n g k a s a n   A r u s   K a s   M a s u k   &   K e l u a r   ( \ C a s h F l o w C h a r t \ ) .  
+     -   D a f t a r   T r a n s a k s i   K a s i r   T e r b a r u   ( \ R e c e n t T r a n s a c t i o n s \ ) .  
+ -   K o m p o n e n   * * S a l d o   G a b u n g a n   &   M e t o d e   P e m b a y a r a n * *   ( \ P a y m e n t M e t h o d S u m m a r y \ )   s e n g a j a   t i d a k   d i p e n g a r u h i   f i l t e r   s e s u a i   i n s t r u k s i ,   u n t u k   t e t a p   m e n a m p i l k a n   s a l d o   a k t u a l   s a a t   i n i .  
+ 

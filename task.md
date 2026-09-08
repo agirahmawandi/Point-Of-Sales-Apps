@@ -25,9 +25,16 @@
 - [x] CRUD Purchase Order
 - [x] Penerimaan Barang
 - [x] Manajemen Pemasok
-- [x] CRUD Pengeluaran Operasional
-- [x] Kategori Beban
-- [x] Upload bukti pembayaran (Simulasi UI)
+- [x] Update `settingsStore.ts` (Add balance and updateBankBalance)
+- [x] Update types: `transaction.ts`, `purchase.ts`, `expense.ts`
+- [x] Update Dashboard UI (`PaymentMethodSummary.tsx`)
+- [x] Update Kasir UI (`PaymentModal.tsx`)
+- [x] Update Pembelian UI (`PurchaseFormPage.tsx`)
+- [x] Update Pengeluaran UI (`ExpenseListPage.tsx`)
+- [x] Verify buildengkap
+- [x] Pengaturan (Profil Toko, Pajak, Metode Bayar)
+- [x] Pengaturan (Users)
+- [x] Polish: animasi, error boundaries, PWA
 
 ## Fase 4 — Laporan & Polish (Minggu 7–8)
 

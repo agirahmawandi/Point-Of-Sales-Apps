@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTransactionStore } from '@/stores/transactionStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import PageContainer from '@/components/layout/PageContainer';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
@@ -21,16 +22,22 @@ import {
   Pencil,
   Percent
 } from 'lucide-react';
-import type { Transaction } from '@/types';
+import type { Transaction, PaymentMethod } from '@/types';
 import EditTransactionModal from '@/features/pos/components/EditTransactionModal';
 
 export default function SalesListPage() {
   const navigate = useNavigate();
-  const { transactions, updateTransactionPaymentStatus } = useTransactionStore();
+  const { transactions, updateTransactionPaymentStatus, updateTransaction } = useTransactionStore();
+  const { bankAccounts, updateBankBalance } = useSettingsStore();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'offline' | 'online' | 'pending' | 'lunas'>('all');
   const [confirmModalId, setConfirmModalId] = useState<string | null>(null);
+  
+  // States for marking as paid
+  const [settleMethod, setSettleMethod] = useState<PaymentMethod>('cash');
+  const [settleBankId, setSettleBankId] = useState(bankAccounts[0]?.id || '');
+
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -102,6 +109,21 @@ export default function SalesListPage() {
   }, [transactions, activeTab, searchTerm]);
 
   const handleMarkAsPaid = (id: string) => {
+    const trx = transactions.find(t => t.id === id);
+    if (!trx) return;
+
+    const remainingToPay = trx.total - (trx.amountPaid || 0);
+
+    // Update bank balance if applicable
+    if (settleMethod === 'card' && settleBankId) {
+      updateBankBalance(settleBankId, remainingToPay);
+    }
+
+    updateTransaction(id, { 
+      paymentMethod: settleMethod, 
+      bankAccountId: settleMethod === 'card' ? settleBankId : undefined 
+    });
+    
     updateTransactionPaymentStatus(id, 'lunas', 'success');
     setConfirmModalId(null);
     showToast('Transaksi berhasil ditandai Lunas!');
@@ -326,9 +348,16 @@ export default function SalesListPage() {
                             )}
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1 text-[11px] text-[#76777d] mt-0.5">
-                            <Store size={11} />
-                            <span>Offline Toko</span>
+                          <div className="flex flex-col gap-0.5 mt-0.5">
+                            <div className="flex items-center gap-1 text-[11px] text-[#76777d]">
+                              <Store size={11} />
+                              <span>Offline Toko</span>
+                            </div>
+                            {trx.customerName && trx.customerName !== 'Pelanggan Umum' && (
+                              <span className="text-[11px] text-[#76777d]">
+                                Pelanggan: <strong className="text-[#254222]">{trx.customerName}</strong>
+                              </span>
+                            )}
                           </div>
                         )}
                       </td>
@@ -464,11 +493,41 @@ export default function SalesListPage() {
               <CheckCircle size={26} />
             </div>
             <h3 className="text-base font-bold text-[#254222]">Konfirmasi Pelunasan</h3>
-            <p className="text-xs text-[#76777d] mt-1.5 leading-relaxed">
+            <p className="text-xs text-[#76777d] mt-1.5 mb-4 leading-relaxed">
               Apakah Anda yakin ingin menandai transaksi <strong>{confirmModalId}</strong> ini sebagai <strong>LUNAS</strong>?
-              (Dana telah dicairkan oleh marketplace atau piutang telah dilunasi).
             </p>
-            <div className="flex gap-2 mt-5">
+
+            <div className="text-left space-y-3 mb-5 border-t border-[#cae4c5] pt-4">
+              <div>
+                <label className="block text-xs font-bold text-[#254222] mb-1.5 uppercase tracking-wider">Terima Pembayaran Via</label>
+                <select
+                  value={settleMethod}
+                  onChange={(e) => setSettleMethod(e.target.value as PaymentMethod)}
+                  className="w-full h-10 px-3 rounded-lg border border-[#cae4c5] bg-[#cae4c5]/20 text-sm font-semibold text-[#254222] focus:outline-none focus:ring-2 focus:ring-[#99cc66]"
+                >
+                  <option value="cash">Tunai / Kas</option>
+                  <option value="card">Transfer Bank / EDC</option>
+                  <option value="qris">QRIS / E-Wallet</option>
+                </select>
+              </div>
+
+              {settleMethod === 'card' && (
+                <div className="animate-in fade-in slide-in-from-top-2">
+                  <label className="block text-xs font-bold text-[#254222] mb-1.5 uppercase tracking-wider">Rekening Penerima</label>
+                  <select
+                    value={settleBankId}
+                    onChange={(e) => setSettleBankId(e.target.value)}
+                    className="w-full h-10 px-3 rounded-lg border border-[#cae4c5] bg-white text-sm font-semibold text-[#254222] focus:outline-none focus:ring-2 focus:ring-[#99cc66]"
+                  >
+                    {bankAccounts.map(b => (
+                      <option key={b.id} value={b.id}>{b.bank} - {b.accountNumber} (Saldo: Rp {(b.balance || 0).toLocaleString('id-ID')})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setConfirmModalId(null)}

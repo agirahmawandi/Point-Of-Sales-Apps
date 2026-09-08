@@ -17,6 +17,7 @@ export interface BankAccount {
   bank: string;
   accountNumber: string;
   accountName: string;
+  balance?: number;
 }
 
 interface SettingsState {
@@ -30,6 +31,8 @@ interface SettingsState {
   addBankAccount: (account: Omit<BankAccount, 'id'>) => void;
   updateBankAccount: (id: string, account: Partial<BankAccount>) => void;
   deleteBankAccount: (id: string) => void;
+  updateBankBalance: (id: string, amount: number) => void;
+  resetBankBalances: () => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -45,8 +48,8 @@ export const useSettingsStore = create<SettingsState>()(
         defaultTaxPercentage: 11,
       },
       bankAccounts: [
-        { id: 'bca-1', bank: 'BCA', accountNumber: '123-456-7890', accountName: 'Frema Mart Store' },
-        { id: 'mandiri-1', bank: 'Mandiri', accountNumber: '900-123-4567', accountName: 'Frema Mart Store' },
+        { id: 'bca-1', bank: 'BCA', accountNumber: '123-456-7890', accountName: 'Frema Mart Store', balance: 0 },
+        { id: 'mandiri-1', bank: 'Mandiri', accountNumber: '900-123-4567', accountName: 'Frema Mart Store', balance: 0 },
       ],
       
       updateStoreProfile: (profile) => set((state) => ({
@@ -72,6 +75,16 @@ export const useSettingsStore = create<SettingsState>()(
       
       deleteBankAccount: (id) => set((state) => ({
         bankAccounts: state.bankAccounts.filter(a => a.id !== id)
+      })),
+      
+      updateBankBalance: (id, amount) => set((state) => ({
+        bankAccounts: state.bankAccounts.map(a => 
+          a.id === id ? { ...a, balance: (a.balance || 0) + amount } : a
+        )
+      })),
+      
+      resetBankBalances: () => set((state) => ({
+        bankAccounts: state.bankAccounts.map(a => ({ ...a, balance: 0 }))
       })),
     }),
     {

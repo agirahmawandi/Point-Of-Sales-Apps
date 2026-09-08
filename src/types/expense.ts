@@ -15,6 +15,7 @@ export interface Expense {
   amount: number;
   date: string;
   paymentMethod: string;
+  bankAccountId?: string;
   attachment?: string;
   createdBy: string;
   createdAt: string;

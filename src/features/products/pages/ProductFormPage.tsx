@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useProductStore } from '@/stores/productStore';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X, Image as ImageIcon } from 'lucide-react';
 
 const productSchema = z.object({
   name: z.string().min(3, 'Nama produk minimal 3 karakter'),
@@ -15,6 +15,7 @@ const productSchema = z.object({
   stock: z.coerce.number().min(0, 'Stok awal tidak boleh negatif'),
   minStock: z.coerce.number().min(0, 'Batas minimum stok tidak boleh negatif'),
   description: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -27,7 +28,9 @@ export default function ProductFormPage() {
   const isEditMode = Boolean(id);
   const existingProduct = isEditMode ? products.find(p => p.id === id) : null;
 
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<ProductFormValues>({
+  const [imageBase64, setImageBase64] = React.useState<string>(existingProduct?.imageUrl || '');
+
+  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
@@ -38,6 +41,7 @@ export default function ProductFormPage() {
       stock: 0,
       minStock: 10,
       description: '',
+      imageUrl: '',
     }
   });
 
@@ -52,7 +56,9 @@ export default function ProductFormPage() {
         stock: existingProduct.stock,
         minStock: existingProduct.minStock,
         description: existingProduct.description || '',
+        imageUrl: existingProduct.imageUrl || '',
       });
+      setImageBase64(existingProduct.imageUrl || '');
     }
   }, [isEditMode, existingProduct, reset]);
 
@@ -63,11 +69,36 @@ export default function ProductFormPage() {
   const marginAmt = sellingPrice - purchasePrice;
   const marginPct = purchasePrice > 0 ? (marginAmt / purchasePrice) * 100 : 0;
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) { // 1MB limit
+        alert('Ukuran gambar maksimal 1MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setImageBase64(base64String);
+        setValue('imageUrl', base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageBase64('');
+    setValue('imageUrl', '');
+  };
+
   const onSubmit = (data: ProductFormValues) => {
+    // Ensure imageUrl is included
+    const finalData = { ...data, imageUrl: imageBase64 };
+    
     if (isEditMode && id) {
-      updateProduct(id, data);
+      updateProduct(id, finalData);
     } else {
-      addProduct(data);
+      addProduct(finalData);
     }
     navigate('/products');
   };
@@ -94,6 +125,51 @@ export default function ProductFormPage() {
         {/* Basic Info Card */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
           <h2 className="text-[16px] font-bold text-[#0b1c30] mb-4">Informasi Dasar Produk</h2>
+          
+          {/* Image Upload Section */}
+          <div className="mb-6">
+            <label className="block text-[13px] font-semibold text-[#0b1c30] mb-2">Foto Produk (Opsional)</label>
+            <div className="flex items-start gap-4">
+              {imageBase64 ? (
+                <div className="relative w-24 h-24 rounded-xl border border-slate-200 overflow-hidden shrink-0 group">
+                  <img src={imageBase64} alt="Preview" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      type="button" 
+                      onClick={removeImage}
+                      className="p-1.5 bg-white text-red-500 rounded-full hover:scale-110 transition-transform"
+                      title="Hapus foto"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                  <ImageIcon size={32} strokeWidth={1.5} />
+                </div>
+              )}
+              
+              <div className="flex-1">
+                <p className="text-xs text-[#76777d] mb-2">
+                  Pilih foto produk yang jelas. Format yang didukung: JPG, PNG. Ukuran maksimal 1MB.
+                </p>
+                <div className="relative">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#cae4c5] bg-[#cae4c5]/20 text-[#254222] text-xs font-bold hover:bg-[#cae4c5]/40 transition-colors pointer-events-none">
+                    <Upload size={14} />
+                    <span>Upload Foto</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="col-span-2 md:col-span-1">
               <label className="block text-[13px] font-semibold text-[#0b1c30] mb-1.5">Nama Produk *</label>

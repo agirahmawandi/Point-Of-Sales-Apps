@@ -2,16 +2,20 @@ import React, { useMemo } from 'react';
 import { ChevronDown, ArrowRight, Package } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTransactionStore } from '@/stores/transactionStore';
+import { useDashboardStore, getDashboardDateRange } from '@/stores/dashboardStore';
 
 export default function TopProductsChart() {
   const { transactions } = useTransactionStore();
+  const dashboardState = useDashboardStore();
 
   const topProducts = useMemo(() => {
+    const { startDate, endDate } = getDashboardDateRange(dashboardState);
     const productStats: Record<string, { id: string, name: string, qty: number, revenue: number }> = {};
     
     // Agregasi penjualan
     transactions.forEach(trx => {
-      if (trx.status === 'success') {
+      const trxDate = new Date(trx.date || trx.createdAt || Date.now());
+      if (trxDate >= startDate && trxDate <= endDate && trx.status === 'success') {
         trx.items.forEach(item => {
           if (!productStats[item.productId]) {
             productStats[item.productId] = {
@@ -47,7 +51,7 @@ export default function TopProductsChart() {
       percentage: Math.round((prod.qty / maxQty) * 100),
       ...colors[idx]
     }));
-  }, [transactions]);
+  }, [transactions, dashboardState]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(value);
@@ -60,7 +64,7 @@ export default function TopProductsChart() {
             <span className="text-2xl">🏆</span>
             <div>
               <h2 className="text-[16px] font-bold text-[#0b1c30]">Produk Terlaris</h2>
-              <span className="text-[12px] text-[#76777d]">Peringkat penjualan hari ini</span>
+              <span className="text-[12px] text-[#76777d]">Peringkat penjualan periode ini</span>
             </div>
           </div>
           <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#eff4ff] text-[#0b1c30] text-[12px] hover:bg-[#e5eeff] transition-colors">

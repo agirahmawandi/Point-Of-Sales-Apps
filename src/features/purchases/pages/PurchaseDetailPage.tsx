@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { useProductStore } from '@/stores/productStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import PageContainer from '@/components/layout/PageContainer';
 import { ArrowLeft, CheckCircle2, AlertCircle, CreditCard, Receipt, FileText, History } from 'lucide-react';
 import { format } from 'date-fns';
@@ -13,10 +14,12 @@ export default function PurchaseDetailPage() {
   const navigate = useNavigate();
   const { getPurchaseOrder, updatePurchaseOrder } = usePurchaseStore();
   const { updatePurchasePrice, products } = useProductStore();
+  const { bankAccounts, updateBankBalance } = useSettingsStore();
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Transfer Bank');
+  const [selectedBankId, setSelectedBankId] = useState(bankAccounts[0]?.id || '');
 
   const po = id ? getPurchaseOrder(id) : undefined;
 
@@ -53,11 +56,19 @@ export default function PurchaseDetailPage() {
     const newPaidAmount = (po.paidAmount || 0) + amountToPay;
     const newPaymentStatus = newPaidAmount >= po.totalAmount ? 'lunas' : 'sebagian';
 
+    const bankInfo = (paymentMethod === 'Transfer Bank' && selectedBankId)
+      ? ` (${bankAccounts.find(b => b.id === selectedBankId)?.bank || ''})`
+      : '';
+
     updatePurchaseOrder(po.id, {
       paidAmount: newPaidAmount,
       paymentStatus: newPaymentStatus,
-      paymentNotes: `${po.paymentNotes ? po.paymentNotes + ' | ' : ''}${format(new Date(), 'dd/MM/yyyy HH:mm')}: ${formatCurrency(amountToPay)} via ${paymentMethod}`,
+      paymentNotes: `${po.paymentNotes ? po.paymentNotes + ' | ' : ''}${format(new Date(), 'dd/MM/yyyy HH:mm')}: ${formatCurrency(amountToPay)} via ${paymentMethod}${bankInfo}`,
     });
+
+    if (paymentMethod === 'Transfer Bank' && selectedBankId) {
+      updateBankBalance(selectedBankId, -amountToPay);
+    }
 
     // Jika pelunasan mencapai LUNAS dan barang sudah diterima (atau sebagian),
     // otomatis sinkronkan harga beli master produk ke harga item PO
@@ -297,6 +308,21 @@ export default function PurchaseDetailPage() {
                     <option value="Giro / Cek">Giro / Cek</option>
                   </select>
                 </div>
+
+                {paymentMethod === 'Transfer Bank' && (
+                  <div className="animate-in fade-in slide-in-from-top-2">
+                    <label className="block text-[13px] font-semibold text-[#0b1c30] mb-1.5">Pilih Rekening Sumber Dana</label>
+                    <select
+                      value={selectedBankId}
+                      onChange={(e) => setSelectedBankId(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg border border-[#3755c3]/30 bg-[#eff4ff]/30 text-sm font-semibold text-[#0b1c30] focus:outline-none focus:border-[#3755c3]"
+                    >
+                      {bankAccounts.map(b => (
+                        <option key={b.id} value={b.id}>{b.bank} - {b.accountNumber} (Saldo: Rp {(b.balance || 0).toLocaleString('id-ID')})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
               
               <div className="p-4 border-t border-[#eff4ff] bg-[#eff4ff]/20 flex justify-end gap-2 shrink-0">

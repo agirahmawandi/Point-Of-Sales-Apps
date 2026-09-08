@@ -35,6 +35,8 @@ export interface PurchaseOrder {
   paymentStatus: PaymentStatus;
   paidAmount: number;
   dueDate?: string;
+  paymentMethod?: string;
+  bankAccountId?: string;
   notes?: string;
   paymentNotes?: string;
   createdAt: string;

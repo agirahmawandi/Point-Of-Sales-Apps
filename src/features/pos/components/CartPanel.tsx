@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useCartStore } from '@/stores/cartStore';
-import { Trash2, Plus, Minus, ShoppingCart, Globe, Edit2 } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingCart, Globe, Edit2, User } from 'lucide-react';
 import PaymentModal from './PaymentModal';
+import OfflineCustomerModal from './OfflineCustomerModal';
 
 interface CartPanelProps {
   onOpenOnlineModal?: () => void;
@@ -22,9 +23,13 @@ export default function CartPanel({ onOpenOnlineModal }: CartPanelProps) {
     removeItem, 
     clearCart, 
     setTax,
-    setMarketplaceFee
+    setMarketplaceFee,
+    customerId,
+    customerName,
+    setCustomer
   } = useCartStore();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -40,6 +45,12 @@ export default function CartPanel({ onOpenOnlineModal }: CartPanelProps) {
       onOpenOnlineModal?.();
       return;
     }
+    
+    if (transactionType === 'offline' && !customerId && customerName !== 'Pelanggan Umum') {
+      setIsCustomerModalOpen(true);
+      return;
+    }
+
     setIsPaymentModalOpen(true);
   };
 
@@ -57,13 +68,24 @@ export default function CartPanel({ onOpenOnlineModal }: CartPanelProps) {
               {items.length}
             </span>
           </div>
-          <button 
-            onClick={clearCart}
-            disabled={items.length === 0}
-            className="text-xs text-[#ba1a1a] hover:bg-[#ffdad6] px-2 py-1 rounded-lg font-semibold disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-          >
-            Kosongkan
-          </button>
+          <div className="flex items-center gap-2">
+            {transactionType === 'offline' && (
+              <button 
+                onClick={() => setIsCustomerModalOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#cae4c5]/30 text-[#254222] hover:bg-[#cae4c5]/50 transition-colors text-xs font-bold border border-[#cae4c5]"
+              >
+                <User size={14} />
+                <span className="max-w-[100px] truncate">{customerName || 'Pilih Pelanggan'}</span>
+              </button>
+            )}
+            <button 
+              onClick={clearCart}
+              disabled={items.length === 0}
+              className="text-xs text-[#ba1a1a] hover:bg-[#ffdad6] px-2 py-1 rounded-lg font-semibold disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+            >
+              Kosongkan
+            </button>
+          </div>
         </div>
 
         {/* Online Order Information Banner (If Online Mode) */}
@@ -252,6 +274,12 @@ export default function CartPanel({ onOpenOnlineModal }: CartPanelProps) {
       {isPaymentModalOpen && (
         <PaymentModal onClose={() => setIsPaymentModalOpen(false)} />
       )}
+
+      <OfflineCustomerModal 
+        isOpen={isCustomerModalOpen} 
+        onClose={() => setIsCustomerModalOpen(false)} 
+        onSuccess={() => setIsPaymentModalOpen(true)}
+      />
     </>
   );
 }

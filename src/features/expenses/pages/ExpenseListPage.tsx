@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useExpenseStore } from '@/stores/expenseStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import PageContainer from '@/components/layout/PageContainer';
 import { Search, Plus, Paperclip, FileText, CheckCircle2, Receipt } from 'lucide-react';
 import { format } from 'date-fns';
@@ -7,8 +8,10 @@ import { id as localeId } from 'date-fns/locale';
 
 export default function ExpenseListPage() {
   const { expenses, categories, addExpense } = useExpenseStore();
+  const { bankAccounts, updateBankBalance } = useSettingsStore();
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBankId, setSelectedBankId] = useState(bankAccounts[0]?.id || '');
   
   const [formData, setFormData] = useState({
     categoryId: '',
@@ -50,9 +53,16 @@ export default function ExpenseListPage() {
       amount: parseInt(formData.amount),
       date: new Date(formData.date).toISOString(),
       paymentMethod: formData.paymentMethod,
+      bankAccountId: (formData.paymentMethod === 'Transfer Bank' || formData.paymentMethod === 'Kartu Kredit') ? selectedBankId : undefined,
       attachment: formData.hasAttachment ? 'dummy-file.jpg' : undefined,
       createdBy: 'admin'
     });
+    
+    // Potong saldo jika bayar pakai bank
+    if ((formData.paymentMethod === 'Transfer Bank' || formData.paymentMethod === 'Kartu Kredit') && selectedBankId) {
+      updateBankBalance(selectedBankId, -parseInt(formData.amount));
+    }
+    
     setIsModalOpen(false);
   };
 
@@ -232,6 +242,21 @@ export default function ExpenseListPage() {
                     </select>
                   </div>
                 </div>
+
+                {(formData.paymentMethod === 'Transfer Bank' || formData.paymentMethod === 'Kartu Kredit') && (
+                  <div className="mt-1 animate-in fade-in slide-in-from-top-2">
+                    <label className="block text-[13px] font-semibold text-[#0b1c30] mb-1.5">Sumber Rekening Bank</label>
+                    <select
+                      value={selectedBankId}
+                      onChange={e => setSelectedBankId(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg border border-[#3755c3]/30 bg-[#eff4ff]/30 text-sm font-semibold text-[#0b1c30] focus:outline-none focus:border-[#3755c3]"
+                    >
+                      {bankAccounts.map(b => (
+                        <option key={b.id} value={b.id}>{b.bank} - {b.accountNumber} (Saldo: Rp {(b.balance || 0).toLocaleString('id-ID')})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div className="border border-dashed border-[#d3e4fe] rounded-xl p-4 mt-2 bg-[#eff4ff]/40 relative">
                   <label className="block text-xs font-semibold text-[#0b1c30] text-center mb-1 cursor-pointer">

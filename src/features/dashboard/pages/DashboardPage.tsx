@@ -11,6 +11,11 @@ import { usePurchaseStore } from '@/stores/purchaseStore';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { useFinanceStore } from '@/stores/financeStore';
+import { useDashboardStore, type DateFilterType } from '@/stores/dashboardStore';
+import { format } from 'date-fns';
+import { id as localeId } from 'date-fns/locale';
 import { 
   RotateCcw, 
   AlertTriangle, 
@@ -20,7 +25,9 @@ import {
   Truck, 
   Receipt, 
   Boxes,
-  Trash2
+  Trash2,
+  Landmark,
+  Banknote
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -31,9 +38,32 @@ export default function DashboardPage() {
   const { resetExpenses } = useExpenseStore();
   const { clearCart } = useCartStore();
   const { user } = useAuthStore();
+  const { resetBankBalances } = useSettingsStore();
+  const { resetFinanceBalances } = useFinanceStore();
+  const financeStore = useFinanceStore();
+  const { dateFilter, setDateFilter } = useDashboardStore();
 
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isResetSuccess, setIsResetSuccess] = useState(false);
+  const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
+
+  const filterOptions: { label: string; value: DateFilterType }[] = [
+    { label: 'Hari Ini', value: 'today' },
+    { label: 'Kemarin', value: 'yesterday' },
+    { label: 'Minggu Ini', value: 'this_week' },
+    { label: 'Bulan Ini', value: 'this_month' },
+  ];
+
+  const getFilterLabel = () => {
+    const option = filterOptions.find(o => o.value === dateFilter);
+    if (option) {
+      if (dateFilter === 'today') {
+        return `Hari Ini (${format(new Date(), 'd MMM yyyy', { locale: localeId })})`;
+      }
+      return option.label;
+    }
+    return 'Custom';
+  };
 
   const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
   const isAdmin = user?.role === 'admin';
@@ -53,6 +83,24 @@ export default function DashboardPage() {
 
     // 5. Bersihkan keranjang kasir
     clearCart();
+
+    // 6. Reset saldo rekening bank
+    resetBankBalances();
+
+    // 7. Reset saldo kas & QRIS
+    resetFinanceBalances();
+
+    // 8. Reset data keuangan (investor deposits, bagi hasil, pindah saldo)
+    useFinanceStore.setState({
+      investorDeposits: [],
+      profitShares: [],
+      balanceTransfers: [],
+      investors: financeStore.investors.map(inv => ({
+        ...inv,
+        totalInvested: 0,
+        totalWithdrawn: 0,
+      })),
+    });
 
     setIsResetModalOpen(false);
     setIsResetSuccess(true);
@@ -105,11 +153,35 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-center gap-3">
           {/* Period Selector Dropdown */}
           <div className="relative">
-            <button className="flex items-center gap-2 h-10 px-4 rounded-xl bg-white text-[#254222] shadow-sm hover:bg-[#cae4c5]/30 transition-colors border border-[#cae4c5]/60">
+            <button 
+              onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
+              className="flex items-center gap-2 h-10 px-4 rounded-xl bg-white text-[#254222] shadow-sm hover:bg-[#cae4c5]/30 transition-colors border border-[#cae4c5]/60"
+            >
               <span className="material-symbols-outlined text-[#76777d] text-[18px]">event</span>
-              <span className="text-[12px] font-semibold">Hari Ini (4 Sep 2026)</span>
-              <span className="material-symbols-outlined text-[#76777d] text-[16px]">arrow_drop_down</span>
+              <span className="text-[12px] font-semibold">{getFilterLabel()}</span>
+              <span className="material-symbols-outlined text-[#76777d] text-[16px]">
+                {isDateDropdownOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
+              </span>
             </button>
+
+            {isDateDropdownOpen && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 animate-in fade-in zoom-in-95">
+                {filterOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setDateFilter(opt.value);
+                      setIsDateDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm font-medium hover:bg-[#cae4c5]/20 transition-colors ${
+                      dateFilter === opt.value ? 'text-[#254222] bg-[#cae4c5]/10' : 'text-[#76777d]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Download Report */}
@@ -238,6 +310,26 @@ export default function DashboardPage() {
                   <div>
                     <div className="text-xs font-bold text-red-800">Kuantitas Stok Semua Produk (Qty Stok = 0)</div>
                     <div className="text-[11px] text-red-600">Seluruh stok barang pada katalog produk akan diatur ulang menjadi 0 unit.</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-red-50/70 border border-red-100">
+                  <div className="p-2 rounded-lg bg-red-100 text-red-700 shrink-0 mt-0.5">
+                    <Landmark className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-red-800">Saldo Keuangan (Rekening, Kas, QRIS = 0)</div>
+                    <div className="text-[11px] text-red-600">Seluruh saldo rekening bank, kas tunai, dan QRIS direset menjadi Rp 0.</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-red-50/70 border border-red-100">
+                  <div className="p-2 rounded-lg bg-red-100 text-red-700 shrink-0 mt-0.5">
+                    <Banknote className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-red-800">Data Keuangan (Pindah Saldo, Setoran Investor, Bagi Hasil)</div>
+                    <div className="text-[11px] text-red-600">Riwayat transaksi keuangan dikosongkan. Data investor tetap tersimpan.</div>
                   </div>
                 </div>
               </div>

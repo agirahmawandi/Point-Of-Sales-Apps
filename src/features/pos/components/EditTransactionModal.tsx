@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Transaction, TransactionItem, PaymentMethod } from '@/types';
 import { useProductStore } from '@/stores/productStore';
 import { useTransactionStore } from '@/stores/transactionStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { 
   X, 
   Save, 
@@ -37,6 +38,7 @@ export default function EditTransactionModal({
   onSaveSuccess,
 }: EditTransactionModalProps) {
   const { addStock, reduceStock } = useProductStore();
+  const { bankAccounts, updateBankBalance } = useSettingsStore();
 
   // Basic transaction states
   const [transactionType, setTransactionType] = useState(transaction.transactionType || 'offline');
@@ -64,6 +66,7 @@ export default function EditTransactionModal({
     transaction.paymentStatus || (transaction.status === 'pending' ? 'tertunda' : 'lunas')
   );
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(transaction.paymentMethod || 'cash');
+  const [bankAccountId, setBankAccountId] = useState(transaction.bankAccountId || bankAccounts[0]?.id || '');
 
   const formatNumber = (value: number) => {
     return new Intl.NumberFormat('id-ID').format(value);
@@ -142,8 +145,36 @@ export default function EditTransactionModal({
       }
     });
 
-    // 2. Prepare updated transaction object
+    // 2. Adjust Bank Balances
     const isPending = paymentStatus === 'tertunda';
+    const newAmountPaid = isPending ? 0 : total;
+
+    const oldBankAmount = (transaction.paymentMethod === 'card' && transaction.bankAccountId) 
+      ? (transaction.amountPaid || transaction.total) 
+      : 0;
+    
+    const newBankAmount = (paymentMethod === 'card' && bankAccountId && !isPending) 
+      ? newAmountPaid 
+      : 0;
+
+    // Deduct old amount from old bank
+    if (transaction.paymentMethod === 'card' && transaction.bankAccountId) {
+      updateBankBalance(transaction.bankAccountId, -oldBankAmount);
+    }
+    
+    // Add new amount to new bank
+    if (paymentMethod === 'card' && bankAccountId && !isPending) {
+      updateBankBalance(bankAccountId, newBankAmount);
+    }
+
+    // 3. Recalculate HPP and Profit
+    const newHpp = items.reduce((acc, item) => {
+      const itemBuyPrice = item.buyPrice || 0;
+      return acc + (itemBuyPrice * item.quantity);
+    }, 0);
+    const newProfit = total - newHpp;
+
+    // 4. Prepare updated transaction object
     const updatedTransaction: Partial<Transaction> = {
       transactionType,
       items,
@@ -152,11 +183,14 @@ export default function EditTransactionModal({
       tax: transactionType === 'offline' ? taxAmount : 0,
       marketplaceFee: transactionType === 'online' ? marketplaceFee : 0,
       total,
+      hpp: newHpp,
+      profit: newProfit,
       paymentMethod,
+      bankAccountId: paymentMethod === 'card' ? bankAccountId : undefined,
       paymentStatus,
       paymentTiming: isPending ? 'tertunda' : 'sekarang',
       status: isPending ? 'pending' : 'success',
-      amountPaid: isPending ? 0 : (paymentMethod === 'cash' ? (transaction.amountPaid || total) : total),
+      amountPaid: newAmountPaid,
       onlineDetails: transactionType === 'online' ? {
         marketplace,
         storeName,
@@ -167,7 +201,7 @@ export default function EditTransactionModal({
       } : undefined,
     };
 
-    // 3. Save to transaction store
+    // 5. Save to transaction store
     useTransactionStore.getState().updateTransaction(transaction.id, updatedTransaction);
 
     onSaveSuccess();
@@ -457,17 +491,34 @@ export default function EditTransactionModal({
               <label className="text-xs font-bold text-[#254222] uppercase tracking-wider block mb-1.5">
                 Metode Pembayaran
               </label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                className="w-full h-10 px-3 text-xs bg-white border border-[#cae4c5] rounded-xl focus:outline-none focus:border-[#99cc66] font-semibold text-[#254222]"
-              >
-                <option value="cash">Tunai</option>
-                <option value="qris">QRIS</option>
-                <option value="card">Kartu</option>
-                <option value="marketplace">Marketplace</option>
-                <option value="piutang">Piutang</option>
-              </select>
+              <div className="space-y-3">
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                  className="w-full h-10 px-3 text-xs bg-white border border-[#cae4c5] rounded-xl focus:outline-none focus:border-[#99cc66] font-semibold text-[#254222]"
+                >
+                  <option value="cash">Tunai</option>
+                  <option value="qris">QRIS</option>
+                  <option value="card">Transfer Bank / EDC</option>
+                  <option value="marketplace">Marketplace</option>
+                  <option value="piutang">Piutang</option>
+                </select>
+
+                {paymentMethod === 'card' && (
+                  <div className="animate-in fade-in slide-in-from-top-2">
+                    <label className="text-[11px] font-semibold text-[#76777d] block mb-1">Rekening Penerima</label>
+                    <select
+                      value={bankAccountId}
+                      onChange={(e) => setBankAccountId(e.target.value)}
+                      className="w-full h-9 px-3 text-xs bg-white border border-[#cae4c5] rounded-lg focus:outline-none focus:border-[#99cc66] font-semibold text-[#254222]"
+                    >
+                      {bankAccounts.map(b => (
+                        <option key={b.id} value={b.id}>{b.bank} - {b.accountNumber} (Rp {(b.balance || 0).toLocaleString('id-ID')})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

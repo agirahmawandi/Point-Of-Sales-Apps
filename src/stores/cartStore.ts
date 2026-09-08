@@ -14,9 +14,13 @@ interface CartState {
   
   transactionType: TransactionType;
   onlineDetails?: OnlineOrderDetails;
+  customerId?: string;
+  customerName?: string;
+  
   setTransactionType: (type: TransactionType) => void;
   setOnlineDetails: (details?: OnlineOrderDetails) => void;
   setMarketplaceFee: (fee: number) => void;
+  setCustomer: (id?: string, name?: string) => void;
   
   addItem: (productId: string, name: string, price: number) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -65,6 +69,8 @@ export const useCartStore = create<CartState>()(
 
     transactionType: 'offline',
     onlineDetails: undefined,
+    customerId: undefined,
+    customerName: undefined,
 
     setTransactionType: (type) => set((state) => ({ 
       transactionType: type,
@@ -78,6 +84,7 @@ export const useCartStore = create<CartState>()(
         ...calculateTotals(state.items, state.discountPercentage, state.taxPercentage, state.transactionType, safeFee)
       };
     }),
+    setCustomer: (id, name) => set({ customerId: id, customerName: name }),
 
     addItem: (productId, name, price) => set((state) => {
       const existingItem = state.items.find(item => item.productId === productId);
@@ -103,6 +110,7 @@ export const useCartStore = create<CartState>()(
           productId,
           name,
           price,
+          buyPrice: product?.buyPrice || 0,
           quantity: 1,
           subtotal: price
         }];
@@ -172,6 +180,8 @@ export const useCartStore = create<CartState>()(
       marketplaceFee: 0,
       total: 0,
       onlineDetails: undefined,
+      customerId: undefined,
+      customerName: undefined,
       transactionType: 'offline',
     })),
     

@@ -3,24 +3,25 @@ import { Link } from 'react-router-dom';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useProductStore } from '@/stores/productStore';
 import { useExpenseStore } from '@/stores/expenseStore';
+import { useDashboardStore, getDashboardDateRange } from '@/stores/dashboardStore';
 
 export default function KPICards() {
   const { transactions } = useTransactionStore();
   const { products } = useProductStore();
   const { expenses } = useExpenseStore();
+  const dashboardState = useDashboardStore();
 
   const kpi = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const { startDate, endDate } = getDashboardDateRange(dashboardState);
 
     let omzetToday = 0;
     let hppToday = 0;
     let expenseToday = 0;
 
-    // Hitung Omzet & HPP (Hanya hari ini)
+    // Hitung Omzet & HPP
     transactions.forEach(trx => {
       const trxDate = new Date(trx.date || trx.createdAt || Date.now());
-      if (trxDate >= today && trx.status === 'success') {
+      if (trxDate >= startDate && trxDate <= endDate && trx.status === 'success') {
         omzetToday += trx.total;
         
         // Hitung HPP
@@ -33,10 +34,10 @@ export default function KPICards() {
       }
     });
 
-    // Hitung Pengeluaran Operasional (Hanya hari ini)
+    // Hitung Pengeluaran Operasional
     expenses.forEach(exp => {
       const expDate = new Date(exp.date);
-      if (expDate >= today) {
+      if (expDate >= startDate && expDate <= endDate) {
         expenseToday += exp.amount;
       }
     });
@@ -58,7 +59,7 @@ export default function KPICards() {
       margin,
       lowStockCount
     };
-  }, [transactions, products, expenses]);
+  }, [transactions, products, expenses, dashboardState]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(value);
@@ -70,7 +71,7 @@ export default function KPICards() {
       <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">
         <div>
           <div className="flex items-center justify-between gap-2 h-10 mb-2">
-            <span className="text-[11px] font-bold text-[#76777d] uppercase tracking-wider truncate">Omzet Hari Ini</span>
+            <span className="text-[11px] font-bold text-[#76777d] uppercase tracking-wider truncate">Omzet</span>
             <div className="w-10 h-10 rounded-xl bg-[#cae4c5]/30 text-[#254222] flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-[22px]">payments</span>
             </div>
@@ -93,7 +94,7 @@ export default function KPICards() {
       <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">
         <div>
           <div className="flex items-center justify-between gap-2 h-10 mb-2">
-            <span className="text-[11px] font-bold text-[#76777d] uppercase tracking-wider truncate">HPP Hari Ini</span>
+            <span className="text-[11px] font-bold text-[#76777d] uppercase tracking-wider truncate">HPP</span>
             <div className="w-10 h-10 rounded-xl bg-[#cae4c5]/25 text-[#254222] flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-[22px]">shopping_bag</span>
             </div>

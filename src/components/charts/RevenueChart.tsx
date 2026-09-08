@@ -9,7 +9,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useTransactionStore } from '@/stores/transactionStore';
-import { format, subDays } from 'date-fns';
+import { useDashboardStore, getDashboardDateRange } from '@/stores/dashboardStore';
+import { format, subDays, eachDayOfInterval, differenceInDays } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 
 const formatCurrency = (value: number) => {
@@ -22,29 +23,38 @@ const formatCurrency = (value: number) => {
 
 export default function RevenueChart() {
   const { transactions } = useTransactionStore();
+  const dashboardState = useDashboardStore();
 
   const data = useMemo(() => {
-    const last7Days = Array.from({ length: 7 }).map((_, i) => {
-      const d = subDays(new Date(), 6 - i);
-      return {
+    const { startDate, endDate } = getDashboardDateRange(dashboardState);
+    
+    // Determine the interval of days
+    const diff = differenceInDays(endDate, startDate);
+    let intervalDays = diff >= 1 ? eachDayOfInterval({ start: startDate, end: endDate }) : [startDate];
+
+    // If it's just today/one day, maybe we still show a 7-day trend ending today?
+    // Let's show the exact interval. If it's 1 day, it will be a single point.
+    const chartData = intervalDays.map(d => ({
         date: format(d, 'yyyy-MM-dd'),
         name: format(d, 'dd MMM', { locale: localeId }),
         revenue: 0
-      };
-    });
+    }));
 
     transactions.forEach(trx => {
       if (trx.status === 'success') {
-        const trxDateStr = format(new Date(trx.date || trx.createdAt || Date.now()), 'yyyy-MM-dd');
-        const dayMatch = last7Days.find(d => d.date === trxDateStr);
-        if (dayMatch) {
-          dayMatch.revenue += trx.total;
+        const trxDate = new Date(trx.date || trx.createdAt || Date.now());
+        if (trxDate >= startDate && trxDate <= endDate) {
+          const trxDateStr = format(trxDate, 'yyyy-MM-dd');
+          const dayMatch = chartData.find(d => d.date === trxDateStr);
+          if (dayMatch) {
+            dayMatch.revenue += trx.total;
+          }
         }
       }
     });
 
-    return last7Days;
-  }, [transactions]);
+    return chartData;
+  }, [transactions, dashboardState]);
 
   const totalRevenueToday = data[data.length - 1]?.revenue || 0;
   const target = 4000000;

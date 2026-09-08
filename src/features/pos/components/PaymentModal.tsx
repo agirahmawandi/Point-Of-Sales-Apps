@@ -4,6 +4,8 @@ import { useCartStore } from '@/stores/cartStore';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useProductStore } from '@/stores/productStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { useCustomerStore } from '@/stores/customerStore';
 import { X, Banknote, CreditCard, QrCode, Zap, Clock, AlertCircle } from 'lucide-react';
 import type { PaymentMethod } from '@/types';
 
@@ -23,13 +25,18 @@ export default function PaymentModal({ onClose }: PaymentModalProps) {
     total, 
     clearCart, 
     transactionType, 
-    onlineDetails 
+    onlineDetails,
+    customerId,
+    customerName
   } = useCartStore();
   const { addTransaction } = useTransactionStore();
   const { reduceStock } = useProductStore();
+  const { bankAccounts, updateBankBalance } = useSettingsStore();
+  const { addCustomer, recordTransaction, findCustomerByPhoneOrName } = useCustomerStore();
 
   const [paymentTiming, setPaymentTiming] = useState<'sekarang' | 'tertunda'>('sekarang');
   const [method, setMethod] = useState<PaymentMethod>('cash');
+  const [selectedBankId, setSelectedBankId] = useState(bankAccounts[0]?.id || '');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const formatNumber = (value: number) => {
@@ -86,6 +93,37 @@ export default function PaymentModal({ onClose }: PaymentModalProps) {
 
       const isPending = paymentTiming === 'tertunda';
 
+      // Calculate HPP and Profit
+      const hpp = items.reduce((acc, item) => {
+        const itemBuyPrice = item.buyPrice || 0;
+        return acc + (itemBuyPrice * item.quantity);
+      }, 0);
+      const profit = total - hpp;
+
+      // Handle Customer Tracking
+      let finalCustomerId = customerId;
+      let finalCustomerName = customerName;
+
+      if (transactionType === 'online' && onlineDetails) {
+        const existingCustomer = findCustomerByPhoneOrName(onlineDetails.customerName);
+        if (existingCustomer) {
+          finalCustomerId = existingCustomer.id;
+          finalCustomerName = existingCustomer.name;
+          recordTransaction(existingCustomer.id, total);
+        } else {
+          const newCust = addCustomer({
+            name: onlineDetails.customerName,
+            address: onlineDetails.customerAddress,
+            platform: (onlineDetails.marketplace as any) || 'Lainnya'
+          });
+          finalCustomerId = newCust.id;
+          finalCustomerName = newCust.name;
+          recordTransaction(newCust.id, total);
+        }
+      } else if (transactionType === 'offline' && finalCustomerId) {
+        recordTransaction(finalCustomerId, total);
+      }
+
       // 1. Create Transaction
       const trxId = addTransaction({
         items,
@@ -94,17 +132,27 @@ export default function PaymentModal({ onClose }: PaymentModalProps) {
         tax: taxAmount,
         marketplaceFee: transactionType === 'online' ? marketplaceFee : 0,
         total,
+        hpp,
+        profit,
         paymentMethod: isPending ? (transactionType === 'online' ? 'marketplace' : 'piutang') : method,
+        bankAccountId: (method === 'card' && !isPending) ? selectedBankId : undefined,
         amountPaid: isPending ? 0 : (method === 'cash' ? amountPaid : total),
         change: isPending ? 0 : (method === 'cash' ? change : 0),
         cashierId: user?.id || 'unknown',
         cashierName: user?.name || 'Unknown',
+        customerId: finalCustomerId,
+        customerName: finalCustomerName,
         status: isPending ? 'pending' : 'success',
         paymentTiming,
         paymentStatus: isPending ? 'tertunda' : 'lunas',
         transactionType,
         onlineDetails: transactionType === 'online' ? onlineDetails : undefined
       });
+
+      // Update bank balance if applicable
+      if (method === 'card' && !isPending && selectedBankId) {
+        updateBankBalance(selectedBankId, total);
+      }
 
       // 2. Reduce Stock
       items.forEach(item => {
@@ -358,10 +406,22 @@ export default function PaymentModal({ onClose }: PaymentModalProps) {
               )}
               
               {method === 'card' && (
-                <div className="p-6 bg-[#cae4c5]/20 rounded-xl border border-[#cae4c5] flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2">
+                <div className="p-4 bg-[#cae4c5]/20 rounded-xl border border-[#cae4c5] flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2">
                   <CreditCard size={48} className="text-[#254222] mb-3" />
-                  <p className="text-[#254222] font-semibold text-sm">Gesek atau tap kartu pada mesin EDC</p>
-                  <p className="text-xs text-[#76777d] mt-1">Debit / Kartu Kredit bank yang didukung</p>
+                  <p className="text-[#254222] font-semibold text-sm">Gesek atau tap kartu pada mesin EDC / Transfer Bank</p>
+                  
+                  <div className="w-full mt-4 text-left border-t border-[#cae4c5] pt-4">
+                    <label className="block text-xs font-bold text-[#254222] mb-1.5 uppercase tracking-wider">Pilih Rekening Penerima</label>
+                    <select
+                      value={selectedBankId}
+                      onChange={(e) => setSelectedBankId(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg border border-[#cae4c5] bg-white text-sm font-semibold text-[#254222] focus:outline-none focus:ring-2 focus:ring-[#99cc66]"
+                    >
+                      {bankAccounts.map(b => (
+                        <option key={b.id} value={b.id}>{b.bank} - {b.accountNumber}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               )}
             </>

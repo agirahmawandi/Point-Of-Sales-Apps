@@ -88,7 +88,18 @@ export default function ProductListPage() {
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-[#eff4ff]/40 transition-colors">
-                    <td className="px-5 py-3.5 font-semibold text-[#0b1c30]">{product.name}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-[#e5eeff] flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden">
+                          {product.imageUrl ? (
+                            <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Package size={20} className="text-[#3755c3]/40" />
+                          )}
+                        </div>
+                        <span className="font-semibold text-[#0b1c30]">{product.name}</span>
+                      </div>
+                    </td>
                     <td className="px-5 py-3.5 text-xs font-mono text-[#76777d]">{product.sku}</td>
                     <td className="px-5 py-3.5">
                       <span className="px-2.5 py-1 rounded-lg bg-[#e5eeff] text-[#0b1c30] text-[11px] font-semibold">

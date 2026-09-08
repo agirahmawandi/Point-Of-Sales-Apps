@@ -22,8 +22,10 @@ import StockOpnamePage from '@/features/products/pages/StockOpnamePage';
 // POS
 import POSTerminalPage from '@/features/pos/pages/POSTerminalPage';
 import TransactionHistoryPage from '@/features/pos/pages/TransactionHistoryPage';
-import SalesListPage from '@/features/pos/pages/SalesListPage';
 import ReceiptPage from '@/features/pos/pages/ReceiptPage';
+// Sales
+import SalesListPage from '@/features/pos/pages/SalesListPage';
+import CustomerListPage from '@/features/pos/pages/CustomerListPage';
 // Settings (Phase 4)
 import StoreProfilePage from '@/features/settings/pages/StoreProfilePage';
 import TaxSettingsPage from '@/features/settings/pages/TaxSettingsPage';
@@ -35,6 +37,11 @@ import PurchaseReportPage from '@/features/reports/pages/PurchaseReportPage';
 import InventoryReportPage from '@/features/reports/pages/InventoryReportPage';
 import ExpenseReportPage from '@/features/reports/pages/ExpenseReportPage';
 import ProfitLossReportPage from '@/features/reports/pages/ProfitLossReportPage';
+// Finance (Keuangan)
+import FinanceHistoryPage from '@/features/finance/pages/FinanceHistoryPage';
+import BalanceTransferPage from '@/features/finance/pages/BalanceTransferPage';
+import InvestorPage from '@/features/finance/pages/InvestorPage';
+import ProfitSharePage from '@/features/finance/pages/ProfitSharePage';
 
 const router = createBrowserRouter([
   {
@@ -76,6 +83,7 @@ const router = createBrowserRouter([
 
           // Sales / List Penjualan (under Terminal POS)
           { path: 'sales', element: <SalesListPage /> },
+          { path: 'sales/customers', element: <CustomerListPage /> },
           { path: 'pos/history', element: <SalesListPage /> },
 
           // Purchases (Phase 3)
@@ -100,8 +108,16 @@ const router = createBrowserRouter([
           // Settings (Phase 4)
           { path: 'settings/store', element: <StoreProfilePage /> },
           { path: 'settings/tax', element: <TaxSettingsPage /> },
+          // Note: /settings/payments is redirected to /finance/banks
           { path: 'settings/payments', element: <PaymentMethodsPage /> },
           { path: 'settings/users', element: <UserManagementPage /> },
+
+          // Finance / Keuangan module
+          { path: 'finance/history', element: <FinanceHistoryPage /> },
+          { path: 'finance/transfer', element: <BalanceTransferPage /> },
+          { path: 'finance/banks', element: <PaymentMethodsPage /> },
+          { path: 'finance/investors', element: <InvestorPage /> },
+          { path: 'finance/profit-share', element: <ProfitSharePage /> },
         ],
       },
     ],

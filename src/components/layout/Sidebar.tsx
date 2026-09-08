@@ -25,7 +25,12 @@ import {
   PieChart,
   Store,
   Terminal,
-  Bell
+  Bell,
+  Landmark,
+  ArrowLeftRight,
+  Building2,
+  UserCheck,
+  History
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
@@ -56,7 +61,14 @@ export default function Sidebar() {
       ]
     },
     { title: 'Terminal POS', icon: Terminal, path: '/pos', badge: 'KASIR' },
-    { title: 'List Penjualan', icon: Receipt, path: '/sales' },
+    {
+      title: 'Sales',
+      icon: Receipt,
+      submenu: [
+        { title: 'List Penjualan', icon: Receipt, path: '/sales' },
+        { title: 'List Pelanggan', icon: Users, path: '/sales/customers' },
+      ]
+    },
     ...(!isKasir ? [{
       title: 'Pembelian',
       icon: ShoppingBag,
@@ -74,6 +86,17 @@ export default function Sidebar() {
       submenu: [
         { title: 'Daftar Pengeluaran', icon: Receipt, path: '/expenses' },
         { title: 'Kategori Beban', icon: Tag, path: '/expenses/categories' },
+      ]
+    }] : []),
+    ...(!isKasir ? [{
+      title: 'Keuangan',
+      icon: Landmark,
+      submenu: [
+        { title: 'Histori Transaksi', icon: History, path: '/finance/history' },
+        { title: 'Pindah Saldo', icon: ArrowLeftRight, path: '/finance/transfer' },
+        { title: 'Daftar Bank', icon: Building2, path: '/finance/banks' },
+        { title: 'Investor', icon: UserCheck, path: '/finance/investors' },
+        { title: 'Bagi Hasil', icon: PieChart, path: '/finance/profit-share' },
       ]
     }] : []),
     {
