@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProductStore } from '@/stores/productStore';
 import PageContainer from '@/components/layout/PageContainer';
-import { Plus, Search, Edit, Trash2, Package } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Package, Loader2 } from 'lucide-react';
 
 export default function ProductListPage() {
   const navigate = useNavigate();
-  const { products, categories, deleteProduct } = useProductStore();
+  const { products, categories, isLoading, error, fetchProducts, fetchCategories, deleteProduct } = useProductStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, [fetchProducts, fetchCategories]);
 
   const filteredProducts = products.filter((p) => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -25,9 +30,13 @@ export default function ProductListPage() {
     return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(value);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Yakin ingin menghapus produk ini?')) {
-      deleteProduct(id);
+      try {
+        await deleteProduct(id);
+      } catch (err: any) {
+        alert(err.message || 'Gagal menghapus produk');
+      }
     }
   };
 
@@ -46,6 +55,12 @@ export default function ProductListPage() {
       }
     >
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+        {error && (
+          <div className="p-4 bg-red-50 text-red-600 text-sm border-b border-red-100">
+            {error}
+          </div>
+        )}
+        
         {/* Toolbar */}
         <div className="p-4 border-b border-[#eff4ff] flex flex-col sm:flex-row gap-4 bg-white">
           <div className="relative flex-1">
@@ -65,7 +80,7 @@ export default function ProductListPage() {
           >
             <option value="">Semua Kategori</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
         </div>
@@ -85,7 +100,14 @@ export default function ProductListPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#eff4ff] text-[13px]">
-              {filteredProducts.length > 0 ? (
+              {isLoading && products.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-[#76777d]">
+                    <Loader2 size={32} className="animate-spin mx-auto mb-2 text-[#3755c3]" />
+                    <p className="font-medium text-[#0b1c30]">Memuat produk...</p>
+                  </td>
+                </tr>
+              ) : filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-[#eff4ff]/40 transition-colors">
                     <td className="px-5 py-3.5">
@@ -133,14 +155,16 @@ export default function ProductListPage() {
                       <div className="flex items-center justify-end gap-1.5">
                         <button 
                           onClick={() => navigate(`/products/${product.id}/edit`)}
-                          className="p-1.5 text-[#76777d] hover:text-[#3755c3] hover:bg-[#eff4ff] rounded-lg transition-colors"
+                          disabled={isLoading}
+                          className="p-1.5 text-[#76777d] hover:text-[#3755c3] hover:bg-[#eff4ff] rounded-lg transition-colors disabled:opacity-50"
                           title="Edit Produk"
                         >
                           <Edit size={16} />
                         </button>
                         <button 
                           onClick={() => handleDelete(product.id)}
-                          className="p-1.5 text-[#76777d] hover:text-[#ba1a1a] hover:bg-[#ffdad6]/60 rounded-lg transition-colors"
+                          disabled={isLoading}
+                          className="p-1.5 text-[#76777d] hover:text-[#ba1a1a] hover:bg-[#ffdad6]/60 rounded-lg transition-colors disabled:opacity-50"
                           title="Hapus Produk"
                         >
                           <Trash2 size={16} />

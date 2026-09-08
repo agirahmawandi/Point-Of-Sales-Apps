@@ -109,19 +109,19 @@ export default function PaymentModal({ onClose }: PaymentModalProps) {
         if (existingCustomer) {
           finalCustomerId = existingCustomer.id;
           finalCustomerName = existingCustomer.name;
-          recordTransaction(existingCustomer.id, total);
+          await recordTransaction(existingCustomer.id, total);
         } else {
-          const newCust = addCustomer({
+          const newCust = await addCustomer({
             name: onlineDetails.customerName,
             address: onlineDetails.customerAddress,
             platform: (onlineDetails.marketplace as any) || 'Lainnya'
           });
           finalCustomerId = newCust.id;
           finalCustomerName = newCust.name;
-          recordTransaction(newCust.id, total);
+          await recordTransaction(newCust.id, total);
         }
       } else if (transactionType === 'offline' && finalCustomerId) {
-        recordTransaction(finalCustomerId, total);
+        await recordTransaction(finalCustomerId, total);
       }
 
       // 1. Create Transaction

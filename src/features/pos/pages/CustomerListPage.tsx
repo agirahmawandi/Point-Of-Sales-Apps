@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
 import { useCustomerStore } from '@/stores/customerStore';
-import { Users, Search, ShoppingBag, MapPin, Phone, Building2 } from 'lucide-react';
+import { Users, Search, ShoppingBag, MapPin, Phone, Building2, Loader2, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 
 export default function CustomerListPage() {
-  const { customers } = useCustomerStore();
+  const { customers, isLoading, error, fetchCustomers } = useCustomerStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [platformFilter, setPlatformFilter] = useState('all');
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   const filteredCustomers = customers.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -80,7 +84,22 @@ export default function CustomerListPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#cae4c5]/30 text-[13px]">
-              {filteredCustomers.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} className="py-16 text-center text-[#76777d]">
+                    <Loader2 size={40} className="mx-auto mb-3 text-slate-300 animate-spin" />
+                    <p className="font-bold text-[#254222]">Memuat Data Pelanggan...</p>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={5} className="py-16 text-center text-[#ba1a1a]">
+                    <AlertCircle size={40} className="mx-auto mb-3 opacity-50" />
+                    <p className="font-bold">Gagal memuat data</p>
+                    <p className="text-xs mt-1">{error}</p>
+                  </td>
+                </tr>
+              ) : filteredCustomers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-16 text-center text-[#76777d]">
                     <Users size={40} className="mx-auto mb-3 text-slate-300" />

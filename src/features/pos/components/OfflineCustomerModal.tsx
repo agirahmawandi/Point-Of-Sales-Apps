@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useCartStore } from '@/stores/cartStore';
-import { X, Search, User, Phone, MapPin, CheckCircle2 } from 'lucide-react';
+import { X, Search, User, Phone, MapPin, CheckCircle2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface OfflineCustomerModalProps {
@@ -11,7 +11,7 @@ interface OfflineCustomerModalProps {
 }
 
 export default function OfflineCustomerModal({ isOpen, onClose, onSuccess }: OfflineCustomerModalProps) {
-  const { customers, addCustomer, findCustomerByPhoneOrName } = useCustomerStore();
+  const { customers, addCustomer, findCustomerByPhoneOrName, isLoading, fetchCustomers } = useCustomerStore();
   const { setCustomer } = useCartStore();
 
   const [mode, setMode] = useState<'search' | 'new'>('search');
@@ -22,6 +22,12 @@ export default function OfflineCustomerModal({ isOpen, onClose, onSuccess }: Off
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
 
+  useEffect(() => {
+    if (isOpen && customers.length === 0) {
+      fetchCustomers();
+    }
+  }, [isOpen, customers.length, fetchCustomers]);
+
   if (!isOpen) return null;
 
   const handleSearchSelect = (customer: any) => {
@@ -31,7 +37,7 @@ export default function OfflineCustomerModal({ isOpen, onClose, onSuccess }: Off
     if (onSuccess) onSuccess();
   };
 
-  const handleAddNew = (e: React.FormEvent) => {
+  const handleAddNew = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
@@ -46,23 +52,27 @@ export default function OfflineCustomerModal({ isOpen, onClose, onSuccess }: Off
       return;
     }
 
-    const newCustomer = addCustomer({
-      name: name.trim(),
-      phone: phone.trim(),
-      address: address.trim(),
-      platform: 'Offline'
-    });
+    try {
+      const newCustomer = await addCustomer({
+        name: name.trim(),
+        phone: phone.trim() || undefined,
+        address: address.trim() || undefined,
+        platform: 'Offline'
+      });
 
-    setCustomer(newCustomer.id, newCustomer.name);
-    toast.success('Pelanggan baru berhasil ditambahkan dan dipilih!');
-    
-    // Reset
-    setName('');
-    setPhone('');
-    setAddress('');
-    
-    onClose();
-    if (onSuccess) onSuccess();
+      setCustomer(newCustomer.id, newCustomer.name);
+      toast.success('Pelanggan baru berhasil ditambahkan dan dipilih!');
+      
+      // Reset
+      setName('');
+      setPhone('');
+      setAddress('');
+      
+      onClose();
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      toast.error('Gagal menambahkan pelanggan');
+    }
   };
 
   const handleSkip = () => {
@@ -208,9 +218,10 @@ export default function OfflineCustomerModal({ isOpen, onClose, onSuccess }: Off
               
               <button
                 type="submit"
-                disabled={!name.trim()}
-                className="w-full h-11 bg-[#254222] hover:bg-[#1b3119] disabled:bg-slate-300 disabled:text-slate-500 text-[#ece2b1] font-bold rounded-xl transition-all shadow-md"
+                disabled={!name.trim() || isLoading}
+                className="w-full h-11 bg-[#254222] hover:bg-[#1b3119] disabled:bg-slate-300 disabled:text-slate-500 text-[#ece2b1] font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
               >
+                {isLoading && <Loader2 size={16} className="animate-spin" />}
                 Simpan & Gunakan
               </button>
             </form>

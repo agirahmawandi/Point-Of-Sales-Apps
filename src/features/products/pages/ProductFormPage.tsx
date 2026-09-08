@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useProductStore } from '@/stores/productStore';
-import { ArrowLeft, Save, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 const productSchema = z.object({
   name: z.string().min(3, 'Nama produk minimal 3 karakter'),
@@ -23,12 +23,13 @@ type ProductFormValues = z.infer<typeof productSchema>;
 export default function ProductFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, categories, addProduct, updateProduct } = useProductStore();
+  const { products, categories, isLoading, fetchCategories, addProduct, updateProduct } = useProductStore();
   
   const isEditMode = Boolean(id);
   const existingProduct = isEditMode ? products.find(p => p.id === id) : null;
 
-  const [imageBase64, setImageBase64] = React.useState<string>(existingProduct?.imageUrl || '');
+  const [imageBase64, setImageBase64] = useState<string>(existingProduct?.imageUrl || '');
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -46,13 +47,17 @@ export default function ProductFormPage() {
   });
 
   useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
     if (isEditMode && existingProduct) {
       reset({
         name: existingProduct.name,
         sku: existingProduct.sku,
         categoryId: existingProduct.categoryId,
-        purchasePrice: existingProduct.purchasePrice,
-        sellingPrice: existingProduct.sellingPrice,
+        purchasePrice: existingProduct.purchasePrice || existingProduct.buyPrice || 0,
+        sellingPrice: existingProduct.sellingPrice || existingProduct.sellPrice || 0,
         stock: existingProduct.stock,
         minStock: existingProduct.minStock,
         description: existingProduct.description || '',
@@ -91,16 +96,20 @@ export default function ProductFormPage() {
     setValue('imageUrl', '');
   };
 
-  const onSubmit = (data: ProductFormValues) => {
-    // Ensure imageUrl is included
+  const onSubmit = async (data: ProductFormValues) => {
+    setSubmitError(null);
     const finalData = { ...data, imageUrl: imageBase64 };
     
-    if (isEditMode && id) {
-      updateProduct(id, finalData);
-    } else {
-      addProduct(finalData);
+    try {
+      if (isEditMode && id) {
+        await updateProduct(id, finalData);
+      } else {
+        await addProduct(finalData);
+      }
+      navigate('/products');
+    } catch (err: any) {
+      setSubmitError(err.message || 'Terjadi kesalahan saat menyimpan produk.');
     }
-    navigate('/products');
   };
 
   return (
@@ -120,6 +129,12 @@ export default function ProductFormPage() {
           <p className="text-[14px] text-[#45464d] mt-0.5">Lengkapi formulir detail inventaris dan harga produk</p>
         </div>
       </div>
+
+      {submitError && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100">
+          {submitError}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Basic Info Card */}
@@ -176,7 +191,8 @@ export default function ProductFormPage() {
               <input
                 {...register('name')}
                 type="text"
-                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+                disabled={isLoading}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all disabled:bg-slate-50"
                 placeholder="Contoh: Indomie Goreng Spesial"
               />
               {errors.name && <p className="text-red-500 text-xs mt-1.5">{errors.name.message}</p>}
@@ -187,7 +203,8 @@ export default function ProductFormPage() {
               <input
                 {...register('sku')}
                 type="text"
-                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all font-mono"
+                disabled={isLoading}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all font-mono disabled:bg-slate-50"
                 placeholder="Contoh: SKU-001"
               />
               {errors.sku && <p className="text-red-500 text-xs mt-1.5">{errors.sku.message}</p>}
@@ -197,7 +214,8 @@ export default function ProductFormPage() {
               <label className="block text-[13px] font-semibold text-[#0b1c30] mb-1.5">Kategori *</label>
               <select
                 {...register('categoryId')}
-                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm bg-white focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+                disabled={isLoading}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm bg-white focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all disabled:bg-slate-50"
               >
                 <option value="">Pilih Kategori...</option>
                 {categories.map(c => (
@@ -212,7 +230,8 @@ export default function ProductFormPage() {
               <textarea
                 {...register('description')}
                 rows={3}
-                className="w-full p-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all resize-none"
+                disabled={isLoading}
+                className="w-full p-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all resize-none disabled:bg-slate-50"
                 placeholder="Deskripsi singkat atau catatan produk..."
               />
             </div>
@@ -229,7 +248,8 @@ export default function ProductFormPage() {
                 {...register('purchasePrice')}
                 type="number"
                 min="0"
-                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+                disabled={isLoading}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all disabled:bg-slate-50"
               />
               {errors.purchasePrice && <p className="text-red-500 text-xs mt-1.5">{errors.purchasePrice.message}</p>}
             </div>
@@ -240,7 +260,8 @@ export default function ProductFormPage() {
                 {...register('sellingPrice')}
                 type="number"
                 min="0"
-                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all font-semibold"
+                disabled={isLoading}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all font-semibold disabled:bg-slate-50"
               />
               {errors.sellingPrice && <p className="text-red-500 text-xs mt-1.5">{errors.sellingPrice.message}</p>}
             </div>
@@ -259,7 +280,8 @@ export default function ProductFormPage() {
                 {...register('stock')}
                 type="number"
                 min="0"
-                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+                disabled={isLoading}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all disabled:bg-slate-50"
               />
               {errors.stock && <p className="text-red-500 text-xs mt-1.5">{errors.stock.message}</p>}
             </div>
@@ -270,7 +292,8 @@ export default function ProductFormPage() {
                 {...register('minStock')}
                 type="number"
                 min="0"
-                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+                disabled={isLoading}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all disabled:bg-slate-50"
               />
               {errors.minStock && <p className="text-red-500 text-xs mt-1.5">{errors.minStock.message}</p>}
             </div>
@@ -282,15 +305,17 @@ export default function ProductFormPage() {
           <button
             type="button"
             onClick={() => navigate('/products')}
-            className="h-10 px-5 rounded-xl bg-white text-[#0b1c30] border border-slate-200 shadow-sm hover:bg-[#eff4ff] font-semibold text-[13px] transition-all"
+            disabled={isLoading}
+            className="h-10 px-5 rounded-xl bg-white text-[#0b1c30] border border-slate-200 shadow-sm hover:bg-[#eff4ff] font-semibold text-[13px] transition-all disabled:opacity-50"
           >
             Batal
           </button>
           <button
             type="submit"
-            className="h-10 px-6 rounded-xl bg-[#3755c3] hover:bg-[#2a429c] text-white font-semibold text-[13px] shadow-sm flex items-center gap-2 transition-all"
+            disabled={isLoading}
+            className="h-10 px-6 rounded-xl bg-[#3755c3] hover:bg-[#2a429c] disabled:bg-[#3755c3]/70 text-white font-semibold text-[13px] shadow-sm flex items-center gap-2 transition-all"
           >
-            <Save size={18} />
+            {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
             <span>{isEditMode ? 'Simpan Perubahan' : 'Simpan Produk'}</span>
           </button>
         </div>

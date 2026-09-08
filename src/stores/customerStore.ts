@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { supabase } from '@/lib/supabase';
 
 export interface Customer {
   id: string;
@@ -14,62 +14,180 @@ export interface Customer {
 
 interface CustomerState {
   customers: Customer[];
-  addCustomer: (data: Omit<Customer, 'id' | 'createdAt' | 'totalTransactions' | 'totalSpent'>) => Customer;
-  updateCustomer: (id: string, data: Partial<Customer>) => void;
-  deleteCustomer: (id: string) => void;
-  recordTransaction: (id: string, amount: number) => void;
+  isLoading: boolean;
+  error: string | null;
+  fetchCustomers: () => Promise<void>;
+  addCustomer: (data: Omit<Customer, 'id' | 'createdAt' | 'totalTransactions' | 'totalSpent'>) => Promise<Customer>;
+  updateCustomer: (id: string, data: Partial<Customer>) => Promise<void>;
+  deleteCustomer: (id: string) => Promise<void>;
+  recordTransaction: (id: string, amount: number) => Promise<void>;
   findCustomerByPhoneOrName: (query: string) => Customer | undefined;
 }
 
-export const useCustomerStore = create<CustomerState>()(
-  persist(
-    (set, get) => ({
-      customers: [],
+export const useCustomerStore = create<CustomerState>((set, get) => ({
+  customers: [],
+  isLoading: false,
+  error: null,
 
-      addCustomer: (data) => {
-        const newCustomer: Customer = {
-          ...data,
-          id: `CUST-${Date.now()}`,
-          createdAt: new Date().toISOString(),
-          totalTransactions: 0,
-          totalSpent: 0,
-        };
-        set((state) => ({ customers: [newCustomer, ...state.customers] }));
-        return newCustomer;
-      },
+  fetchCustomers: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .order('name', { ascending: true });
 
-      updateCustomer: (id, data) =>
-        set((state) => ({
-          customers: state.customers.map((c) => (c.id === id ? { ...c, ...data } : c)),
-        })),
+      if (error) throw error;
 
-      deleteCustomer: (id) =>
-        set((state) => ({
-          customers: state.customers.filter((c) => c.id !== id),
-        })),
+      const customers: Customer[] = (data || []).map((row) => ({
+        id: row.id,
+        name: row.name,
+        phone: row.phone || undefined,
+        address: row.address || undefined,
+        platform: (row.platform as Customer['platform']) || 'Offline',
+        createdAt: row.created_at,
+        totalTransactions: row.total_transactions,
+        totalSpent: Number(row.total_spent)
+      }));
 
-      recordTransaction: (id, amount) =>
-        set((state) => ({
-          customers: state.customers.map((c) =>
-            c.id === id
-              ? {
-                  ...c,
-                  totalTransactions: c.totalTransactions + 1,
-                  totalSpent: c.totalSpent + amount,
-                }
-              : c
-          ),
-        })),
+      set({ customers, isLoading: false });
+    } catch (error: any) {
+      console.error('Error fetching customers:', error);
+      set({ error: error.message, isLoading: false });
+    }
+  },
 
-      findCustomerByPhoneOrName: (query) => {
-        const q = query.toLowerCase().trim();
-        return get().customers.find(
-          (c) =>
-            (c.name && c.name.toLowerCase() === q) ||
-            (c.phone && c.phone === q)
-        );
-      },
-    }),
-    { name: 'pos-customer-storage' }
-  )
-);
+  addCustomer: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data: newRow, error } = await supabase
+        .from('customers')
+        .insert([{
+          name: data.name,
+          phone: data.phone || null,
+          address: data.address || null,
+          platform: data.platform || 'Offline'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newCustomer: Customer = {
+        id: newRow.id,
+        name: newRow.name,
+        phone: newRow.phone || undefined,
+        address: newRow.address || undefined,
+        platform: (newRow.platform as Customer['platform']) || 'Offline',
+        createdAt: newRow.created_at,
+        totalTransactions: newRow.total_transactions,
+        totalSpent: Number(newRow.total_spent)
+      };
+
+      set((state) => ({ 
+        customers: [newCustomer, ...state.customers],
+        isLoading: false 
+      }));
+      
+      return newCustomer;
+    } catch (error: any) {
+      console.error('Error adding customer:', error);
+      set({ error: error.message, isLoading: false });
+      throw error;
+    }
+  },
+
+  updateCustomer: async (id, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updates: any = {};
+      if (data.name !== undefined) updates.name = data.name;
+      if (data.phone !== undefined) updates.phone = data.phone;
+      if (data.address !== undefined) updates.address = data.address;
+      if (data.platform !== undefined) updates.platform = data.platform;
+
+      const { error } = await supabase
+        .from('customers')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      set((state) => ({
+        customers: state.customers.map((c) => (c.id === id ? { ...c, ...data } : c)),
+        isLoading: false
+      }));
+    } catch (error: any) {
+      console.error('Error updating customer:', error);
+      set({ error: error.message, isLoading: false });
+      throw error;
+    }
+  },
+
+  deleteCustomer: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      set((state) => ({
+        customers: state.customers.filter((c) => c.id !== id),
+        isLoading: false
+      }));
+    } catch (error: any) {
+      console.error('Error deleting customer:', error);
+      set({ error: error.message, isLoading: false });
+      throw error;
+    }
+  },
+
+  recordTransaction: async (id, amount) => {
+    // We update local state optimistically so UI is fast
+    set((state) => ({
+      customers: state.customers.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              totalTransactions: c.totalTransactions + 1,
+              totalSpent: c.totalSpent + amount,
+            }
+          : c
+      ),
+    }));
+
+    try {
+      // Find current to increment on DB
+      const current = get().customers.find(c => c.id === id);
+      if (current) {
+        const updatedTransactions = current.totalTransactions;
+        const updatedSpent = current.totalSpent;
+
+        const { error } = await supabase
+          .from('customers')
+          .update({
+            total_transactions: updatedTransactions,
+            total_spent: updatedSpent
+          })
+          .eq('id', id);
+
+        if (error) throw error;
+      }
+    } catch (error: any) {
+      console.error('Error recording transaction to DB:', error);
+    }
+  },
+
+  findCustomerByPhoneOrName: (query) => {
+    if (!query) return undefined;
+    const q = query.toLowerCase().trim();
+    return get().customers.find(
+      (c) =>
+        (c.name && c.name.toLowerCase() === q) ||
+        (c.phone && c.phone === q)
+    );
+  },
+}));

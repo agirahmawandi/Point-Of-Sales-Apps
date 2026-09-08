@@ -32,38 +32,38 @@
 ## 🔲 PHASE 2 — Products Module
 
 ### Kategori
-- [ ] Fetch semua kategori dari tabel `categories`
-- [ ] Tambah kategori baru → INSERT ke `categories`
-- [ ] Edit kategori → UPDATE `categories`
-- [ ] Hapus kategori → DELETE `categories`
+- [x] Fetch semua kategori dari tabel `categories`
+- [x] Tambah kategori baru → INSERT ke `categories`
+- [x] Edit kategori → UPDATE `categories`
+- [x] Hapus kategori → DELETE `categories`
 - [ ] Hitung `productCount` dari query JOIN
 
 ### Produk
-- [ ] Fetch semua produk dari tabel `products` (dengan join kategori)
-- [ ] Tambah produk baru → INSERT ke `products`
-- [ ] Edit produk → UPDATE `products`
-- [ ] Soft-delete produk → UPDATE `is_active = false`
-- [ ] Search & filter produk (by kategori, nama, SKU)
+- [x] Fetch semua produk dari tabel `products` (dengan join kategori)
+- [x] Tambah produk baru → INSERT ke `products`
+- [x] Edit produk → UPDATE `products`
+- [x] Soft-delete produk → UPDATE `is_active = false`
+- [x] Search & filter produk (by kategori, nama, SKU)
 - [ ] Update stok manual (stock opname)
-- [ ] Validasi SKU unik saat create/edit
+- [x] Validasi SKU unik saat create/edit
 
 ### Refactor Store
-- [ ] Hapus mock data dari `productStore.ts`
-- [ ] Ganti semua state dengan Supabase queries
-- [ ] Tambah loading & error state
-- [ ] Pastikan `ProductListPage`, `ProductFormPage`, `CategoryPage` berfungsi
+- [x] Hapus mock data dari `productStore.ts`
+- [x] Ganti semua state dengan Supabase queries
+- [x] Tambah loading & error state
+- [x] Pastikan `ProductListPage`, `ProductFormPage`, `CategoryPage` berfungsi
 
 ---
 
-## 🔲 PHASE 3 — Customer Module
+## ✅ PHASE 3 — Customer Module
 
-- [ ] Fetch semua pelanggan dari tabel `customers`
-- [ ] Tambah pelanggan → INSERT ke `customers`
-- [ ] Edit pelanggan → UPDATE `customers`
-- [ ] Hapus pelanggan → DELETE `customers`
-- [ ] Search by nama/telepon
-- [ ] Filter by platform
-- [ ] Refactor `customerStore.ts` → Supabase queries
+- [x] Fetch semua pelanggan dari tabel `customers`
+- [x] Tambah pelanggan → INSERT ke `customers`
+- [x] Edit pelanggan → UPDATE `customers`
+- [x] Hapus pelanggan → DELETE `customers`
+- [x] Search by nama/telepon
+- [x] Filter by platform
+- [x] Refactor `customerStore.ts` → Supabase queries
 
 ---
 
@@ -174,6 +174,7 @@
 - [ ] Tambah error handling global (toast notifications)
 - [ ] Testing semua CRUD di setiap modul
 - [ ] Buat user kasir untuk testing role kasir
+- [ ] Fitur Recycle Bin (Khusus Admin)
 - [ ] Deploy ke Vercel
 - [ ] Set environment variables di Vercel
 - [ ] Testing di production URL
@@ -187,8 +188,8 @@
 |-------|-------|--------|---------|
 | 0 | Setup & Infrastruktur | ✅ Done | 8/8 |
 | 1 | Auth | ✅ Done | 8/8 |
-| 2 | Products | 🔲 Todo | 0/16 |
-| 3 | Customer | 🔲 Todo | 0/6 |
+| 2 | Products | ⏳ In Progress | 14/16 |
+| 3 | Customer | ✅ Done | 7/7 |
 | 4 | Transaction / POS | 🔲 Todo | 0/11 |
 | 5 | Purchase Order | 🔲 Todo | 0/11 |
 | 6 | Expense | 🔲 Todo | 0/7 |
