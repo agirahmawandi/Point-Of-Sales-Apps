@@ -25,18 +25,11 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     setErrorMsg('');
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const success = login(data.email, data.password);
-      if (success) {
-        navigate('/');
-      } else {
-        throw new Error('Email atau password salah');
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message);
+    const result = await login(data.email, data.password);
+    if (result.success) {
+      navigate('/');
+    } else {
+      setErrorMsg(result.error || 'Email atau password salah');
     }
   };
 
@@ -138,9 +131,7 @@ export default function LoginPage() {
               <span className="text-[12px] font-medium text-slate-400">Terminal ID: 884-FMM-JKT</span>
             </div>
             
-            <div className="mt-4 p-2 bg-[#cae4c5]/20 rounded-xl text-[11px] text-[#254222] text-center border border-[#cae4c5]/40 font-medium">
-               Info Demo: admin@tokomakmur.com / admin123
-            </div>
+
           </div>
         </div>
       </main>
