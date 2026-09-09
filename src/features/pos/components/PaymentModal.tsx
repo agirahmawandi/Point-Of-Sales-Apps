@@ -109,7 +109,6 @@ export default function PaymentModal({ onClose }: PaymentModalProps) {
         if (existingCustomer) {
           finalCustomerId = existingCustomer.id;
           finalCustomerName = existingCustomer.name;
-          await recordTransaction(existingCustomer.id, total);
         } else {
           const newCust = await addCustomer({
             name: onlineDetails.customerName,
@@ -118,14 +117,11 @@ export default function PaymentModal({ onClose }: PaymentModalProps) {
           });
           finalCustomerId = newCust.id;
           finalCustomerName = newCust.name;
-          await recordTransaction(newCust.id, total);
         }
-      } else if (transactionType === 'offline' && finalCustomerId) {
-        await recordTransaction(finalCustomerId, total);
       }
 
-      // 1. Create Transaction
-      const trxId = addTransaction({
+      // 1. Create Transaction (Atomic via RPC)
+      const trxId = await addTransaction({
         items,
         subtotal,
         discount: discountAmount,

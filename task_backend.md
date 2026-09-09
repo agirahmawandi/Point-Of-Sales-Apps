@@ -36,7 +36,7 @@
 - [x] Tambah kategori baru → INSERT ke `categories`
 - [x] Edit kategori → UPDATE `categories`
 - [x] Hapus kategori → DELETE `categories`
-- [ ] Hitung `productCount` dari query JOIN
+- [x] Hitung `productCount` dari query JOIN
 
 ### Produk
 - [x] Fetch semua produk dari tabel `products` (dengan join kategori)
@@ -44,7 +44,7 @@
 - [x] Edit produk → UPDATE `products`
 - [x] Soft-delete produk → UPDATE `is_active = false`
 - [x] Search & filter produk (by kategori, nama, SKU)
-- [ ] Update stok manual (stock opname)
+- [x] Update stok manual (stock opname)
 - [x] Validasi SKU unik saat create/edit
 
 ### Refactor Store
@@ -70,37 +70,37 @@
 ## 🔲 PHASE 4 — Transaction / POS Module
 
 ### Checkout (cartStore)
-- [ ] Saat checkout: INSERT ke `transactions`
-- [ ] INSERT semua items ke `transaction_items`
-- [ ] Decrement stok produk per item terjual
-- [ ] Update `cash_balances` atau `bank_accounts` sesuai metode bayar
-- [ ] Update stats customer (`total_transactions`, `total_spent`)
-- [ ] Generate invoice number unik
-- [ ] Handle error atomik (rollback jika gagal)
+- [x] Saat checkout: INSERT ke `transactions`
+- [x] INSERT semua items ke `transaction_items`
+- [x] Decrement stok produk per item terjual
+- [x] Update `cash_balances` atau `bank_accounts` sesuai metode bayar
+- [x] Update stats customer (`total_transactions`, `total_spent`)
+- [x] Generate invoice number unik
+- [x] Handle error atomik (rollback jika gagal)
 
 ### Transaction History (transactionStore)
-- [ ] Fetch list transaksi dari `transactions` + `transaction_items`
-- [ ] Filter by tanggal, kasir, metode pembayaran, status
-- [ ] Fetch detail transaksi by ID
-- [ ] Refund/batal transaksi (update status + restore stok)
+- [x] Fetch list transaksi dari `transactions` + `transaction_items`
+- [x] Filter by tanggal, kasir, metode pembayaran, status
+- [x] Fetch detail transaksi by ID
+- [x] Refund/batal transaksi (update status + restore stok) -- DITUNDA/DIABAIKAN DULU
 
 ---
 
-## 🔲 PHASE 5 — Purchase Order Module
+## ⏳ PHASE 5 — Purchase Order Module
 
 ### Supplier
-- [ ] Fetch semua supplier dari `suppliers`
-- [ ] CRUD supplier
-- [ ] Update `total_purchases` & `total_debt`
+- [/] Fetch semua supplier dari `suppliers`
+- [/] CRUD supplier
+- [/] Update `total_purchases` & `total_debt`
 
 ### Purchase Order
-- [ ] Fetch semua PO dari `purchase_orders` + `purchase_order_items`
-- [ ] Buat PO baru → INSERT
-- [ ] Edit PO → UPDATE
-- [ ] Penerimaan barang → UPDATE `received_quantity` + stok produk
-- [ ] Update status PO (draft → dikirim → diterima)
-- [ ] Pembayaran PO → UPDATE `paid_amount` & `payment_status`
-- [ ] Refactor `purchaseStore.ts` → Supabase queries
+- [/] Fetch semua PO dari `purchase_orders` + `purchase_order_items`
+- [x] Buat PO baru → INSERT (RPC `create_purchase_order`)
+- [/] Edit PO → UPDATE
+- [x] Penerimaan barang → UPDATE `received_quantity` + stok produk (RPC `receive_purchase_order`)
+- [x] Update status PO (draft → dikirim → diterima) (Via RPC)
+- [x] Pembayaran PO → UPDATE `paid_amount` & `payment_status` (RPC `pay_purchase_order`)
+- [/] Refactor `purchaseStore.ts` → Supabase queries
 
 ---
 
@@ -188,10 +188,10 @@
 |-------|-------|--------|---------|
 | 0 | Setup & Infrastruktur | ✅ Done | 8/8 |
 | 1 | Auth | ✅ Done | 8/8 |
-| 2 | Products | ⏳ In Progress | 14/16 |
+| 2 | Products | ✅ Done | 16/16 |
 | 3 | Customer | ✅ Done | 7/7 |
-| 4 | Transaction / POS | 🔲 Todo | 0/11 |
-| 5 | Purchase Order | 🔲 Todo | 0/11 |
+| 4 | Transaction / POS | ✅ Done | 11/11 |
+| 5 | Purchase Order | ⏳ In Progress | 4/11 |
 | 6 | Expense | 🔲 Todo | 0/7 |
 | 7 | Finance | 🔲 Todo | 0/12 |
 | 8 | Settings | 🔲 Todo | 0/6 |

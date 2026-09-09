@@ -12,8 +12,8 @@ import { id as localeId } from 'date-fns/locale';
 export default function ReceiveGoodsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getPurchaseOrder, updatePurchaseOrder, purchaseOrders } = usePurchaseStore();
-  const { addStock, updatePurchasePrice, products } = useProductStore();
+  const { getPurchaseOrder, receivePurchaseOrder, payPurchaseOrder, purchaseOrders } = usePurchaseStore();
+  const { updateProduct, fetchProducts, products } = useProductStore();
   const { bankAccounts, updateBankBalance } = useSettingsStore();
   const { updateCashBalance } = useFinanceStore();
 
@@ -119,36 +119,25 @@ export default function ReceiveGoodsPage() {
     }));
   };
 
-  const handleReceive = () => {
-    if (!window.confirm('Verifikasi penerimaan barang? Stok produk akan ditambahkan secara otomatis.')) return;
+  const handleReceive = async () => {
+    if (!window.confirm('Verifikasi penerimaan barang? Stok produk akan ditambahkan secara otomatis oleh database.')) return;
 
     let isPartial = false;
     let allZero = true;
     const isPaid = po.paymentStatus === 'lunas' || markPaidNow;
     let updatedPriceCount = 0;
 
-    // Update PO items and product stocks
-    const updatedItems = po.items.map(item => {
+    const payloadItems: { productId: string; qtyReceived: number }[] = [];
+
+    // Calculate which items are received
+    po.items.forEach(item => {
       const received = receivedItems[item.id] || 0;
       
       if (received < item.quantity) isPartial = true;
-      if (received > 0) allZero = false;
-
-      // Update product stock in productStore
       if (received > 0) {
-        addStock(item.productId, received);
-
-        // Jika barang diterima dan status pembayaran lunas, update harga beli master produk
-        if (isPaid && item.buyPrice > 0) {
-          updatePurchasePrice(item.productId, item.buyPrice);
-          updatedPriceCount++;
-        }
+        allZero = false;
+        payloadItems.push({ productId: item.productId, qtyReceived: received });
       }
-
-      return {
-        ...item,
-        receivedQuantity: received
-      };
     });
 
     if (allZero) {
@@ -156,36 +145,42 @@ export default function ReceiveGoodsPage() {
       return;
     }
 
-    // Jika bayar lunas sekarang, update saldo
-    if (markPaidNow) {
-      const payAmount = po.totalAmount - (po.paidAmount || 0);
-      if (payMethod === 'cash') {
-        updateCashBalance(-payAmount);
-      } else if (payBankId) {
-        updateBankBalance(payBankId, -payAmount);
+    try {
+      // 1. Eksekusi RPC Receive Goods
+      await receivePurchaseOrder(po.id, payloadItems);
+
+      // 2. Eksekusi RPC Payment jika user mencentang bayar sekarang
+      if (markPaidNow) {
+        const payAmount = po.totalAmount - (po.paidAmount || 0);
+        await payPurchaseOrder(po.id, payAmount, payMethod, payMethod === 'transfer' ? payBankId : undefined);
       }
+
+      // 3. Update harga master produk jika PO lunas
+      if (isPaid) {
+        for (const item of po.items) {
+          const received = receivedItems[item.id] || 0;
+          if (received > 0 && item.buyPrice > 0) {
+            await updateProduct(item.productId, { purchasePrice: item.buyPrice });
+            updatedPriceCount++;
+          }
+        }
+      }
+
+      // 4. Refresh products agar stok terbaru terlihat
+      await fetchProducts();
+
+      if (isPaid && updatedPriceCount > 0) {
+        alert(`✅ Penerimaan barang berhasil diverifikasi!\nStok telah ditambahkan oleh database, dan harga beli ${updatedPriceCount} produk di master data stok otomatis diperbarui sesuai harga PO.`);
+      } else if (!isPaid) {
+        alert(`✅ Penerimaan barang berhasil diverifikasi!\nStok telah ditambahkan.\nCatatan: Tagihan PO belum lunas. Harga beli master produk akan otomatis diperbarui saat tagihan PO dilunasi.`);
+      } else {
+        alert('✅ Penerimaan barang berhasil diverifikasi!');
+      }
+
+      navigate('/purchases');
+    } catch (err: any) {
+      alert(`Gagal memproses penerimaan: ${err.message}`);
     }
-
-    updatePurchaseOrder(po.id, {
-      items: updatedItems,
-      status: isPartial ? 'diterima_sebagian' : 'diterima',
-      paymentStatus: isPaid ? 'lunas' : po.paymentStatus,
-      paidAmount: isPaid ? po.totalAmount : (po.paidAmount || 0),
-      notes: po.notes ? `${po.notes}\n\nCatatan Penerimaan: ${receiveNotes}` : `Catatan Penerimaan: ${receiveNotes}`,
-      paymentNotes: markPaidNow 
-        ? `${po.paymentNotes ? po.paymentNotes + ' | ' : ''}${format(new Date(), 'dd/MM/yyyy HH:mm')}: Lunas saat terima barang (COD/Tunai)` 
-        : po.paymentNotes,
-    });
-
-    if (isPaid && updatedPriceCount > 0) {
-      alert(`✅ Penerimaan barang berhasil diverifikasi!\nStok telah ditambahkan, dan harga beli ${updatedPriceCount} produk di master data stok otomatis diperbarui sesuai harga PO.`);
-    } else if (!isPaid) {
-      alert(`✅ Penerimaan barang berhasil diverifikasi!\nStok telah ditambahkan.\nCatatan: Tagihan PO belum lunas. Harga beli master produk akan otomatis diperbarui saat tagihan PO dilunasi pada halaman Detail PO.`);
-    } else {
-      alert('✅ Penerimaan barang berhasil diverifikasi!');
-    }
-
-    navigate('/purchases');
   };
 
   const formatCurrency = (value: number) => {

@@ -23,6 +23,7 @@ interface ProductState {
   addStock: (id: string, quantity: number) => void;
   updatePurchasePrice: (id: string, newPrice: number) => void;
   resetAllProductStocks: (toQuantity?: number) => void;
+  updateStock: (id: string, newStock: number, reason?: string) => Promise<void>;
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({
@@ -36,7 +37,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('*')
+        .select('*, products(count)')
         .order('name');
         
       if (error) throw error;
@@ -45,6 +46,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         id: item.id,
         name: item.name,
         description: item.description || undefined,
+        productCount: item.products?.[0]?.count || 0,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
       }));
@@ -303,6 +305,33 @@ export const useProductStore = create<ProductState>((set, get) => ({
       }));
     } catch (err: any) {
       console.error('Error deleting product:', err);
+      set({ error: err.message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateStock: async (id: string, newStock: number, reason?: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ 
+          stock: newStock, 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      set((state) => ({
+        products: state.products.map(p => 
+          p.id === id ? { ...p, stock: newStock, updatedAt: new Date().toISOString() } : p
+        )
+      }));
+    } catch (err: any) {
+      console.error('Error updating stock:', err);
       set({ error: err.message });
       throw err;
     } finally {

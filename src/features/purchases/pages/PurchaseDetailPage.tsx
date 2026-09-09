@@ -12,9 +12,9 @@ import type { PurchaseOrderStatus } from '@/types/purchase';
 export default function PurchaseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getPurchaseOrder, updatePurchaseOrder } = usePurchaseStore();
-  const { updatePurchasePrice, products } = useProductStore();
-  const { bankAccounts, updateBankBalance } = useSettingsStore();
+  const { getPurchaseOrder, payPurchaseOrder } = usePurchaseStore();
+  const { updateProduct, fetchProducts, products } = useProductStore();
+  const { bankAccounts } = useSettingsStore();
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -48,49 +48,45 @@ export default function PurchaseDetailPage() {
 
   const remainingDebt = po.totalAmount - (po.paidAmount || 0);
 
-  const handlePayment = (e: React.FormEvent) => {
+  const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     const amountToPay = parseInt(paymentAmount) || 0;
     if (amountToPay <= 0 || amountToPay > remainingDebt) return;
 
-    const newPaidAmount = (po.paidAmount || 0) + amountToPay;
-    const newPaymentStatus = newPaidAmount >= po.totalAmount ? 'lunas' : 'sebagian';
+    try {
+      // Panggil RPC Supabase
+      const method = paymentMethod === 'Transfer Bank' ? 'transfer' : 'cash';
+      const bankId = method === 'transfer' ? selectedBankId : undefined;
+      
+      await payPurchaseOrder(po.id, amountToPay, method, bankId);
 
-    const bankInfo = (paymentMethod === 'Transfer Bank' && selectedBankId)
-      ? ` (${bankAccounts.find(b => b.id === selectedBankId)?.bank || ''})`
-      : '';
+      // Hitung status lunas atau tidak untuk alert
+      const newPaidAmount = (po.paidAmount || 0) + amountToPay;
+      const newPaymentStatus = newPaidAmount >= po.totalAmount ? 'lunas' : 'sebagian';
 
-    updatePurchaseOrder(po.id, {
-      paidAmount: newPaidAmount,
-      paymentStatus: newPaymentStatus,
-      paymentNotes: `${po.paymentNotes ? po.paymentNotes + ' | ' : ''}${format(new Date(), 'dd/MM/yyyy HH:mm')}: ${formatCurrency(amountToPay)} via ${paymentMethod}${bankInfo}`,
-    });
+      let updatedPriceCount = 0;
+      const isGoodsReceived = po.status === 'diterima' || po.items.some(i => (i.receivedQuantity || 0) > 0);
 
-    if (paymentMethod === 'Transfer Bank' && selectedBankId) {
-      updateBankBalance(selectedBankId, -amountToPay);
-    }
-
-    // Jika pelunasan mencapai LUNAS dan barang sudah diterima (atau sebagian),
-    // otomatis sinkronkan harga beli master produk ke harga item PO
-    let updatedPriceCount = 0;
-    const isGoodsReceived = po.status === 'diterima' || po.items.some(i => (i.receivedQuantity || 0) > 0);
-
-    if (newPaymentStatus === 'lunas' && isGoodsReceived) {
-      po.items.forEach(item => {
-        if ((item.receivedQuantity > 0 || po.status === 'diterima') && item.buyPrice > 0) {
-          updatePurchasePrice(item.productId, item.buyPrice);
-          updatedPriceCount++;
+      if (newPaymentStatus === 'lunas' && isGoodsReceived) {
+        for (const item of po.items) {
+          if ((item.receivedQuantity > 0 || po.status === 'diterima') && item.buyPrice > 0) {
+            await updateProduct(item.productId, { purchasePrice: item.buyPrice });
+            updatedPriceCount++;
+          }
         }
-      });
-    }
+        await fetchProducts();
+      }
 
-    setIsPaymentModalOpen(false);
-    setPaymentAmount('');
+      setIsPaymentModalOpen(false);
+      setPaymentAmount('');
 
-    if (newPaymentStatus === 'lunas' && updatedPriceCount > 0) {
-      alert(`✅ Pembayaran sebesar ${formatCurrency(amountToPay)} berhasil dicatat!\nTagihan PO telah LUNAS dan barang sudah diterima: Harga beli ${updatedPriceCount} master produk otomatis diperbarui ke harga PO terbaru.`);
-    } else {
-      alert(`✅ Pembayaran sebesar ${formatCurrency(amountToPay)} berhasil dicatat ke hutang dagang PO!`);
+      if (newPaymentStatus === 'lunas' && updatedPriceCount > 0) {
+        alert(`✅ Pembayaran sebesar ${formatCurrency(amountToPay)} berhasil dicatat!\nTagihan PO telah LUNAS dan barang sudah diterima: Harga beli ${updatedPriceCount} master produk otomatis diperbarui ke harga PO terbaru.`);
+      } else {
+        alert(`✅ Pembayaran sebesar ${formatCurrency(amountToPay)} berhasil dicatat ke hutang dagang PO!`);
+      }
+    } catch (err: any) {
+      alert(`Gagal memproses pembayaran: ${err.message}`);
     }
   };
 

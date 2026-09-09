@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase } from '@/lib/supabase';
 
 export interface StoreProfile {
   name: string;
@@ -24,20 +25,20 @@ interface SettingsState {
   storeProfile: StoreProfile;
   taxSettings: TaxSettings;
   bankAccounts: BankAccount[];
+  isLoading: boolean;
   
   updateStoreProfile: (profile: Partial<StoreProfile>) => void;
   updateTaxSettings: (settings: Partial<TaxSettings>) => void;
   
-  addBankAccount: (account: Omit<BankAccount, 'id'>) => void;
-  updateBankAccount: (id: string, account: Partial<BankAccount>) => void;
-  deleteBankAccount: (id: string) => void;
-  updateBankBalance: (id: string, amount: number) => void;
-  resetBankBalances: () => void;
+  fetchBankAccounts: () => Promise<void>;
+  addBankAccount: (account: Omit<BankAccount, 'id'>) => Promise<void>;
+  updateBankAccount: (id: string, account: Partial<BankAccount>) => Promise<void>;
+  deleteBankAccount: (id: string) => Promise<void>;
 }
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       storeProfile: {
         name: 'Frema Mart',
         address: 'Jl. Merdeka No. 123, Jakarta',
@@ -47,10 +48,8 @@ export const useSettingsStore = create<SettingsState>()(
       taxSettings: {
         defaultTaxPercentage: 11,
       },
-      bankAccounts: [
-        { id: 'bca-1', bank: 'BCA', accountNumber: '123-456-7890', accountName: 'Frema Mart Store', balance: 0 },
-        { id: 'mandiri-1', bank: 'Mandiri', accountNumber: '900-123-4567', accountName: 'Frema Mart Store', balance: 0 },
-      ],
+      bankAccounts: [],
+      isLoading: false,
       
       updateStoreProfile: (profile) => set((state) => ({
         storeProfile: { ...state.storeProfile, ...profile }
@@ -59,36 +58,76 @@ export const useSettingsStore = create<SettingsState>()(
       updateTaxSettings: (settings) => set((state) => ({
         taxSettings: { ...state.taxSettings, ...settings }
       })),
+
+      fetchBankAccounts: async () => {
+        set({ isLoading: true });
+        try {
+          const { data, error } = await supabase.from('bank_accounts').select('*').order('bank');
+          if (error) throw error;
+          
+          const accounts: BankAccount[] = data.map((d: any) => ({
+            id: d.id,
+            bank: d.bank,
+            accountNumber: d.account_number,
+            accountName: d.account_name,
+            balance: d.balance
+          }));
+          
+          set({ bankAccounts: accounts });
+        } catch (err) {
+          console.error('Failed to fetch bank accounts', err);
+        } finally {
+          set({ isLoading: false });
+        }
+      },
       
-      addBankAccount: (account) => set((state) => ({
-        bankAccounts: [
-          ...state.bankAccounts,
-          { ...account, id: `bank-${Date.now()}` }
-        ]
-      })),
+      addBankAccount: async (account) => {
+        try {
+          const { error } = await supabase.from('bank_accounts').insert({
+            bank: account.bank,
+            account_number: account.accountNumber,
+            account_name: account.accountName,
+            balance: account.balance || 0
+          });
+          if (error) throw error;
+          await get().fetchBankAccounts();
+        } catch (err) {
+          console.error('Failed to add bank account', err);
+        }
+      },
       
-      updateBankAccount: (id, account) => set((state) => ({
-        bankAccounts: state.bankAccounts.map(a => 
-          a.id === id ? { ...a, ...account } : a
-        )
-      })),
+      updateBankAccount: async (id, account) => {
+        try {
+          const payload: any = {};
+          if (account.bank) payload.bank = account.bank;
+          if (account.accountNumber) payload.account_number = account.accountNumber;
+          if (account.accountName) payload.account_name = account.accountName;
+          
+          const { error } = await supabase.from('bank_accounts').update(payload).eq('id', id);
+          if (error) throw error;
+          await get().fetchBankAccounts();
+        } catch (err) {
+          console.error('Failed to update bank account', err);
+        }
+      },
       
-      deleteBankAccount: (id) => set((state) => ({
-        bankAccounts: state.bankAccounts.filter(a => a.id !== id)
-      })),
-      
-      updateBankBalance: (id, amount) => set((state) => ({
-        bankAccounts: state.bankAccounts.map(a => 
-          a.id === id ? { ...a, balance: (a.balance || 0) + amount } : a
-        )
-      })),
-      
-      resetBankBalances: () => set((state) => ({
-        bankAccounts: state.bankAccounts.map(a => ({ ...a, balance: 0 }))
-      })),
+      deleteBankAccount: async (id) => {
+        try {
+          const { error } = await supabase.from('bank_accounts').delete().eq('id', id);
+          if (error) throw error;
+          await get().fetchBankAccounts();
+        } catch (err) {
+          console.error('Failed to delete bank account', err);
+        }
+      },
     }),
     {
       name: 'pos-settings-storage',
+      partialize: (state) => ({
+        storeProfile: state.storeProfile,
+        taxSettings: state.taxSettings,
+        // We do NOT persist bankAccounts anymore, since it comes from DB
+      }),
     }
   )
 );

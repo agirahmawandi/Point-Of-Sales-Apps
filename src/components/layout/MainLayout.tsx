@@ -5,10 +5,29 @@ import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import { useUiStore } from '@/stores/uiStore';
+import { useProductStore } from '@/stores/productStore';
+import { useTransactionStore } from '@/stores/transactionStore';
+import { usePurchaseStore } from '@/stores/purchaseStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { cn } from '@/lib/utils';
 
 export default function MainLayout() {
   const { isSidebarOpen, toggleSidebar } = useUiStore();
+  const fetchProducts = useProductStore(state => state.fetchProducts);
+  const fetchCategories = useProductStore(state => state.fetchCategories);
+  const fetchTransactions = useTransactionStore(state => state.fetchTransactions);
+  const fetchSuppliers = usePurchaseStore(state => state.fetchSuppliers);
+  const fetchPurchaseOrders = usePurchaseStore(state => state.fetchPurchaseOrders);
+  const fetchBankAccounts = useSettingsStore(state => state.fetchBankAccounts);
+
+  React.useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+    fetchTransactions();
+    fetchSuppliers();
+    fetchPurchaseOrders();
+    fetchBankAccounts();
+  }, [fetchProducts, fetchCategories, fetchTransactions, fetchSuppliers, fetchPurchaseOrders, fetchBankAccounts]);
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">

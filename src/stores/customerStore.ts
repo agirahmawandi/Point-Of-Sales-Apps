@@ -146,7 +146,8 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
   },
 
   recordTransaction: async (id, amount) => {
-    // We update local state optimistically so UI is fast
+    // We update local state optimistically so UI is fast.
+    // DB update is now handled atomically via Supabase RPC during checkout.
     set((state) => ({
       customers: state.customers.map((c) =>
         c.id === id
@@ -158,27 +159,6 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
           : c
       ),
     }));
-
-    try {
-      // Find current to increment on DB
-      const current = get().customers.find(c => c.id === id);
-      if (current) {
-        const updatedTransactions = current.totalTransactions;
-        const updatedSpent = current.totalSpent;
-
-        const { error } = await supabase
-          .from('customers')
-          .update({
-            total_transactions: updatedTransactions,
-            total_spent: updatedSpent
-          })
-          .eq('id', id);
-
-        if (error) throw error;
-      }
-    } catch (error: any) {
-      console.error('Error recording transaction to DB:', error);
-    }
   },
 
   findCustomerByPhoneOrName: (query) => {

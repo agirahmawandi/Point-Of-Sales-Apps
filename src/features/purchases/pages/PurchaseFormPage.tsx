@@ -10,8 +10,8 @@ import type { Product } from '@/types/product';
 
 export default function PurchaseFormPage() {
   const navigate = useNavigate();
-  const { suppliers, addPurchaseOrder } = usePurchaseStore();
-  const { products, addStock, updatePurchasePrice } = useProductStore();
+  const { suppliers, addPurchaseOrder, receivePurchaseOrder, payPurchaseOrder } = usePurchaseStore();
+  const { products, updateProduct, fetchProducts } = useProductStore();
   const { bankAccounts, updateBankBalance } = useSettingsStore();
   
   const [supplierId, setSupplierId] = useState('');
@@ -63,10 +63,9 @@ export default function PurchaseFormPage() {
   const totalAmount = items.reduce((acc, item) => acc + (item.subtotal || 0), 0);
   const isValid = supplierId && items.length > 0 && items.every(i => (i.quantity || 0) > 0 && (i.buyPrice || 0) >= 0);
 
-  const handleSave = (status: 'draft' | 'dikirim' | 'diterima') => {
+  const handleSave = async (status: 'draft' | 'dikirim' | 'diterima') => {
     if (!isValid) return;
 
-    const supplier = suppliers.find(s => s.id === supplierId);
     const isPaid = paymentStatusOption === 'lunas';
 
     const preparedItems = items.map(item => ({
@@ -76,43 +75,60 @@ export default function PurchaseFormPage() {
 
     const newPo: Omit<PurchaseOrder, 'id' | 'poNumber' | 'createdAt' | 'updatedAt'> = {
       supplierId,
-      supplier,
       items: preparedItems,
       totalAmount,
-      status,
-      paymentStatus: isPaid ? 'lunas' : 'utang',
-      paidAmount: isPaid ? totalAmount : 0,
-      paymentMethod: paymentMethodOption,
-      bankAccountId: (paymentMethodOption === 'transfer' && isPaid) ? selectedBankId : undefined,
+      status: status === 'diterima' ? 'dikirim' : status, // We create it as dikirim first, then receive it
+      paymentStatus: 'utang',
+      paidAmount: 0,
       notes
     };
 
-    addPurchaseOrder(newPo);
-    
-    // Potong saldo bank jika langsung lunas via transfer
-    if (isPaid && paymentMethodOption === 'transfer' && selectedBankId) {
-      updateBankBalance(selectedBankId, -totalAmount);
-    }
-
-    // Jika langsung diterima & masuk stok:
-    if (status === 'diterima') {
-      let updatedPriceCount = 0;
-      preparedItems.forEach(item => {
-        addStock(item.productId, item.quantity);
-        if (isPaid && item.buyPrice > 0) {
-          updatePurchasePrice(item.productId, item.buyPrice);
-          updatedPriceCount++;
-        }
-      });
-
-      if (isPaid && updatedPriceCount > 0) {
-        alert(`✅ PO berhasil dibuat!\nBarang langsung diterima (stok bertambah) dan status LUNAS: Harga beli ${updatedPriceCount} master produk otomatis disinkronkan ke harga PO terbaru.`);
-      } else {
-        alert('✅ PO berhasil dibuat dan stok barang telah ditambahkan ke sistem!');
+    try {
+      // 1. Buat PO dasar
+      const poId = await addPurchaseOrder(newPo);
+      
+      // 2. Jika langsung lunas, bayar PO
+      if (isPaid) {
+        await payPurchaseOrder(poId, totalAmount, paymentMethodOption, paymentMethodOption === 'transfer' ? selectedBankId : undefined);
       }
-    }
 
-    navigate('/purchases');
+      // 3. Jika langsung diterima, proses penerimaan barang (akan tambah stok otomatis)
+      if (status === 'diterima') {
+        let updatedPriceCount = 0;
+        
+        const receiveItemsPayload = preparedItems.map(item => ({
+          productId: item.productId,
+          qtyReceived: item.quantity
+        }));
+        
+        await receivePurchaseOrder(poId, receiveItemsPayload);
+
+        // Update harga master produk jika lunas
+        if (isPaid) {
+          for (const item of preparedItems) {
+            if (item.buyPrice > 0) {
+              await updateProduct(item.productId, { purchasePrice: item.buyPrice });
+              updatedPriceCount++;
+            }
+          }
+        }
+        
+        // Refresh products
+        await fetchProducts();
+
+        if (isPaid && updatedPriceCount > 0) {
+          alert(`✅ PO berhasil dibuat!\nBarang langsung diterima (stok bertambah) dan status LUNAS: Harga beli ${updatedPriceCount} master produk otomatis disinkronkan ke harga PO terbaru.`);
+        } else {
+          alert('✅ PO berhasil dibuat dan stok barang telah ditambahkan ke sistem!');
+        }
+      } else {
+        alert('✅ PO berhasil dibuat!');
+      }
+
+      navigate('/purchases');
+    } catch (err: any) {
+      alert(`Gagal membuat PO: ${err.message}`);
+    }
   };
 
   const formatNumber = (value: number) => {

@@ -3,14 +3,27 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { CheckCircle, Printer, ArrowLeft, ShoppingCart, Clock } from 'lucide-react';
+import { CheckCircle, Printer, ArrowLeft, ShoppingCart, Clock, Loader2 } from 'lucide-react';
+import type { Transaction } from '@/types';
 
 export default function ReceiptPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getTransaction } = useTransactionStore();
+  const [trx, setTrx] = React.useState<Transaction | undefined>(undefined);
+  const [loading, setLoading] = React.useState(true);
 
-  const trx = id ? getTransaction(id) : undefined;
+  React.useEffect(() => {
+    const fetchTrx = async () => {
+      setLoading(true);
+      if (id) {
+        const data = await getTransaction(id);
+        setTrx(data);
+      }
+      setLoading(false);
+    };
+    fetchTrx();
+  }, [id, getTransaction]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -33,6 +46,15 @@ export default function ReceiptPage() {
   const handlePrint = () => {
     window.print();
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+        <Loader2 className="animate-spin text-[#254222] mb-4" size={32} />
+        <p className="text-[#76777d]">Memuat struk...</p>
+      </div>
+    );
+  }
 
   if (!trx) {
     return (

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useCartStore } from '@/stores/cartStore';
+import { useProductStore } from '@/stores/productStore';
 import ProductGrid from '../components/ProductGrid';
 import CartPanel from '../components/CartPanel';
 import OnlineOrderModal from '../components/OnlineOrderModal';
@@ -16,6 +17,11 @@ export default function POSTerminalPage() {
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
+    
+    // Fetch products and categories when POS loads
+    useProductStore.getState().fetchCategories();
+    useProductStore.getState().fetchProducts();
+    
     return () => clearInterval(timer);
   }, []);
 

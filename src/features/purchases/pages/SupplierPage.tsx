@@ -45,19 +45,27 @@ export default function SupplierPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateSupplier(editingId, formData);
-    } else {
-      addSupplier(formData);
+    try {
+      if (editingId) {
+        await updateSupplier(editingId, formData);
+      } else {
+        await addSupplier(formData);
+      }
+      setIsModalOpen(false);
+    } catch (err: any) {
+      alert(`Gagal menyimpan pemasok: ${err.message}`);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Yakin ingin menghapus pemasok ini? Data PO terkait mungkin akan terpengaruh.')) {
-      deleteSupplier(id);
+      try {
+        await deleteSupplier(id);
+      } catch (err: any) {
+        alert(`Gagal menghapus pemasok: ${err.message}`);
+      }
     }
   };
 
