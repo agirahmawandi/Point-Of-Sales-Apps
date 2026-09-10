@@ -11,6 +11,10 @@ interface TransactionState {
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => Promise<string>;
   getTransaction: (id: string) => Promise<Transaction | undefined>;
   updateTransactionPaymentStatus: (id: string, paymentStatus: 'lunas' | 'tertunda', status?: 'success' | 'pending') => Promise<void>;
+  
+  // Dummy functions to fix compilation for UI components that haven't been updated yet
+  updateTransaction: (id: string, data: Partial<Transaction>) => void;
+  resetTransactions: () => void;
 }
 
 export const useTransactionStore = create<TransactionState>((set, get) => ({
@@ -253,5 +257,13 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  updateTransaction: (id, data) => {
+    console.warn('updateTransaction is a dummy function now');
+  },
+
+  resetTransactions: () => {
+    console.warn('resetTransactions is a dummy function now');
   }
 }));

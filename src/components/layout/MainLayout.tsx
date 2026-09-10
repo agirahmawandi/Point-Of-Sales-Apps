@@ -9,25 +9,52 @@ import { useProductStore } from '@/stores/productStore';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useExpenseStore } from '@/stores/expenseStore';
+import { useFinanceStore } from '@/stores/financeStore';
 import { cn } from '@/lib/utils';
 
 export default function MainLayout() {
   const { isSidebarOpen, toggleSidebar } = useUiStore();
   const fetchProducts = useProductStore(state => state.fetchProducts);
-  const fetchCategories = useProductStore(state => state.fetchCategories);
+  const fetchProductCategories = useProductStore(state => state.fetchCategories);
   const fetchTransactions = useTransactionStore(state => state.fetchTransactions);
   const fetchSuppliers = usePurchaseStore(state => state.fetchSuppliers);
   const fetchPurchaseOrders = usePurchaseStore(state => state.fetchPurchaseOrders);
   const fetchBankAccounts = useSettingsStore(state => state.fetchBankAccounts);
+  const fetchExpenseCategories = useExpenseStore(state => state.fetchCategories);
+  const fetchExpenses = useExpenseStore(state => state.fetchExpenses);
+  const fetchInvestors = useFinanceStore(state => state.fetchInvestors);
+  const fetchCashBalances = useFinanceStore(state => state.fetchCashBalances);
+  const fetchBalanceTransfers = useFinanceStore(state => state.fetchBalanceTransfers);
+  const fetchProfitShares = useFinanceStore(state => state.fetchProfitShares);
 
   React.useEffect(() => {
     fetchProducts();
-    fetchCategories();
+    fetchProductCategories();
     fetchTransactions();
     fetchSuppliers();
     fetchPurchaseOrders();
     fetchBankAccounts();
-  }, [fetchProducts, fetchCategories, fetchTransactions, fetchSuppliers, fetchPurchaseOrders, fetchBankAccounts]);
+    fetchExpenseCategories();
+    fetchExpenses();
+    fetchInvestors();
+    fetchCashBalances();
+    fetchBalanceTransfers();
+    fetchProfitShares();
+  }, [
+    fetchProducts, 
+    fetchProductCategories, 
+    fetchTransactions, 
+    fetchSuppliers, 
+    fetchPurchaseOrders, 
+    fetchBankAccounts, 
+    fetchExpenseCategories, 
+    fetchExpenses,
+    fetchInvestors,
+    fetchCashBalances,
+    fetchBalanceTransfers,
+    fetchProfitShares
+  ]);
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">

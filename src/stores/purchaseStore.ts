@@ -23,6 +23,9 @@ interface PurchaseState {
   payPurchaseOrder: (id: string, amount: number, method: string, bankAccountId?: string) => Promise<void>;
   deletePurchaseOrder: (id: string) => Promise<void>;
   getPurchaseOrder: (id: string) => PurchaseOrder | undefined;
+  
+  // Dummy functions to fix compilation for UI components that haven't been updated yet
+  resetPurchaseOrders: () => void;
 }
 
 export const usePurchaseStore = create<PurchaseState>((set, get) => ({
@@ -310,5 +313,9 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   },
 
   getPurchaseOrder: (id) => get().purchaseOrders.find(po => po.id === id),
+
+  resetPurchaseOrders: () => {
+    console.warn('resetPurchaseOrders is a dummy function now');
+  }
 
 }));

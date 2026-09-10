@@ -1,137 +1,243 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { supabase } from '@/lib/supabase';
 import type { Expense, ExpenseCategory } from '@/types/expense';
 
 interface ExpenseState {
   categories: ExpenseCategory[];
   expenses: Expense[];
+  isLoading: boolean;
+  error: string | null;
   
   // Category Actions
-  addCategory: (category: Omit<ExpenseCategory, 'id' | 'createdAt' | 'totalExpenses'>) => void;
-  updateCategory: (id: string, data: Partial<ExpenseCategory>) => void;
-  deleteCategory: (id: string) => void;
+  fetchCategories: () => Promise<void>;
+  addCategory: (category: Omit<ExpenseCategory, 'id' | 'createdAt' | 'totalExpenses'>) => Promise<void>;
+  updateCategory: (id: string, data: Partial<ExpenseCategory>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
   getCategory: (id: string) => ExpenseCategory | undefined;
   
   // Expense Actions
-  addExpense: (expense: Omit<Expense, 'id' | 'createdAt' | 'category'>) => void;
-  updateExpense: (id: string, data: Partial<Expense>) => void;
-  deleteExpense: (id: string) => void;
+  fetchExpenses: () => Promise<void>;
+  addExpense: (expense: Omit<Expense, 'id' | 'createdAt' | 'category'>) => Promise<void>;
+  deleteExpense: (id: string) => Promise<void>;
   getExpense: (id: string) => Expense | undefined;
   resetExpenses: () => void;
 }
 
-const DUMMY_CATEGORIES: ExpenseCategory[] = [
-  {
-    id: 'cat-1',
-    name: 'Operasional',
-    icon: '⚡',
-    description: 'Listrik, Air, Internet',
-    totalExpenses: 1200000,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'cat-2',
-    name: 'Gaji Karyawan',
-    icon: '👤',
-    description: 'Gaji bulanan dan bonus',
-    totalExpenses: 5000000,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'cat-3',
-    name: 'Sewa Tempat',
-    icon: '🏠',
-    description: 'Sewa ruko',
-    totalExpenses: 15000000,
-    createdAt: new Date().toISOString(),
-  }
-];
+export const useExpenseStore = create<ExpenseState>((set, get) => ({
+  categories: [],
+  expenses: [],
+  isLoading: false,
+  error: null,
 
-const DUMMY_EXPENSES: Expense[] = [
-  {
-    id: 'exp-1',
-    categoryId: 'cat-1',
-    category: DUMMY_CATEGORIES[0],
-    description: 'Bayar Listrik Bulan Agustus',
-    amount: 1200000,
-    date: new Date().toISOString(),
-    paymentMethod: 'Transfer Bank',
-    createdBy: 'admin',
-    createdAt: new Date().toISOString(),
-  }
-];
-
-export const useExpenseStore = create<ExpenseState>()(
-  persist(
-    (set, get) => ({
-      categories: DUMMY_CATEGORIES,
-      expenses: DUMMY_EXPENSES,
-
-      addCategory: (category) => set((state) => ({
-        categories: [
-          ...state.categories,
-          {
-            ...category,
-            id: `cat-${Date.now()}`,
-            totalExpenses: 0,
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      })),
+  fetchCategories: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data, error } = await supabase
+        .from('expense_categories')
+        .select('*')
+        .order('name');
+        
+      if (error) throw error;
       
-      updateCategory: (id, data) => set((state) => ({
-        categories: state.categories.map(c => c.id === id ? { ...c, ...data } : c),
-      })),
+      const categories: ExpenseCategory[] = (data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        icon: item.icon || undefined,
+        description: item.description || undefined,
+        totalExpenses: 0, // In a real scenario, this might need an aggregate query or be calculated dynamically
+        createdAt: item.created_at,
+      }));
       
-      deleteCategory: (id) => set((state) => ({
-        categories: state.categories.filter(c => c.id !== id),
-      })),
-
-      getCategory: (id) => get().categories.find(c => c.id === id),
-
-      addExpense: (expense) => set((state) => {
-        const category = state.categories.find(c => c.id === expense.categoryId);
-        return {
-          expenses: [
-            {
-              ...expense,
-              id: `exp-${Date.now()}`,
-              category,
-              createdAt: new Date().toISOString(),
-            },
-            ...state.expenses,
-          ],
-        };
-      }),
-
-      updateExpense: (id, data) => set((state) => {
-        return {
-          expenses: state.expenses.map(exp => {
-            if (exp.id === id) {
-              const category = data.categoryId ? state.categories.find(c => c.id === data.categoryId) : exp.category;
-              return { ...exp, ...data, category };
-            }
-            return exp;
-          }),
-        };
-      }),
-
-      deleteExpense: (id) => set((state) => ({
-        expenses: state.expenses.filter(exp => exp.id !== id),
-      })),
-
-      getExpense: (id) => get().expenses.find(exp => exp.id === id),
-
-      resetExpenses: () => set((state) => ({
-        expenses: [],
-        categories: state.categories.map(c => ({
-          ...c,
-          totalExpenses: 0,
-        }))
-      })),
-    }),
-    {
-      name: 'pos-expense-storage',
+      set({ categories });
+    } catch (err: any) {
+      console.error('Error fetching expense categories:', err);
+      set({ error: err.message });
+    } finally {
+      set({ isLoading: false });
     }
-  )
-);
+  },
+
+  addCategory: async (category) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data, error } = await supabase
+        .from('expense_categories')
+        .insert([{
+          name: category.name,
+          icon: category.icon || null,
+          description: category.description || null,
+        }])
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      const newCategory: ExpenseCategory = {
+        id: data.id,
+        name: data.name,
+        icon: data.icon || undefined,
+        description: data.description || undefined,
+        totalExpenses: 0,
+        createdAt: data.created_at,
+      };
+      
+      set((state) => ({ categories: [...state.categories, newCategory] }));
+    } catch (err: any) {
+      console.error('Error adding expense category:', err);
+      set({ error: err.message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+  
+  updateCategory: async (id, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updatePayload: any = {};
+      if (data.name !== undefined) updatePayload.name = data.name;
+      if (data.icon !== undefined) updatePayload.icon = data.icon || null;
+      if (data.description !== undefined) updatePayload.description = data.description || null;
+
+      const { error } = await supabase
+        .from('expense_categories')
+        .update(updatePayload)
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      await get().fetchCategories();
+    } catch (err: any) {
+      console.error('Error updating expense category:', err);
+      set({ error: err.message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+  
+  deleteCategory: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase
+        .from('expense_categories')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      set((state) => ({
+        categories: state.categories.filter(c => c.id !== id),
+      }));
+    } catch (err: any) {
+      console.error('Error deleting expense category:', err);
+      set({ error: err.message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  getCategory: (id) => get().categories.find(c => c.id === id),
+
+  fetchExpenses: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data, error } = await supabase
+        .from('expenses')
+        .select(`
+          *,
+          expense_categories(id, name, icon, description)
+        `)
+        .order('date', { ascending: false });
+        
+      if (error) throw error;
+      
+      const expenses: Expense[] = (data || []).map(item => ({
+        id: item.id,
+        categoryId: item.category_id || '',
+        category: item.expense_categories ? {
+          id: (item.expense_categories as any).id,
+          name: (item.expense_categories as any).name,
+          icon: (item.expense_categories as any).icon || undefined,
+          description: (item.expense_categories as any).description || undefined,
+          totalExpenses: 0,
+          createdAt: '',
+        } : undefined,
+        description: item.description,
+        amount: item.amount,
+        date: item.date,
+        paymentMethod: item.payment_method,
+        bankAccountId: item.bank_account_id || undefined,
+        attachment: item.attachment || undefined,
+        createdBy: item.created_by || '',
+        createdAt: item.created_at,
+      }));
+      
+      set({ expenses });
+    } catch (err: any) {
+      console.error('Error fetching expenses:', err);
+      set({ error: err.message });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  addExpense: async (expense) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data, error } = await supabase.rpc('create_expense', {
+        payload: {
+          category_id: expense.categoryId,
+          description: expense.description,
+          amount: expense.amount,
+          date: expense.date,
+          payment_method: expense.paymentMethod,
+          bank_account_id: expense.bankAccountId,
+          attachment: expense.attachment,
+          created_by: expense.createdBy,
+        }
+      });
+        
+      if (error) throw error;
+      if (!data?.success) throw new Error('RPC returned failure');
+      
+      await get().fetchExpenses();
+    } catch (err: any) {
+      console.error('Error adding expense:', err);
+      set({ error: err.message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteExpense: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      set((state) => ({
+        expenses: state.expenses.filter(exp => exp.id !== id),
+      }));
+    } catch (err: any) {
+      console.error('Error deleting expense:', err);
+      set({ error: err.message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  getExpense: (id) => get().expenses.find(exp => exp.id === id),
+
+  resetExpenses: () => {
+    console.warn('resetExpenses is a dummy function now');
+  },
+}));
+

@@ -11,8 +11,7 @@ import { id as localeId } from 'date-fns/locale';
 
 export default function ProfitSharePage() {
   const { investors, profitShares, addProfitShare } = useFinanceStore();
-  const { bankAccounts, updateBankBalance } = useSettingsStore();
-  const { updateCashBalance } = useFinanceStore();
+  const { bankAccounts } = useSettingsStore();
   const { transactions } = useTransactionStore();
   const { expenses } = useExpenseStore();
 
@@ -72,7 +71,7 @@ export default function ProfitSharePage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (totalPercentage > 100) {
       toast.error('Total persentase bagi hasil tidak boleh melebihi 100%!');
@@ -86,29 +85,24 @@ export default function ProfitSharePage() {
         amount: Math.round((summary.netProfit * d.percentage) / 100),
       }));
 
-    addProfitShare({
-      period,
-      totalRevenue: summary.totalRevenue,
-      totalExpense: summary.totalExpense + summary.totalCogs,
-      netProfit: summary.netProfit,
-      sharePercentage: totalPercentage,
-      shareAmount: totalShareAmount,
-      distributions: finalDistributions,
-      notes,
-    });
+    try {
+      await addProfitShare({
+        period,
+        totalRevenue: summary.totalRevenue,
+        totalExpense: summary.totalExpense + summary.totalCogs,
+        netProfit: summary.netProfit,
+        sharePercentage: totalPercentage,
+        shareAmount: totalShareAmount,
+        distributions: finalDistributions,
+        notes,
+      });
 
-    // Deduct each distribution from the corresponding balance
-    finalDistributions.forEach((d) => {
-      if (d.method === 'cash') {
-        updateCashBalance(-d.amount);
-      } else if (d.bankAccountId) {
-        updateBankBalance(d.bankAccountId, -d.amount);
-      }
-    });
-
-    toast.success(`Bagi hasil periode ${period} berhasil dicatat!`);
-    setIsModalOpen(false);
-    setNotes('');
+      toast.success(`Bagi hasil periode ${period} berhasil dicatat!`);
+      setIsModalOpen(false);
+      setNotes('');
+    } catch (err: any) {
+      toast.error('Gagal mencatat bagi hasil: ' + err.message);
+    }
   };
 
   return (

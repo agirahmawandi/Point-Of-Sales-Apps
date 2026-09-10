@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useExpenseStore } from '@/stores/expenseStore';
 import PageContainer from '@/components/layout/PageContainer';
-import { Search, Plus, Edit2, Trash2, Tag, Layers } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Tag, Layers, Loader2 } from 'lucide-react';
 import type { ExpenseCategory } from '@/types/expense';
+import { toast } from 'sonner';
 
 export default function ExpenseCategoryPage() {
-  const { categories, addCategory, updateCategory, deleteCategory } = useExpenseStore();
+  const { categories, addCategory, updateCategory, deleteCategory, isLoading } = useExpenseStore();
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -40,19 +41,30 @@ export default function ExpenseCategoryPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateCategory(editingId, formData);
-    } else {
-      addCategory(formData);
+    try {
+      if (editingId) {
+        await updateCategory(editingId, formData);
+        toast.success('Kategori berhasil diperbarui');
+      } else {
+        await addCategory(formData);
+        toast.success('Kategori baru berhasil ditambahkan');
+      }
+      setIsModalOpen(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Gagal menyimpan kategori');
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Yakin hapus kategori ini?')) {
-      deleteCategory(id);
+      try {
+        await deleteCategory(id);
+        toast.success('Kategori berhasil dihapus');
+      } catch (error: any) {
+        toast.error(error.message || 'Gagal menghapus kategori');
+      }
     }
   };
 

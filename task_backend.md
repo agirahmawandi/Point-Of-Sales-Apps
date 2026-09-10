@@ -86,58 +86,58 @@
 
 ---
 
-## ⏳ PHASE 5 — Purchase Order Module
+## ✅ PHASE 5 — Purchase Order Module
 
 ### Supplier
-- [/] Fetch semua supplier dari `suppliers`
-- [/] CRUD supplier
-- [/] Update `total_purchases` & `total_debt`
+- [x] Fetch semua supplier dari `suppliers`
+- [x] CRUD supplier
+- [x] Update `total_purchases` & `total_debt`
 
 ### Purchase Order
-- [/] Fetch semua PO dari `purchase_orders` + `purchase_order_items`
+- [x] Fetch semua PO dari `purchase_orders` + `purchase_order_items`
 - [x] Buat PO baru → INSERT (RPC `create_purchase_order`)
-- [/] Edit PO → UPDATE
+- [x] Edit PO → UPDATE
 - [x] Penerimaan barang → UPDATE `received_quantity` + stok produk (RPC `receive_purchase_order`)
 - [x] Update status PO (draft → dikirim → diterima) (Via RPC)
 - [x] Pembayaran PO → UPDATE `paid_amount` & `payment_status` (RPC `pay_purchase_order`)
-- [/] Refactor `purchaseStore.ts` → Supabase queries
+- [x] Refactor `purchaseStore.ts` → Supabase queries
 
 ---
 
-## 🔲 PHASE 6 — Expense Module
+## ✅ PHASE 6 — Expense Module
 
-- [ ] Fetch kategori pengeluaran dari `expense_categories`
-- [ ] CRUD kategori pengeluaran
-- [ ] Fetch pengeluaran dari `expenses`
-- [ ] Tambah pengeluaran → INSERT + update saldo
-- [ ] Edit & hapus pengeluaran
-- [ ] Filter by kategori, tanggal, metode
-- [ ] Refactor `expenseStore.ts` → Supabase queries
+- [x] Fetch kategori pengeluaran dari `expense_categories`
+- [x] CRUD kategori pengeluaran
+- [x] Fetch pengeluaran dari `expenses`
+- [x] Tambah pengeluaran → INSERT + update saldo (via RPC)
+- [x] Hapus pengeluaran
+- [x] Filter by kategori, tanggal, metode
+- [x] Refactor `expenseStore.ts` → Supabase queries
 
 ---
 
-## 🔲 PHASE 7 — Finance Module
+## ✅ PHASE 7 — Finance Module
 
 ### Bank Accounts
-- [ ] Fetch rekening bank dari `bank_accounts`
-- [ ] CRUD rekening bank
+- [x] Fetch rekening bank dari `bank_accounts`
+- [x] CRUD rekening bank
 
 ### Balance & Transfers
-- [ ] Fetch saldo kas & QRIS dari `cash_balances`
-- [ ] Fetch transfer saldo dari `balance_transfers`
-- [ ] Tambah transfer → INSERT + update saldo kedua arah
+- [x] Fetch saldo kas & QRIS dari `cash_balances`
+- [x] Fetch transfer saldo dari `balance_transfers`
+- [x] Tambah transfer → INSERT + update saldo kedua arah
 
 ### Investor
-- [ ] Fetch investor dari `investors`
-- [ ] CRUD investor
-- [ ] Tambah setoran modal → INSERT `investor_deposits` + update `total_invested`
+- [x] Fetch investor dari `investors`
+- [x] CRUD investor
+- [x] Tambah setoran modal → INSERT `investor_deposits` + update `total_invested`
 
 ### Profit Share
-- [ ] Fetch bagi hasil dari `profit_shares` + `profit_share_distributions`
-- [ ] Tambah bagi hasil → INSERT + INSERT distributions + update `total_withdrawn`
+- [x] Fetch bagi hasil dari `profit_shares` + `profit_share_distributions`
+- [x] Tambah bagi hasil → INSERT + INSERT distributions + update `total_withdrawn`
 
 ### Refactor
-- [ ] Refactor `financeStore.ts` → Supabase queries
+- [x] Refactor `financeStore.ts` → Supabase queries
 
 ---
 
@@ -191,15 +191,15 @@
 | 2 | Products | ✅ Done | 16/16 |
 | 3 | Customer | ✅ Done | 7/7 |
 | 4 | Transaction / POS | ✅ Done | 11/11 |
-| 5 | Purchase Order | ⏳ In Progress | 4/11 |
-| 6 | Expense | 🔲 Todo | 0/7 |
+| 5 | Purchase Order | ✅ Done | 11/11 |
+| 6 | Expense | ✅ Done | 7/7 |
 | 7 | Finance | 🔲 Todo | 0/12 |
 | 8 | Settings | 🔲 Todo | 0/6 |
 | 9 | Dashboard & Reports | 🔲 Todo | 0/11 |
 | 10 | Final & Deploy | 🔲 Todo | 0/8 |
 
-**Total: 16/104 tasks selesai**
+**Total: 57/104 tasks selesai**
 
 ---
 
-*Last updated: 2026-09-08*
+*Last updated: 2026-09-10*

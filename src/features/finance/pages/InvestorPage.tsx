@@ -11,8 +11,7 @@ import { id as localeId } from 'date-fns/locale';
 
 export default function InvestorPage() {
   const { investors, investorDeposits, addInvestor, deleteInvestor, addInvestorDeposit } = useFinanceStore();
-  const { bankAccounts, updateBankBalance } = useSettingsStore();
-  const { updateCashBalance } = useFinanceStore();
+  const { bankAccounts } = useSettingsStore();
 
   const [isAddInvestorOpen, setIsAddInvestorOpen] = useState(false);
   const [isDepositOpen, setIsDepositOpen] = useState(false);
@@ -33,16 +32,20 @@ export default function InvestorPage() {
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(v);
 
-  const handleAddInvestor = (e: React.FormEvent) => {
+  const handleAddInvestor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!invName.trim()) return;
-    addInvestor({ name: invName.trim(), phone: invPhone, notes: invNotes });
-    toast.success(`Investor "${invName}" berhasil ditambahkan!`);
-    setInvName(''); setInvPhone(''); setInvNotes('');
-    setIsAddInvestorOpen(false);
+    try {
+      await addInvestor({ name: invName.trim(), phone: invPhone, notes: invNotes });
+      toast.success(`Investor "${invName}" berhasil ditambahkan!`);
+      setInvName(''); setInvPhone(''); setInvNotes('');
+      setIsAddInvestorOpen(false);
+    } catch (err: any) {
+      toast.error('Gagal menambahkan investor: ' + err.message);
+    }
   };
 
-  const handleDeposit = (e: React.FormEvent) => {
+  const handleDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = parseInt(depAmount.replace(/\D/g, ''), 10) || 0;
     if (!selectedInvestorId || amount <= 0) return;
@@ -50,25 +53,22 @@ export default function InvestorPage() {
     const investor = investors.find((i) => i.id === selectedInvestorId);
     if (!investor) return;
 
-    addInvestorDeposit({
-      investorId: selectedInvestorId,
-      investorName: investor.name,
-      amount,
-      method: depMethod,
-      bankAccountId: depMethod === 'transfer' ? depBankId : undefined,
-      notes: depNotes,
-    });
+    try {
+      await addInvestorDeposit({
+        investorId: selectedInvestorId,
+        investorName: investor.name,
+        amount,
+        method: depMethod,
+        bankAccountId: depMethod === 'transfer' ? depBankId : undefined,
+        notes: depNotes,
+      });
 
-    // Update balance
-    if (depMethod === 'cash') {
-      updateCashBalance(amount);
-    } else {
-      updateBankBalance(depBankId, amount);
+      toast.success(`Dana Rp ${new Intl.NumberFormat('id-ID').format(amount)} dari ${investor.name} berhasil dicatat!`);
+      setDepAmount(''); setDepNotes('');
+      setIsDepositOpen(false);
+    } catch (err: any) {
+      toast.error('Gagal mencatat dana investor: ' + err.message);
     }
-
-    toast.success(`Dana Rp ${new Intl.NumberFormat('id-ID').format(amount)} dari ${investor.name} berhasil dicatat!`);
-    setDepAmount(''); setDepNotes('');
-    setIsDepositOpen(false);
   };
 
   const handleOpenDeposit = (investorId: string) => {
@@ -153,10 +153,14 @@ export default function InvestorPage() {
                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (window.confirm(`Hapus investor ${inv.name}?`)) {
-                            deleteInvestor(inv.id);
-                            toast.success('Investor dihapus!');
+                            try {
+                              await deleteInvestor(inv.id);
+                              toast.success('Investor dihapus!');
+                            } catch (err: any) {
+                              toast.error('Gagal menghapus: ' + err.message);
+                            }
                           }
                         }}
                         className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 transition-colors"

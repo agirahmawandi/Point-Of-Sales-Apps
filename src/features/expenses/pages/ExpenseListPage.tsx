@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useAuthStore } from '@/stores/authStore';
 import PageContainer from '@/components/layout/PageContainer';
-import { Search, Plus, Paperclip, FileText, CheckCircle2, Receipt } from 'lucide-react';
+import { Search, Plus, Paperclip, FileText, CheckCircle2, Receipt, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 export default function ExpenseListPage() {
-  const { expenses, categories, addExpense } = useExpenseStore();
-  const { bankAccounts, updateBankBalance } = useSettingsStore();
+  const { expenses, categories, addExpense, isLoading } = useExpenseStore();
+  const { bankAccounts } = useSettingsStore();
+  const { user } = useAuthStore();
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBankId, setSelectedBankId] = useState(bankAccounts[0]?.id || '');
@@ -24,7 +27,7 @@ export default function ExpenseListPage() {
 
   const filteredExpenses = expenses.filter(e => 
     e.description.toLowerCase().includes(search.toLowerCase()) || 
-    e.category?.name.toLowerCase().includes(search.toLowerCase())
+    (e.category?.name || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const formatNumber = (value: number) => {
@@ -43,27 +46,27 @@ export default function ExpenseListPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.categoryId || !formData.amount) return;
 
-    addExpense({
-      categoryId: formData.categoryId,
-      description: formData.description,
-      amount: parseInt(formData.amount),
-      date: new Date(formData.date).toISOString(),
-      paymentMethod: formData.paymentMethod,
-      bankAccountId: (formData.paymentMethod === 'Transfer Bank' || formData.paymentMethod === 'Kartu Kredit') ? selectedBankId : undefined,
-      attachment: formData.hasAttachment ? 'dummy-file.jpg' : undefined,
-      createdBy: 'admin'
-    });
-    
-    // Potong saldo jika bayar pakai bank
-    if ((formData.paymentMethod === 'Transfer Bank' || formData.paymentMethod === 'Kartu Kredit') && selectedBankId) {
-      updateBankBalance(selectedBankId, -parseInt(formData.amount));
+    try {
+      await addExpense({
+        categoryId: formData.categoryId,
+        description: formData.description,
+        amount: parseInt(formData.amount),
+        date: new Date(formData.date).toISOString(),
+        paymentMethod: formData.paymentMethod,
+        bankAccountId: (formData.paymentMethod === 'Transfer Bank' || formData.paymentMethod === 'Kartu Kredit') ? selectedBankId : undefined,
+        attachment: formData.hasAttachment ? 'dummy-file.jpg' : undefined,
+        createdBy: user?.id || undefined
+      });
+      
+      toast.success('Pengeluaran berhasil dicatat');
+      setIsModalOpen(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Gagal mencatat pengeluaran');
     }
-    
-    setIsModalOpen(false);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,6 +74,7 @@ export default function ExpenseListPage() {
       setFormData({ ...formData, hasAttachment: true });
     }
   };
+
 
   return (
     <PageContainer 

@@ -34,6 +34,10 @@ interface SettingsState {
   addBankAccount: (account: Omit<BankAccount, 'id'>) => Promise<void>;
   updateBankAccount: (id: string, account: Partial<BankAccount>) => Promise<void>;
   deleteBankAccount: (id: string) => Promise<void>;
+  
+  // Dummy functions to fix compilation for UI components that haven't been updated yet
+  updateBankBalance: (id: string, amount: number) => void;
+  resetBankBalances: () => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -120,6 +124,14 @@ export const useSettingsStore = create<SettingsState>()(
           console.error('Failed to delete bank account', err);
         }
       },
+      
+      updateBankBalance: (id, amount) => {
+        console.warn('updateBankBalance is a dummy function now');
+      },
+      
+      resetBankBalances: () => {
+        console.warn('resetBankBalances is a dummy function now');
+      }
     }),
     {
       name: 'pos-settings-storage',

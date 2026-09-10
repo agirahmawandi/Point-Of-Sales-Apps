@@ -1,42 +1,51 @@
-# 📝 Log Pekerjaan & Handover (9 September 2026)
+# 📝 Log Pekerjaan & Handover (10 September 2026)
 
-Dokumen ini adalah ringkasan pekerjaan yang telah diselesaikan hari ini dan peta jalan (roadmap) untuk sesi besok.
+Dokumen ini adalah ringkasan pekerjaan yang telah diselesaikan pada 10 September 2026 dan peta jalan (roadmap) untuk sesi besok.
 
 ## ✅ Pekerjaan yang Diselesaikan Hari Ini
 
-### 1. Perbaikan Bug Phase 4 (Kasir / POS)
-- Memperbaiki error *white-screen* saat aplikasi mencoba me-render struk pembayaran (`ReceiptPage`) sebelum data transaksi dari database selesai dimuat (menggunakan *loading state* & `useEffect`).
-- Mengubah strategi pemuatan data dari per-halaman menjadi **Global Data Fetching** di `MainLayout.tsx`. Sekarang aplikasi akan menarik data `products`, `categories`, `transactions`, `suppliers`, `purchaseOrders`, dan `bankAccounts` di latar belakang saat aplikasi pertama kali dimuat. Hal ini menyelesaikan masalah "data lama/kosong" dan membuat UX secepat aplikasi lokal.
+### 1. Perbaikan Bug Phase 6 (Modul Pengeluaran / Expense)
+- Memperbaiki bug `uuid cast error` di file `supabase_expense_rpc.sql` yang sebelumnya membaca `created_by` sebagai teks murni.
+- Mengintegrasikan `useAuthStore` di `ExpenseListPage.tsx` agar data `user.id` yang diinput ke pengeluaran adalah identitas asli dari kasir/admin yang sedang login.
 
-### 2. Penyelesaian Phase 5 (Purchase Order & Supplier)
-- **Database (RPC)**: Membuat 3 Fungsi SQL (RPC) di file `supabase_po_rpc.sql` agar konsisten dan atomik:
-  - `create_purchase_order`: Menyimpan PO dan Item sekaligus.
-  - `receive_purchase_order`: Mengubah status menjadi diterima dan otomatis menambahkan stok produk utama.
-  - `pay_purchase_order`: Melunasi PO dan otomatis memotong saldo rekening bank/kas perusahaan, serta mengurangi hutang supplier.
+### 2. Penyelesaian Phase 7 (Modul Keuangan / Finance)
+- **Database (RPC)**: Membuat 3 Fungsi SQL yang sangat krusial di `supabase_finance_rpc.sql` untuk menjamin keamanan mutasi uang perusahaan:
+  - `create_balance_transfer`: Memindahkan saldo antar Kas, QRIS, dan Rekening Bank.
+  - `create_investor_deposit`: Menambah setoran dana modal masuk dari investor.
+  - `create_profit_share`: Menghitung, mendistribusikan, dan mencatat pengeluaran uang secara kolektif untuk bagi hasil investor.
+- **Bug Fix**: Memperbaiki masalah *constraint not-null* karena kurangnya deklarasi `investor_name` pada tabel setoran dan tabel distribusi bagi hasil di dalam *script* RPC.
 - **Frontend Refactoring**: 
-  - Merombak total `purchaseStore.ts` (menghapus dummy data lokal dan menggantinya dengan kueri Supabase).
-  - Memodifikasi UI di `SupplierPage`, `PurchaseFormPage`, `PurchaseDetailPage`, dan `ReceiveGoodsPage` agar menggunakan metode `async` dari RPC di atas.
-
-### 3. Hotfix Pengaturan Bank (Settings)
-- Muncul bug `invalid input syntax for type uuid` karena daftar bank masih menggunakan *dummy id* dari UI lama (`mandiri-1`).
-- Merombak `settingsStore.ts` untuk tidak lagi mem-persist data bank secara lokal, melainkan mengambil (*fetch*) daftar rekening bank asli langsung dari tabel `bank_accounts` di Supabase.
+  - Merombak total `financeStore.ts` untuk membuang penyimpanan lokal otomatis (persist) dan beralih menggunakan *queries* serta fungsi Supabase.
+  - Mengupdate `MainLayout.tsx` agar modul keuangan ikut diload di belakang layar (*Global Fetching*) saat aplikasi dibuka (menarik kas, QRIS, investor, dsb).
+  - Mengonversi `InvestorPage`, `BalanceTransferPage`, dan `ProfitSharePage` dari fungsi sinkronus biasa menjadi `async`/`await` dengan pengamanan `try-catch` terpusat.
 
 ---
 
 ## 🚀 Agenda Untuk Besok (Next Steps)
 
-Besok, agen akan melanjutkan pekerjaan berdasarkan `task_backend.md`:
+Besok, kita akan melaju ke **Phase 8** dan bersiap untuk integrasi tampilan utama:
 
-> **PENTING SEBELUM MELANJUTKAN**
-> Jika database Supabase Anda belum memiliki data Rekening Bank, maka disarankan untuk **menginput data bank asli Anda** terlebih dahulu di halaman Pengaturan > Rekening Bank, agar transaksi PO dan Pengeluaran besok tidak error.
+1. **Memulai Phase 8 (Pengaturan / Settings Module)**
+   - Fokus: Profil Toko & Manajemen Pengguna (Kasir/Admin).
+   - Menghubungkan *Store Settings* (Pajak, Nama Toko) ke database `store_settings`.
+   - Mengelola akun *User* lewat tabel Supabase Auth agar Admin bisa menambah atau menghapus akses login untuk Kasir.
+   - Refactor `settingsStore.ts` agar bersih dari *dummy data*.
+   
+2. **Bersiap untuk Phase 9 (Dashboard & Laporan)**
+   - Menyambungkan saldo dan total pendapatan yang kini sudah nyata di Supabase ke antarmuka kartu KPI (Dashboard).
+   - Menarik dan menggambar grafik dari riwayat data yang valid.
 
-1. **Memulai Phase 6 (Modul Pengeluaran / Expense)**
-   - Fokus: Menghubungkan tabel `expense_categories` dan `expenses` ke Supabase.
-   - Mengganti dummy data di `expenseStore.ts` ke Supabase CRUD operations.
-   - Menyesuaikan halaman UI pencatatan pengeluaran.
-   
-2. **Phase 7 (Keuangan / Finance)**
-   - Fokus: Investor, Arus Kas (Cash Flow), dan Bagi Hasil (Profit Sharing).
-   
-3. **Phase 8 (Pengaturan / Settings & Security)**
-   - Fokus: Melengkapi CRUD Profil Toko, Sinkronisasi UI Bank Account penuh, serta *Row Level Security (RLS)* jika diperlukan sebelum *deploy* akhir.
+---
+
+# 📝 Log Pekerjaan Sebelumnya (9 September 2026)
+
+### 1. Perbaikan Bug Phase 4 (Kasir / POS)
+- Memperbaiki error *white-screen* saat aplikasi mencoba me-render struk pembayaran (`ReceiptPage`) sebelum data transaksi selesai dimuat.
+- Mengubah strategi pemuatan data dari per-halaman menjadi **Global Data Fetching** di `MainLayout.tsx`.
+
+### 2. Penyelesaian Phase 5 (Purchase Order & Supplier)
+- **Database (RPC)**: Membuat fungsi SQL `create_purchase_order`, `receive_purchase_order`, dan `pay_purchase_order`.
+- **Frontend Refactoring**: Merombak total `purchaseStore.ts` ke Supabase dan memodifikasi `SupplierPage`, `PurchaseFormPage`, dll.
+
+### 3. Hotfix Pengaturan Bank (Settings)
+- Merombak `settingsStore.ts` untuk mengambil (*fetch*) daftar rekening bank asli langsung dari tabel `bank_accounts`.

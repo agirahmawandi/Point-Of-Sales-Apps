@@ -10,8 +10,8 @@ import { id as localeId } from 'date-fns/locale';
 type BalanceType = 'cash' | 'qris' | 'bank';
 
 export default function BalanceTransferPage() {
-  const { bankAccounts, updateBankBalance } = useSettingsStore();
-  const { cashBalance, qrisBalance, updateCashBalance, updateQrisBalance, addBalanceTransfer, balanceTransfers } = useFinanceStore();
+  const { bankAccounts } = useSettingsStore();
+  const { cashBalance, qrisBalance, addBalanceTransfer, balanceTransfers } = useFinanceStore();
 
   const [fromType, setFromType] = useState<BalanceType>('cash');
   const [fromBankId, setFromBankId] = useState(bankAccounts[0]?.id || '');
@@ -42,33 +42,27 @@ export default function BalanceTransferPage() {
   const fromBalance = getBalance(fromType, fromBankId);
   const isValid = amountNum > 0 && amountNum <= fromBalance && fromType !== toType || (fromType === 'bank' && toType === 'bank' && fromBankId !== toBankId);
 
-  const handleTransfer = () => {
+  const handleTransfer = async () => {
     if (!isValid) return;
 
-    // Deduct from source
-    if (fromType === 'cash') updateCashBalance(-amountNum);
-    else if (fromType === 'qris') updateQrisBalance(-amountNum);
-    else updateBankBalance(fromBankId, -amountNum);
+    try {
+      await addBalanceTransfer({
+        fromType,
+        fromBankId: fromType === 'bank' ? fromBankId : undefined,
+        toType,
+        toBankId: toType === 'bank' ? toBankId : undefined,
+        amount: amountNum,
+        notes,
+      });
 
-    // Add to destination
-    if (toType === 'cash') updateCashBalance(amountNum);
-    else if (toType === 'qris') updateQrisBalance(amountNum);
-    else updateBankBalance(toBankId, amountNum);
-
-    addBalanceTransfer({
-      fromType,
-      fromBankId: fromType === 'bank' ? fromBankId : undefined,
-      toType,
-      toBankId: toType === 'bank' ? toBankId : undefined,
-      amount: amountNum,
-      notes,
-    });
-
-    setAmount('');
-    setNotes('');
-    setIsSuccess(true);
-    toast.success(`Saldo sebesar ${formatCurrency(amountNum)} berhasil dipindahkan!`);
-    setTimeout(() => setIsSuccess(false), 3000);
+      setAmount('');
+      setNotes('');
+      setIsSuccess(true);
+      toast.success(`Saldo sebesar ${formatCurrency(amountNum)} berhasil dipindahkan!`);
+      setTimeout(() => setIsSuccess(false), 3000);
+    } catch (err: any) {
+      toast.error('Gagal memindahkan saldo: ' + err.message);
+    }
   };
 
   const typeOptions: { value: BalanceType; label: string; icon: React.ElementType; color: string }[] = [
