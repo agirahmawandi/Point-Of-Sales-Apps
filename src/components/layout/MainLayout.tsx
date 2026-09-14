@@ -21,6 +21,7 @@ export default function MainLayout() {
   const fetchSuppliers = usePurchaseStore(state => state.fetchSuppliers);
   const fetchPurchaseOrders = usePurchaseStore(state => state.fetchPurchaseOrders);
   const fetchBankAccounts = useSettingsStore(state => state.fetchBankAccounts);
+  const fetchStoreSettings = useSettingsStore(state => state.fetchStoreSettings);
   const fetchExpenseCategories = useExpenseStore(state => state.fetchCategories);
   const fetchExpenses = useExpenseStore(state => state.fetchExpenses);
   const fetchInvestors = useFinanceStore(state => state.fetchInvestors);
@@ -35,6 +36,7 @@ export default function MainLayout() {
     fetchSuppliers();
     fetchPurchaseOrders();
     fetchBankAccounts();
+    fetchStoreSettings();
     fetchExpenseCategories();
     fetchExpenses();
     fetchInvestors();
@@ -48,6 +50,7 @@ export default function MainLayout() {
     fetchSuppliers, 
     fetchPurchaseOrders, 
     fetchBankAccounts, 
+    fetchStoreSettings,
     fetchExpenseCategories, 
     fetchExpenses,
     fetchInvestors,

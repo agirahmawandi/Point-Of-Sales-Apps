@@ -1,39 +1,24 @@
-# 📝 Log Pekerjaan & Handover (10 September 2026)
+# 📝 Log Pekerjaan & Handover (14 September 2026)
 
-Dokumen ini adalah ringkasan pekerjaan yang telah diselesaikan pada 10 September 2026 dan peta jalan (roadmap) untuk sesi besok.
+## ✅ Pekerjaan yang Diselesaikan Hari Ini (Phase 8 - Settings)
 
-## ✅ Pekerjaan yang Diselesaikan Hari Ini
+### 1. Refactor Store Settings & Tax
+- **`settingsStore.ts`**: Menghapus `persist` (localStorage) dan mengimplementasikan pengambilan data profil toko dan pengaturan pajak langsung dari tabel `store_settings` di Supabase secara asinkron.
+- Menyediakan logika inisialisasi (*auto-create*) profil default (Frema Mart, 11% Pajak) jika tabel kosong.
+- **UI Integrations**: Memperbarui *StoreProfilePage* dan *TaxSettingsPage* agar mendukung proses `async`/`await`, `try-catch`, serta menampilkan status loading (*Menyimpan...*).
 
-### 1. Perbaikan Bug Phase 6 (Modul Pengeluaran / Expense)
-- Memperbaiki bug `uuid cast error` di file `supabase_expense_rpc.sql` yang sebelumnya membaca `created_by` sebagai teks murni.
-- Mengintegrasikan `useAuthStore` di `ExpenseListPage.tsx` agar data `user.id` yang diinput ke pengeluaran adalah identitas asli dari kasir/admin yang sedang login.
-
-### 2. Penyelesaian Phase 7 (Modul Keuangan / Finance)
-- **Database (RPC)**: Membuat 3 Fungsi SQL yang sangat krusial di `supabase_finance_rpc.sql` untuk menjamin keamanan mutasi uang perusahaan:
-  - `create_balance_transfer`: Memindahkan saldo antar Kas, QRIS, dan Rekening Bank.
-  - `create_investor_deposit`: Menambah setoran dana modal masuk dari investor.
-  - `create_profit_share`: Menghitung, mendistribusikan, dan mencatat pengeluaran uang secara kolektif untuk bagi hasil investor.
-- **Bug Fix**: Memperbaiki masalah *constraint not-null* karena kurangnya deklarasi `investor_name` pada tabel setoran dan tabel distribusi bagi hasil di dalam *script* RPC.
-- **Frontend Refactoring**: 
-  - Merombak total `financeStore.ts` untuk membuang penyimpanan lokal otomatis (persist) dan beralih menggunakan *queries* serta fungsi Supabase.
-  - Mengupdate `MainLayout.tsx` agar modul keuangan ikut diload di belakang layar (*Global Fetching*) saat aplikasi dibuka (menarik kas, QRIS, investor, dsb).
-  - Mengonversi `InvestorPage`, `BalanceTransferPage`, dan `ProfitSharePage` dari fungsi sinkronus biasa menjadi `async`/`await` dengan pengamanan `try-catch` terpusat.
+### 2. Implementasi User Management (Opsi B)
+- Memilih pendekatan CRUD khusus untuk profil (`userStore.ts` & tabel `profiles`) tanpa sinkronisasi langsung dengan Supabase Auth di _client-side_.
+- Menambahkan **UserManagementPage**: Menghapus _dummy data_, menggunakan state real-time dari database, dan membuat modal _Tambah_ & _Edit_ Pengguna secara interaktif.
+- Pengecekan tipe dan perbaikan bug (TypeScript error `UserProfile` import dan *nullable string* di modul pengeluaran).
 
 ---
 
-## 🚀 Agenda Untuk Besok (Next Steps)
+## 🚀 Agenda Untuk Besok (Next Steps - Phase 9)
 
-Besok, kita akan melaju ke **Phase 8** dan bersiap untuk integrasi tampilan utama:
-
-1. **Memulai Phase 8 (Pengaturan / Settings Module)**
-   - Fokus: Profil Toko & Manajemen Pengguna (Kasir/Admin).
-   - Menghubungkan *Store Settings* (Pajak, Nama Toko) ke database `store_settings`.
-   - Mengelola akun *User* lewat tabel Supabase Auth agar Admin bisa menambah atau menghapus akses login untuk Kasir.
-   - Refactor `settingsStore.ts` agar bersih dari *dummy data*.
-   
-2. **Bersiap untuk Phase 9 (Dashboard & Laporan)**
-   - Menyambungkan saldo dan total pendapatan yang kini sudah nyata di Supabase ke antarmuka kartu KPI (Dashboard).
-   - Menarik dan menggambar grafik dari riwayat data yang valid.
+Besok, kita akan beralih ke **Phase 9 (Dashboard & Reports)**:
+1. **Dashboard Utama (`KPICards.tsx`, `SalesChart.tsx`)**: Menghubungkan metrik performa (Penjualan Hari Ini, Total Transaksi, Laba Kotor) dan grafik bulanan/mingguan agar mengambil data yang nyata dari transaksi.
+2. **Halaman Laporan (`SalesReportPage.tsx`, dll)**: Menyelesaikan logika perhitungan *Income Statement* (Laba/Rugi), filter laporan berdasarkan tanggal, dan rekapan aktivitas toko.
 
 ---
 

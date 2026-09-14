@@ -59,7 +59,7 @@ export default function ExpenseListPage() {
         paymentMethod: formData.paymentMethod,
         bankAccountId: (formData.paymentMethod === 'Transfer Bank' || formData.paymentMethod === 'Kartu Kredit') ? selectedBankId : undefined,
         attachment: formData.hasAttachment ? 'dummy-file.jpg' : undefined,
-        createdBy: user?.id || undefined
+        createdBy: user?.id || ''
       });
       
       toast.success('Pengeluaran berhasil dicatat');

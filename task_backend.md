@@ -143,12 +143,12 @@
 
 ## 🔲 PHASE 8 — Settings Module
 
-- [ ] Fetch pengaturan toko dari `store_settings`
-- [ ] Update profil toko → UPDATE `store_settings`
-- [ ] Update pajak default → UPDATE `store_settings`
-- [ ] CRUD rekening bank (sudah di Finance, share logic)
-- [ ] User management: fetch, buat, edit, hapus user
-- [ ] Refactor `settingsStore.ts` → Supabase queries
+- [x] Fetch pengaturan toko dari `store_settings`
+- [x] Update profil toko → UPDATE `store_settings`
+- [x] Update pajak default → UPDATE `store_settings`
+- [x] CRUD rekening bank (sudah di Finance, share logic)
+- [x] User management: fetch, buat, edit, hapus user
+- [x] Refactor `settingsStore.ts` → Supabase queries
 
 ---
 
@@ -194,11 +194,11 @@
 | 5 | Purchase Order | ✅ Done | 11/11 |
 | 6 | Expense | ✅ Done | 7/7 |
 | 7 | Finance | 🔲 Todo | 0/12 |
-| 8 | Settings | 🔲 Todo | 0/6 |
+| 8 | Settings | ✅ Done | 6/6 |
 | 9 | Dashboard & Reports | 🔲 Todo | 0/11 |
 | 10 | Final & Deploy | 🔲 Todo | 0/8 |
 
-**Total: 57/104 tasks selesai**
+**Total: 63/104 tasks selesai**
 
 ---
 

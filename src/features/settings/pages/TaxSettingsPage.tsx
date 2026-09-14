@@ -7,15 +7,27 @@ import { toast } from 'sonner';
 export default function TaxSettingsPage() {
   const { taxSettings, updateTaxSettings } = useSettingsStore();
   const [formData, setFormData] = useState(taxSettings);
+  const [isSaving, setIsSaving] = useState(false);
+
+  React.useEffect(() => {
+    setFormData(taxSettings);
+  }, [taxSettings]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: parseFloat(value) || 0 }));
   };
 
-  const handleSave = () => {
-    updateTaxSettings(formData);
-    toast.success('Pengaturan pajak berhasil diperbarui!');
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateTaxSettings(formData);
+      toast.success('Pengaturan pajak berhasil diperbarui!');
+    } catch (error) {
+      toast.error('Gagal memperbarui pengaturan pajak');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -25,10 +37,11 @@ export default function TaxSettingsPage() {
       actions={
         <button
           onClick={handleSave}
-          className="h-10 px-5 rounded-xl bg-[#254222] text-[#ece2b1] text-[13px] font-bold flex items-center gap-2 hover:bg-[#1b3119] transition-all shadow-sm"
+          disabled={isSaving}
+          className="h-10 px-5 rounded-xl bg-[#254222] text-[#ece2b1] text-[13px] font-bold flex items-center gap-2 hover:bg-[#1b3119] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save size={16} />
-          <span>Simpan Perubahan</span>
+          <span>{isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
         </button>
       }
     >

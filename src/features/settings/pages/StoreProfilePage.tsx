@@ -7,15 +7,28 @@ import { toast } from 'sonner';
 export default function StoreProfilePage() {
   const { storeProfile, updateStoreProfile } = useSettingsStore();
   const [formData, setFormData] = useState(storeProfile);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Sync state if storeProfile changes (e.g., loaded from DB after mount)
+  React.useEffect(() => {
+    setFormData(storeProfile);
+  }, [storeProfile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    updateStoreProfile(formData);
-    toast.success('Profil toko berhasil diperbarui!');
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateStoreProfile(formData);
+      toast.success('Profil toko berhasil diperbarui!');
+    } catch (error) {
+      toast.error('Gagal memperbarui profil toko');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -25,10 +38,11 @@ export default function StoreProfilePage() {
       actions={
         <button
           onClick={handleSave}
-          className="h-10 px-5 rounded-xl bg-[#254222] text-[#ece2b1] text-[13px] font-bold flex items-center gap-2 hover:bg-[#1b3119] transition-all shadow-sm"
+          disabled={isSaving}
+          className="h-10 px-5 rounded-xl bg-[#254222] text-[#ece2b1] text-[13px] font-bold flex items-center gap-2 hover:bg-[#1b3119] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save size={16} />
-          <span>Simpan Perubahan</span>
+          <span>{isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
         </button>
       }
     >
