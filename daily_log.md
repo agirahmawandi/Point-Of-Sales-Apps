@@ -18,7 +18,30 @@
 - Refactoring halaman Laporan (`SalesReportPage`, `ExpenseReportPage`, `ProfitLossReportPage`, `PurchaseReportPage`, `InventoryReportPage`) agar langsung fetch data menggunakan `.select()` ke tabel-tabel Supabase sesuai periode tanggal.
 - Selesai Phase 9.
 
+### 4. Perbaikan Reset Data & Laporan (Hotfix)
+- Memperbaiki bug _infinite loading_ di `InventoryReportPage` yang disebabkan referensi null pada data produk.
+- Menambahkan fungsi `reset_all_data` di Supabase RPC yang membersihkan *semua* transaksi, pengeluaran, pergerakan kas, deposit investor, dan profit sharing.
+- Menambahkan *resetters* pada store Zustand untuk mengosongkan state UI seketika setelah database di-reset.
+
+### 5. Perencanaan Web Display (Katalog Pelanggan Publik)
+- Diskusi dan penyusunan konsep arsiketur *Path-based routing* untuk menggabungkan aplikasi POS dan Web Display dalam 1 repository.
+- Menyusun dokumen PRD lengkap (`prd_web_display.md`) dan memecah implementasi menjadi tugas rinci (`task_web_display.md` - 10 Phase A-J).
+- Resolusi *open questions*: Menggunakan nomor profil toko untuk WhatsApp, produk stok 0 tetap tampil dengan badge, URL aplikasi kasir diubah menggunakan *secret path* (`pos-d5jm0seouq6bwhqy28ff8g30`).
+
+### 6. Penyelesaian Phase 10 & Deploy Production
+- **Audit & Cleanup**: Menghapus seluruh 65 statement `console.log/warn/error` untuk kebersihan environment production.
+- **Error Handling**: Mengganti semua pemanggilan `alert()` dan `window.confirm()` dengan library notifikasi global **Sonner Toast** agar UX lebih rapi (kecuali konfirmasi hapus permanen).
+- **Fix TypeScript**: Memperbaiki error Typescript pada pemanggilan fungsi `getDashboardDateRange` di `CashFlowChart` sebelum proses build.
+- **Vercel Deploy**: Aplikasi telah sukses di-build oleh Vite dan berhasil di-deploy ke Vercel di URL `point-of-sales-apps-hazel.vercel.app` (Siap digunakan). Fitur Recycle Bin diputuskan untuk ditunda (di luar Phase 10).
+
 ---
+
+## 🚀 Agenda Berikutnya (Next Steps - Web Display)
+
+Di sesi selanjutnya (besok), kita akan memulai pengerjaan **Web Display (Katalog Pelanggan)**:
+1. **Phase A (Arsitektur)**: Mengubah policy RLS Supabase untuk publik (`anon`), memindahkan routing POS lama ke dalam secret path `/pos-d5jm0seouq6bwhqy28ff8g30`, dan menyiapkan routing publik di `/`.
+2. Lanjut ke Phase B dan C (State cart publik dan komponen UI).
+
 
 # 📝 Log Pekerjaan Sebelumnya (14 September 2026)
 
