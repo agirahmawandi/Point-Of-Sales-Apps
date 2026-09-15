@@ -16,6 +16,7 @@ export interface TransactionItem {
   name?: string;
   productName?: string;
   sku?: string;
+  unit?: string;
   price: number;
   buyPrice?: number;
   quantity: number;

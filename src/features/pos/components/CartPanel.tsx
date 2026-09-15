@@ -139,7 +139,12 @@ export default function CartPanel({ onOpenOnlineModal }: CartPanelProps) {
               {items.map((item) => (
                 <div key={item.id} className="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-[#254222] text-xs truncate">{item.name}</h4>
+                    <h4 className="font-semibold text-[#254222] text-xs truncate">
+                      {item.name}
+                      <span className="text-[10px] text-[#76777d] font-normal ml-1">
+                        ({item.unit || 'kg'})
+                      </span>
+                    </h4>
                     {transactionType === 'online' ? (
                       <div className="flex items-center gap-1 mt-1">
                         <span className="text-[10px] text-[#76777d]">Rp</span>
@@ -166,20 +171,21 @@ export default function CartPanel({ onOpenOnlineModal }: CartPanelProps) {
                   <div className="flex items-center gap-2">
                     <div className="flex items-center bg-[#cae4c5]/30 rounded-lg p-0.5">
                       <button 
-                        onClick={() => updateQuantity(item.id!, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.id!, Math.max(0.01, item.quantity - 1))}
                         className="p-1 hover:bg-white rounded text-[#254222] transition-colors"
                       >
                         <Minus size={13} />
                       </button>
                       <input 
                         type="number"
-                        min="1"
+                        min="0.01"
+                        step="0.01"
                         value={item.quantity}
                         onChange={(e) => {
-                          const val = parseInt(e.target.value);
+                          const val = parseFloat(e.target.value);
                           if (!isNaN(val)) updateQuantity(item.id!, val);
                         }}
-                        className="w-9 text-center text-xs font-bold bg-white text-[#254222] border border-slate-200 rounded mx-0.5 hide-spin-button focus:outline-none focus:border-[#99cc66]"
+                        className="w-12 text-center text-xs font-bold bg-white text-[#254222] border border-slate-200 rounded mx-0.5 hide-spin-button focus:outline-none focus:border-[#99cc66]"
                         style={{ MozAppearance: 'textfield' }}
                       />
                       <button 

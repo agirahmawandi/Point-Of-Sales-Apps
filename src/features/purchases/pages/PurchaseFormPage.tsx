@@ -347,9 +347,10 @@ export default function PurchaseFormPage() {
                         <td className="py-3 px-4 text-center">
                           <input 
                             type="number" 
-                            min="1"
+                            min="0.01"
+                            step="0.01"
                             value={item.quantity || ''}
-                            onChange={(e) => updateItem(idx, 'quantity', parseInt(e.target.value) || 0)}
+                            onChange={(e) => updateItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
                             className="w-20 h-8 text-center rounded-lg border border-slate-200 text-xs font-bold text-[#0b1c30] focus:outline-none focus:border-[#3755c3]"
                           />
                         </td>

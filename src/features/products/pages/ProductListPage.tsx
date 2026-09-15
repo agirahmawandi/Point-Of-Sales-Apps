@@ -144,11 +144,11 @@ export default function ProductListPage() {
                         </span>
                       ) : product.stock <= product.minStock ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#ffdad6] text-[#93000a] text-[11px] font-bold uppercase">
-                          Sisa {product.stock}
+                          Sisa {product.stock} {product.unit || 'kg'}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#e6f4ea] text-[#137333] text-[11px] font-bold uppercase">
-                          {product.stock} unit
+                          {product.stock} {product.unit || 'kg'}
                         </span>
                       )}
                     </td>

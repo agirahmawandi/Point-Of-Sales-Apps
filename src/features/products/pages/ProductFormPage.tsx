@@ -15,6 +15,7 @@ const productSchema = z.object({
   sellingPrice: z.coerce.number().min(0, 'Harga jual tidak boleh negatif'),
   stock: z.coerce.number().min(0, 'Stok awal tidak boleh negatif'),
   minStock: z.coerce.number().min(0, 'Batas minimum stok tidak boleh negatif'),
+  unit: z.string().default('kg'),
   description: z.string().optional(),
   imageUrl: z.string().optional(),
 });
@@ -42,6 +43,7 @@ export default function ProductFormPage() {
       sellingPrice: 0,
       stock: 0,
       minStock: 10,
+      unit: 'kg',
       description: '',
       imageUrl: '',
     }
@@ -61,6 +63,7 @@ export default function ProductFormPage() {
         sellingPrice: existingProduct.sellingPrice || existingProduct.sellPrice || 0,
         stock: existingProduct.stock,
         minStock: existingProduct.minStock,
+        unit: existingProduct.unit || 'kg',
         description: existingProduct.description || '',
         imageUrl: existingProduct.imageUrl || '',
       });
@@ -211,7 +214,25 @@ export default function ProductFormPage() {
               {errors.sku && <p className="text-red-500 text-xs mt-1.5">{errors.sku.message}</p>}
             </div>
 
-            <div className="col-span-2">
+            <div className="col-span-2 md:col-span-1">
+              <label className="block text-[13px] font-semibold text-[#0b1c30] mb-1.5">Satuan (Unit) *</label>
+              <select
+                {...register('unit')}
+                disabled={isLoading}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm bg-white focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all disabled:bg-slate-50"
+              >
+                <option value="kg">Kilogram (kg)</option>
+                <option value="pcs">Pcs</option>
+                <option value="gram">Gram (g)</option>
+                <option value="liter">Liter (L)</option>
+                <option value="pack">Pack</option>
+                <option value="lusin">Lusin</option>
+                <option value="dus">Dus</option>
+              </select>
+              {errors.unit && <p className="text-red-500 text-xs mt-1.5">{errors.unit.message}</p>}
+            </div>
+
+            <div className="col-span-2 md:col-span-1">
               <label className="block text-[13px] font-semibold text-[#0b1c30] mb-1.5">Kategori *</label>
               <select
                 {...register('categoryId')}

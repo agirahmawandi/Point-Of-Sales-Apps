@@ -200,7 +200,7 @@ export default function ReceiptPage() {
                 <div>
                   <p className="font-semibold text-[#254222]">{item.name}</p>
                   <p className="text-[#76777d] text-xs">
-                    {item.quantity} × {formatCurrency(item.price)}
+                    {item.quantity} {item.unit || 'kg'} × {formatCurrency(item.price)}
                   </p>
                 </div>
                 <span className="font-bold text-[#254222]">{formatCurrency(item.subtotal)}</span>

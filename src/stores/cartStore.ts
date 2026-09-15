@@ -109,6 +109,7 @@ export const useCartStore = create<CartState>()(
           id: `item-${Date.now()}`,
           productId,
           name,
+          unit: product?.unit || 'kg',
           price,
           buyPrice: product?.buyPrice || 0,
           quantity: 1,
