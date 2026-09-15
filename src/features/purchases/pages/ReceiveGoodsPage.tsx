@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { showSuccess, showError, showInfo } from '@/lib/toast';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { useProductStore } from '@/stores/productStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -141,7 +142,7 @@ export default function ReceiveGoodsPage() {
     });
 
     if (allZero) {
-      alert('Tidak ada barang yang diterima. Isi jumlah minimal 1.');
+      showInfo('Tidak ada barang yang diterima. Isi jumlah minimal 1.');
       return;
     }
 
@@ -170,16 +171,16 @@ export default function ReceiveGoodsPage() {
       await fetchProducts();
 
       if (isPaid && updatedPriceCount > 0) {
-        alert(`✅ Penerimaan barang berhasil diverifikasi!\nStok telah ditambahkan oleh database, dan harga beli ${updatedPriceCount} produk di master data stok otomatis diperbarui sesuai harga PO.`);
+        showSuccess(`Penerimaan barang berhasil! Stok ditambahkan, harga beli ${updatedPriceCount} produk otomatis diperbarui.`);
       } else if (!isPaid) {
-        alert(`✅ Penerimaan barang berhasil diverifikasi!\nStok telah ditambahkan.\nCatatan: Tagihan PO belum lunas. Harga beli master produk akan otomatis diperbarui saat tagihan PO dilunasi.`);
+        showSuccess('Penerimaan barang berhasil! Stok telah ditambahkan.');
       } else {
-        alert('✅ Penerimaan barang berhasil diverifikasi!');
+        showSuccess('Penerimaan barang berhasil diverifikasi!');
       }
 
       navigate('/purchases');
     } catch (err: any) {
-      alert(`Gagal memproses penerimaan: ${err.message}`);
+      showError(`Gagal memproses penerimaan: ${err.message}`);
     }
   };
 

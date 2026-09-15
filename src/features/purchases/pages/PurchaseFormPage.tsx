@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { showSuccess, showError } from '@/lib/toast';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { useProductStore } from '@/stores/productStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -117,17 +118,17 @@ export default function PurchaseFormPage() {
         await fetchProducts();
 
         if (isPaid && updatedPriceCount > 0) {
-          alert(`✅ PO berhasil dibuat!\nBarang langsung diterima (stok bertambah) dan status LUNAS: Harga beli ${updatedPriceCount} master produk otomatis disinkronkan ke harga PO terbaru.`);
+          showSuccess(`PO berhasil dibuat! Harga beli ${updatedPriceCount} master produk otomatis disinkronkan ke harga PO terbaru.`);
         } else {
-          alert('✅ PO berhasil dibuat dan stok barang telah ditambahkan ke sistem!');
+          showSuccess('PO berhasil dibuat dan stok barang telah ditambahkan ke sistem!');
         }
       } else {
-        alert('✅ PO berhasil dibuat!');
+        showSuccess('PO berhasil dibuat!');
       }
 
       navigate('/purchases');
     } catch (err: any) {
-      alert(`Gagal membuat PO: ${err.message}`);
+      showError(`Gagal membuat PO: ${err.message}`);
     }
   };
 

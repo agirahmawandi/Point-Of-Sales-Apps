@@ -9,11 +9,13 @@ import { useProductStore } from '@/stores/productStore';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { useExpenseStore } from '@/stores/expenseStore';
+import { useCustomerStore } from '@/stores/customerStore';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useFinanceStore } from '@/stores/financeStore';
 import { useDashboardStore, type DateFilterType } from '@/stores/dashboardStore';
+import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { 
@@ -34,14 +36,19 @@ import { toast } from 'sonner';
 export default function DashboardPage() {
   const { products, resetAllProductStocks } = useProductStore();
   const { resetTransactions } = useTransactionStore();
-  const { resetPurchaseOrders } = usePurchaseStore();
+  const { resetPurchaseOrders, resetSuppliers } = usePurchaseStore();
   const { resetExpenses } = useExpenseStore();
+  const { resetCustomers } = useCustomerStore();
   const { clearCart } = useCartStore();
   const { user } = useAuthStore();
   const { resetBankBalances } = useSettingsStore();
   const { resetFinanceBalances } = useFinanceStore();
   const financeStore = useFinanceStore();
-  const { dateFilter, setDateFilter } = useDashboardStore();
+  const { dateFilter, setDateFilter, fetchDashboardData } = useDashboardStore();
+
+  React.useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isResetSuccess, setIsResetSuccess] = useState(false);
@@ -68,47 +75,47 @@ export default function DashboardPage() {
   const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
   const isAdmin = user?.role === 'admin';
 
-  const handleExecuteReset = () => {
-    // 1. Reset Penjualan (Sales)
-    resetTransactions();
+  const handleExecuteReset = async () => {
+    try {
+      // 1. Reset data di database Supabase melalui RPC
+      const { error } = await supabase.rpc('reset_all_data');
+      if (error) throw error;
 
-    // 2. Reset Pembelian (Purchase Orders & Hutang Supplier)
-    resetPurchaseOrders();
+      // 2. Reset local states agar UI langsung terupdate
+      resetTransactions();
+      resetPurchaseOrders();
+      resetExpenses();
+      resetAllProductStocks(0);
+      resetCustomers();
+      resetSuppliers();
+      clearCart();
+      resetBankBalances();
+      resetFinanceBalances();
 
-    // 3. Reset Pengeluaran (Expenses)
-    resetExpenses();
+      useFinanceStore.setState({
+        investorDeposits: [],
+        profitShares: [],
+        balanceTransfers: [],
+        investors: financeStore.investors.map(inv => ({
+          ...inv,
+          totalInvested: 0,
+          totalWithdrawn: 0,
+        })),
+      });
 
-    // 4. Reset Kuantitas Stok Semua Produk ke 0
-    resetAllProductStocks(0);
+      // 3. Refresh Dashboard Data
+      await fetchDashboardData();
 
-    // 5. Bersihkan keranjang kasir
-    clearCart();
+      setIsResetModalOpen(false);
+      setIsResetSuccess(true);
+      toast.success('Semua transaksi dan stok produk berhasil direset dari database!');
 
-    // 6. Reset saldo rekening bank
-    resetBankBalances();
-
-    // 7. Reset saldo kas & QRIS
-    resetFinanceBalances();
-
-    // 8. Reset data keuangan (investor deposits, bagi hasil, pindah saldo)
-    useFinanceStore.setState({
-      investorDeposits: [],
-      profitShares: [],
-      balanceTransfers: [],
-      investors: financeStore.investors.map(inv => ({
-        ...inv,
-        totalInvested: 0,
-        totalWithdrawn: 0,
-      })),
-    });
-
-    setIsResetModalOpen(false);
-    setIsResetSuccess(true);
-    toast.success('Semua transaksi (Sales, Purchase, Expense) dan stok produk berhasil direset!');
-
-    setTimeout(() => {
-      setIsResetSuccess(false);
-    }, 4500);
+      setTimeout(() => {
+        setIsResetSuccess(false);
+      }, 4500);
+    } catch (err: any) {
+      toast.error(`Gagal melakukan reset data: ${err.message}`);
+    }
   };
   return (
     <div className="flex flex-col w-full space-y-6">

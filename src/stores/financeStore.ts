@@ -111,7 +111,6 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
         })) });
       }
     } catch (e) {
-      console.error(e);
     } finally {
       set({ isLoading: false });
     }
@@ -129,7 +128,6 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
       });
       set({ cashBalance: cash, qrisBalance: qris });
     } catch (e) {
-      console.error(e);
     }
   },
 
@@ -141,7 +139,7 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
         id: d.id, fromType: d.from_type, fromBankId: d.from_bank_id,
         toType: d.to_type, toBankId: d.to_bank_id, amount: d.amount, notes: d.notes, date: d.date
       })) });
-    } catch (e) { console.error(e); }
+    } catch (e) { /* silenced */ }
   },
 
   fetchProfitShares: async () => {
@@ -158,7 +156,7 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
           method: dist.method, bankAccountId: dist.bank_account_id
         }))
       })) });
-    } catch (e) { console.error(e); }
+    } catch (e) { /* silenced */ }
   },
 
   addInvestor: async (data) => {
@@ -241,5 +239,18 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
 
   updateCashBalance: () => {},
   updateQrisBalance: () => {},
-  resetFinanceBalances: () => {}
+  resetFinanceBalances: () => {
+    set((state) => ({
+      investorDeposits: [],
+      profitShares: [],
+      balanceTransfers: [],
+      cashBalance: 0,
+      qrisBalance: 0,
+      investors: state.investors.map(inv => ({
+        ...inv,
+        totalInvested: 0,
+        totalWithdrawn: 0
+      }))
+    }));
+  }
 }));

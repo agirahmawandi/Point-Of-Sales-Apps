@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { showSuccess, showError, showInfo } from '@/lib/toast';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
 import { useTransactionStore } from '@/stores/transactionStore';
@@ -162,8 +163,7 @@ export default function PaymentModal({ onClose }: PaymentModalProps) {
       navigate(`/pos/receipt/${trxId}`);
       
     } catch (error) {
-      console.error(error);
-      alert('Terjadi kesalahan saat memproses pembayaran');
+      showError('Terjadi kesalahan saat memproses pembayaran');
     } finally {
       setIsProcessing(false);
     }

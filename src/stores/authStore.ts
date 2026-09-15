@@ -54,7 +54,6 @@ export const useAuthStore = create<AuthState>()(
             set({ user: null, isAuthenticated: false });
           }
         } catch (err) {
-          console.error('initAuth error:', err);
           set({ user: null, isAuthenticated: false });
         } finally {
           set({ isLoading: false });
@@ -81,12 +80,7 @@ export const useAuthStore = create<AuthState>()(
             .eq('id', data.user.id)
             .single();
 
-          // Log untuk debug
-          console.log('[Auth] profile from DB:', profile);
-          console.log('[Auth] user_metadata:', data.user.user_metadata);
-
           const user = buildUser(data.user, profile);
-          console.log('[Auth] resolved user:', user);
 
           set({ user, isAuthenticated: true });
 
@@ -102,7 +96,6 @@ export const useAuthStore = create<AuthState>()(
 
           return { success: true };
         } catch (err: any) {
-          console.error('Login error:', err);
           return { success: false, error: 'Terjadi kesalahan saat login' };
         } finally {
           set({ isLoading: false });

@@ -1,28 +1,59 @@
 import { create } from 'zustand';
 import { startOfDay, endOfDay, startOfWeek, endOfMonth, startOfMonth, subDays } from 'date-fns';
+import { supabase } from '@/lib/supabase';
+import type { Transaction } from '@/types/transaction';
 
 export type DateFilterType = 'today' | 'yesterday' | 'this_week' | 'this_month' | 'custom';
+
+export interface DashboardStats {
+  omzet: number;
+  hpp: number;
+  expense: number;
+  laba: number;
+  totalTransactions: number;
+  lowStockCount: number;
+}
+
+export interface MonthlyRevenue {
+  month: string;
+  date: string;
+  omzet: number;
+  hpp: number;
+  expense: number;
+  laba: number;
+}
+
+export interface TopProduct {
+  id: string;
+  name: string;
+  sku: string;
+  total_quantity: number;
+  total_revenue: number;
+}
 
 interface DashboardState {
   dateFilter: DateFilterType;
   customStartDate: Date | null;
   customEndDate: Date | null;
+  
+  // Data
+  stats: DashboardStats | null;
+  monthlyRevenue: MonthlyRevenue[];
+  topProducts: TopProduct[];
+  transactions: Transaction[]; // Tambahan untuk CashFlow, PaymentMethod, & RecentTransactions
+  isLoading: boolean;
+  error: string | null;
+
+  // Actions
   setDateFilter: (filter: DateFilterType) => void;
   setCustomDateRange: (start: Date, end: Date) => void;
+  fetchDashboardData: () => Promise<void>;
 }
 
-export const useDashboardStore = create<DashboardState>((set) => ({
-  dateFilter: 'today',
-  customStartDate: null,
-  customEndDate: null,
-  setDateFilter: (filter) => set({ dateFilter: filter }),
-  setCustomDateRange: (start, end) => set({ customStartDate: start, customEndDate: end, dateFilter: 'custom' }),
-}));
-
-export const getDashboardDateRange = (state: DashboardState) => {
+export const getDashboardDateRange = (filter: DateFilterType, customStart: Date | null, customEnd: Date | null) => {
   const now = new Date();
   
-  switch (state.dateFilter) {
+  switch (filter) {
     case 'today':
       return { startDate: startOfDay(now), endDate: endOfDay(now) };
     case 'yesterday': {
@@ -34,11 +65,92 @@ export const getDashboardDateRange = (state: DashboardState) => {
     case 'this_month':
       return { startDate: startOfMonth(now), endDate: endOfDay(now) };
     case 'custom':
-      if (state.customStartDate && state.customEndDate) {
-        return { startDate: startOfDay(state.customStartDate), endDate: endOfDay(state.customEndDate) };
+      if (customStart && customEnd) {
+        return { startDate: startOfDay(customStart), endDate: endOfDay(customEnd) };
       }
       return { startDate: startOfDay(now), endDate: endOfDay(now) }; // fallback
     default:
       return { startDate: startOfDay(now), endDate: endOfDay(now) };
   }
 };
+
+export const useDashboardStore = create<DashboardState>((set, get) => ({
+  dateFilter: 'this_month',
+  customStartDate: null,
+  customEndDate: null,
+  
+  stats: null,
+  monthlyRevenue: [],
+  topProducts: [],
+  transactions: [],
+  isLoading: false,
+  error: null,
+
+  setDateFilter: (filter) => {
+    set({ dateFilter: filter });
+    get().fetchDashboardData();
+  },
+
+  setCustomDateRange: (start, end) => {
+    set({ customStartDate: start, customEndDate: end, dateFilter: 'custom' });
+    get().fetchDashboardData();
+  },
+
+  fetchDashboardData: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const { dateFilter, customStartDate, customEndDate } = get();
+      const { startDate, endDate } = getDashboardDateRange(dateFilter, customStartDate, customEndDate);
+
+      // 1. Fetch Stats (RPC)
+      const { data: statsData, error: statsError } = await supabase
+        .rpc('get_dashboard_stats', { 
+          p_start_date: startDate.toISOString(), 
+          p_end_date: endDate.toISOString() 
+        });
+        
+      if (statsError) throw statsError;
+
+      // 2. Fetch Monthly Revenue (RPC)
+      const { data: monthlyData, error: monthlyError } = await supabase
+        .rpc('get_monthly_revenue', { p_months: 12 });
+        
+      if (monthlyError) throw monthlyError;
+
+      // 3. Fetch Top Products (RPC)
+      const { data: topProductsData, error: topProductsError } = await supabase
+        .rpc('get_top_products', { 
+          p_start_date: startDate.toISOString(), 
+          p_end_date: endDate.toISOString(),
+          p_limit: 5
+        });
+
+      if (topProductsError) throw topProductsError;
+
+      // 4. Fetch Transactions for the period (limit to prevent overloading)
+      const { data: trxData, error: trxError } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          items:transaction_items(*)
+        `)
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (trxError) throw trxError;
+
+      set({ 
+        stats: statsData as DashboardStats,
+        monthlyRevenue: (monthlyData as MonthlyRevenue[]) || [],
+        topProducts: (topProductsData as TopProduct[]) || [],
+        transactions: (trxData as Transaction[]) || [],
+        isLoading: false 
+      });
+    } catch (err: any) {
+      set({ error: err.message, isLoading: false });
+    }
+  }
+}));

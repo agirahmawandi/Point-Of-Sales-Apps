@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { showSuccess, showError, showInfo } from '@/lib/toast';
 import { useCartStore } from '@/stores/cartStore';
 import { Trash2, Plus, Minus, ShoppingCart, Globe, Edit2, User } from 'lucide-react';
 import PaymentModal from './PaymentModal';
@@ -41,7 +42,7 @@ export default function CartPanel({ onOpenOnlineModal }: CartPanelProps) {
 
   const handleCheckout = () => {
     if (transactionType === 'online' && !onlineDetails) {
-      alert('Silakan lengkapi data pesanan online terlebih dahulu!');
+      showInfo('Silakan lengkapi data pesanan online terlebih dahulu!');
       onOpenOnlineModal?.();
       return;
     }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { showSuccess, showError } from '@/lib/toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { useProductStore } from '@/stores/productStore';
@@ -81,12 +82,12 @@ export default function PurchaseDetailPage() {
       setPaymentAmount('');
 
       if (newPaymentStatus === 'lunas' && updatedPriceCount > 0) {
-        alert(`✅ Pembayaran sebesar ${formatCurrency(amountToPay)} berhasil dicatat!\nTagihan PO telah LUNAS dan barang sudah diterima: Harga beli ${updatedPriceCount} master produk otomatis diperbarui ke harga PO terbaru.`);
+        showSuccess(`Pembayaran ${formatCurrency(amountToPay)} berhasil! Harga beli ${updatedPriceCount} produk otomatis diperbarui.`);
       } else {
-        alert(`✅ Pembayaran sebesar ${formatCurrency(amountToPay)} berhasil dicatat ke hutang dagang PO!`);
+        showSuccess(`Pembayaran ${formatCurrency(amountToPay)} berhasil dicatat!`);
       }
     } catch (err: any) {
-      alert(`Gagal memproses pembayaran: ${err.message}`);
+      showError(`Gagal memproses pembayaran: ${err.message}`);
     }
   };
 

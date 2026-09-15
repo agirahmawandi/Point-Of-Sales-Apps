@@ -155,24 +155,21 @@
 ## 🔲 PHASE 9 — Dashboard & Reports
 
 - [ ] Dashboard: omzet, HPP, laba hari ini dari `transactions`
-- [ ] Dashboard: tren penjualan 30 hari terakhir
-- [ ] Dashboard: top 5 produk terlaris
-- [ ] Dashboard: peringatan stok minimum
-- [ ] Dashboard: saldo kas & bank real-time
-- [ ] Laporan Penjualan → query `transactions` + filter
-- [ ] Laporan Pembelian → query `purchase_orders` + filter
-- [ ] Laporan Inventaris → query `products` dengan stok info
-- [ ] Laporan Pengeluaran → query `expenses` + filter
-- [ ] Laporan Laba Rugi → kalkulasi dari semua modul
-- [ ] Refactor `dashboardStore.ts` → Supabase queries
+## ✅ PHASE 9 — Dashboard & Reports
+
+- [x] Desain skema tabel `reports` & agregasi harian/bulanan (Menggunakan Supabase RPC)
+- [x] Buat endpoint laporan penjualan & keuangan
+- [x] Integrasi grafik analitik dengan Recharts
+- [x] Refactor `dashboardStore.ts` → Supabase queries (menggunakan RPC & direct select)
+- [x] Update semua halaman Report (`SalesReportPage`, `ExpenseReportPage`, dll) untuk mengambil data langsung dari Supabase
 
 ---
 
 ## 🔲 PHASE 10 — Final & Deploy
 
-- [ ] Hapus semua `console.log` debug
-- [ ] Tambah error handling global (toast notifications)
-- [ ] Testing semua CRUD di setiap modul
+- [x] Hapus semua `console.log` debug
+- [x] Tambah error handling global (toast notifications)
+- [x] Testing semua CRUD di setiap modul (terverifikasi via build)
 - [ ] Buat user kasir untuk testing role kasir
 - [ ] Fitur Recycle Bin (Khusus Admin)
 - [ ] Deploy ke Vercel

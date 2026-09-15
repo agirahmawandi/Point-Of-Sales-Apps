@@ -26,6 +26,7 @@ interface PurchaseState {
   
   // Dummy functions to fix compilation for UI components that haven't been updated yet
   resetPurchaseOrders: () => void;
+  resetSuppliers: () => void;
 }
 
 export const usePurchaseStore = create<PurchaseState>((set, get) => ({
@@ -59,7 +60,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       
       set({ suppliers });
     } catch (err: any) {
-      console.error('Error fetching suppliers:', err);
       set({ error: err.message });
     } finally {
       set({ isLoading: false });
@@ -79,7 +79,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       if (error) throw error;
       await get().fetchSuppliers();
     } catch (err: any) {
-      console.error('Error adding supplier:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -100,7 +99,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       if (error) throw error;
       await get().fetchSuppliers();
     } catch (err: any) {
-      console.error('Error updating supplier:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -115,7 +113,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       if (error) throw error;
       await get().fetchSuppliers();
     } catch (err: any) {
-      console.error('Error deleting supplier:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -180,7 +177,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       
       set({ purchaseOrders });
     } catch (err: any) {
-      console.error('Error fetching purchase orders:', err);
       set({ error: err.message });
     } finally {
       set({ isLoading: false });
@@ -220,7 +216,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       
       return data.po_id;
     } catch (err: any) {
-      console.error('Error adding purchase order:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -241,7 +236,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       if (error) throw error;
       await get().fetchPurchaseOrders();
     } catch (err: any) {
-      console.error('Error updating purchase order:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -265,7 +259,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       
       await get().fetchPurchaseOrders();
     } catch (err: any) {
-      console.error('Error receiving purchase order:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -289,7 +282,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       await get().fetchPurchaseOrders();
       await get().fetchSuppliers();
     } catch (err: any) {
-      console.error('Error paying purchase order:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -304,7 +296,6 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
       if (error) throw error;
       await get().fetchPurchaseOrders();
     } catch (err: any) {
-      console.error('Error deleting purchase order:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -315,7 +306,17 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   getPurchaseOrder: (id) => get().purchaseOrders.find(po => po.id === id),
 
   resetPurchaseOrders: () => {
-    console.warn('resetPurchaseOrders is a dummy function now');
+    set({ purchaseOrders: [] });
+  },
+
+  resetSuppliers: () => {
+    set((state) => ({
+      suppliers: state.suppliers.map(s => ({
+        ...s,
+        totalPurchases: 0,
+        totalDebt: 0
+      }))
+    }));
   }
 
 }));

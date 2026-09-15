@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { showInfo } from '@/lib/toast';
 import type { Transaction, TransactionItem, PaymentMethod } from '@/types';
 import { useProductStore } from '@/stores/productStore';
 import { useTransactionStore } from '@/stores/transactionStore';
@@ -126,7 +127,7 @@ export default function EditTransactionModal({
 
   const handleSave = () => {
     if (transactionType === 'online' && !orderNumber.trim()) {
-      alert('Nomor Pesanan Marketplace wajib diisi!');
+      showInfo('Nomor Pesanan Marketplace wajib diisi!');
       return;
     }
 

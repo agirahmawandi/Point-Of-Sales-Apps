@@ -1,60 +1,82 @@
-import React, { useState, useMemo } from 'react';
-import { usePurchaseStore } from '@/stores/purchaseStore';
+import React, { useState, useMemo, useEffect } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
+import { supabase } from '@/lib/supabase';
+import type { PurchaseOrder } from '@/types/purchase';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer
 } from 'recharts';
-import { format, subDays, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { Download, ShoppingCart, TrendingDown, Clock } from 'lucide-react';
+import { Download, ShoppingCart, TrendingDown, Clock, Loader2 } from 'lucide-react';
 
 export default function PurchaseReportPage() {
-  const { purchaseOrders } = usePurchaseStore();
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [dateRange, setDateRange] = useState<'today' | '7days' | '30days' | 'all'>('30days');
 
   // Filter purchase orders based on date range
-  const filteredPOs = useMemo(() => {
-    if (dateRange === 'all') return purchaseOrders;
+  // Fetch purchase orders from Supabase
+  useEffect(() => {
+    const fetchPO = async () => {
+      setIsLoading(true);
+      try {
+        let query = supabase.from('purchase_orders').select(`
+          *,
+          supplier:suppliers(name)
+        `);
 
-    const now = new Date();
-    let startDate = now;
+        if (dateRange !== 'all') {
+          const now = new Date();
+          let startDate = startOfDay(now);
 
-    if (dateRange === 'today') {
-      startDate = startOfDay(now);
-    } else if (dateRange === '7days') {
-      startDate = subDays(startOfDay(now), 7);
-    } else if (dateRange === '30days') {
-      startDate = subDays(startOfDay(now), 30);
-    }
+          if (dateRange === '7days') startDate = subDays(startOfDay(now), 7);
+          if (dateRange === '30days') startDate = subDays(startOfDay(now), 30);
 
-    return purchaseOrders.filter(po => {
-      const txDate = new Date(po.createdAt || new Date());
-      return isWithinInterval(txDate, { start: startDate, end: endOfDay(now) });
-    });
-  }, [purchaseOrders, dateRange]);
+          query = query.gte('created_at', startDate.toISOString())
+                       .lte('created_at', endOfDay(now).toISOString());
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        
+        // map supplier data to match frontend structure if needed
+        const mappedData = (data as any[]).map(d => ({
+          ...d,
+          supplier: d.supplier || { name: 'Unknown' }
+        }));
+        
+        setPurchaseOrders(mappedData as PurchaseOrder[] || []);
+      } catch (error) {
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPO();
+  }, [dateRange]);
 
   // Calculate KPIs
-  const totalPurchases = filteredPOs.reduce((acc, po) => acc + (po.totalAmount || 0), 0);
-  const totalPaid = filteredPOs.reduce((acc, po) => acc + (po.paidAmount || 0), 0);
+  // Calculate KPIs
+  const totalPurchases = purchaseOrders.reduce((acc, po) => acc + (po.totalAmount || 0), 0);
+  const totalPaid = purchaseOrders.reduce((acc, po) => acc + (po.paidAmount || 0), 0);
   const totalDebt = totalPurchases - totalPaid;
-  const totalPO = filteredPOs.length;
+  const totalPO = purchaseOrders.length;
   
   // Prepare chart data (Group by date)
   const chartData = useMemo(() => {
     const grouped: Record<string, number> = {};
-    filteredPOs.forEach(po => {
+    purchaseOrders.forEach(po => {
       const dateStr = format(new Date(po.createdAt || new Date()), 'dd MMM', { locale: localeId });
       grouped[dateStr] = (grouped[dateStr] || 0) + (po.totalAmount || 0);
     });
     
     return Object.entries(grouped)
       .map(([date, amount]) => ({ date, amount }))
-      .reverse();
-  }, [filteredPOs]);
+      .sort((a, b) => new Date(a.date + ' ' + new Date().getFullYear()).getTime() - new Date(b.date + ' ' + new Date().getFullYear()).getTime());
+  }, [purchaseOrders]);
 
   const supplierData = useMemo(() => {
     const counts: Record<string, number> = {};
-    filteredPOs.forEach(po => {
+    purchaseOrders.forEach(po => {
       const name = po.supplier?.name || 'Unknown';
       counts[name] = (counts[name] || 0) + (po.totalAmount || 0);
     });
@@ -62,7 +84,7 @@ export default function PurchaseReportPage() {
       .map(([name, amount]) => ({ name, amount }))
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 5); // top 5
-  }, [filteredPOs]);
+  }, [purchaseOrders]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
@@ -91,6 +113,12 @@ export default function PurchaseReportPage() {
         </div>
       }
     >
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-3xl mt-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#3755c3]" />
+        </div>
+      )}
+      
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">

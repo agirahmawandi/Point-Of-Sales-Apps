@@ -50,7 +50,6 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
       
       set({ categories });
     } catch (err: any) {
-      console.error('Error fetching expense categories:', err);
       set({ error: err.message });
     } finally {
       set({ isLoading: false });
@@ -83,7 +82,6 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
       
       set((state) => ({ categories: [...state.categories, newCategory] }));
     } catch (err: any) {
-      console.error('Error adding expense category:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -108,7 +106,6 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
       
       await get().fetchCategories();
     } catch (err: any) {
-      console.error('Error updating expense category:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -130,7 +127,6 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
         categories: state.categories.filter(c => c.id !== id),
       }));
     } catch (err: any) {
-      console.error('Error deleting expense category:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -176,7 +172,6 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
       
       set({ expenses });
     } catch (err: any) {
-      console.error('Error fetching expenses:', err);
       set({ error: err.message });
     } finally {
       set({ isLoading: false });
@@ -204,7 +199,6 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
       
       await get().fetchExpenses();
     } catch (err: any) {
-      console.error('Error adding expense:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -226,7 +220,6 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
         expenses: state.expenses.filter(exp => exp.id !== id),
       }));
     } catch (err: any) {
-      console.error('Error deleting expense:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -237,7 +230,7 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
   getExpense: (id) => get().expenses.find(exp => exp.id === id),
 
   resetExpenses: () => {
-    console.warn('resetExpenses is a dummy function now');
+    set({ expenses: [] });
   },
 }));
 

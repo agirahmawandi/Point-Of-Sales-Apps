@@ -22,6 +22,7 @@ interface CustomerState {
   deleteCustomer: (id: string) => Promise<void>;
   recordTransaction: (id: string, amount: number) => Promise<void>;
   findCustomerByPhoneOrName: (query: string) => Customer | undefined;
+  resetCustomers: () => void;
 }
 
 export const useCustomerStore = create<CustomerState>((set, get) => ({
@@ -52,7 +53,6 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
 
       set({ customers, isLoading: false });
     } catch (error: any) {
-      console.error('Error fetching customers:', error);
       set({ error: error.message, isLoading: false });
     }
   },
@@ -91,7 +91,6 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
       
       return newCustomer;
     } catch (error: any) {
-      console.error('Error adding customer:', error);
       set({ error: error.message, isLoading: false });
       throw error;
     }
@@ -118,7 +117,6 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
         isLoading: false
       }));
     } catch (error: any) {
-      console.error('Error updating customer:', error);
       set({ error: error.message, isLoading: false });
       throw error;
     }
@@ -139,7 +137,6 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
         isLoading: false
       }));
     } catch (error: any) {
-      console.error('Error deleting customer:', error);
       set({ error: error.message, isLoading: false });
       throw error;
     }
@@ -170,4 +167,14 @@ export const useCustomerStore = create<CustomerState>((set, get) => ({
         (c.phone && c.phone === q)
     );
   },
+
+  resetCustomers: () => {
+    set((state) => ({
+      customers: state.customers.map(c => ({
+        ...c,
+        totalTransactions: 0,
+        totalSpent: 0
+      }))
+    }));
+  }
 }));

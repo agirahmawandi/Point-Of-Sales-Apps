@@ -92,7 +92,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
         }
       }
     } catch (err) {
-      console.error('Failed to fetch store settings', err);
     } finally {
       set({ isLoading: false });
     }
@@ -122,7 +121,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
         storeProfile: { ...state.storeProfile, ...profile }
       }));
     } catch (err) {
-      console.error('Failed to update store profile', err);
       throw err;
     }
   },
@@ -147,7 +145,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
         taxSettings: { ...state.taxSettings, ...settings }
       }));
     } catch (err) {
-      console.error('Failed to update tax settings', err);
       throw err;
     }
   },
@@ -168,7 +165,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       
       set({ bankAccounts: accounts });
     } catch (err) {
-      console.error('Failed to fetch bank accounts', err);
     } finally {
       set({ isLoading: false });
     }
@@ -185,7 +181,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       if (error) throw error;
       await get().fetchBankAccounts();
     } catch (err) {
-      console.error('Failed to add bank account', err);
     }
   },
   
@@ -200,7 +195,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       if (error) throw error;
       await get().fetchBankAccounts();
     } catch (err) {
-      console.error('Failed to update bank account', err);
     }
   },
   
@@ -210,15 +204,12 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       if (error) throw error;
       await get().fetchBankAccounts();
     } catch (err) {
-      console.error('Failed to delete bank account', err);
     }
   },
   
   updateBankBalance: (id, amount) => {
-    console.warn('updateBankBalance is a dummy function now');
   },
   
   resetBankBalances: () => {
-    console.warn('resetBankBalances is a dummy function now');
   }
 }));

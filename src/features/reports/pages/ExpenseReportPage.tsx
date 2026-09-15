@@ -1,66 +1,79 @@
-import React, { useState, useMemo } from 'react';
-import { useExpenseStore } from '@/stores/expenseStore';
+import React, { useState, useMemo, useEffect } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
+import { supabase } from '@/lib/supabase';
+import type { Expense } from '@/types/expense';
+import { useExpenseStore } from '@/stores/expenseStore'; // we keep this to map category names if needed
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer
 } from 'recharts';
 import { format, subDays, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { Download, Receipt, Wallet, TrendingUp } from 'lucide-react';
+import { Download, Receipt, Wallet, TrendingUp, Loader2 } from 'lucide-react';
 
 export default function ExpenseReportPage() {
-  const { expenses, categories } = useExpenseStore();
+  const { categories } = useExpenseStore();
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [dateRange, setDateRange] = useState<'today' | '7days' | '30days' | 'all'>('30days');
 
   // Filter expenses based on date range
-  const filteredExpenses = useMemo(() => {
-    if (dateRange === 'all') return expenses;
+  // Fetch expenses from Supabase
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      setIsLoading(true);
+      try {
+        let query = supabase.from('expenses').select('*');
 
-    const now = new Date();
-    let startDate = now;
+        if (dateRange !== 'all') {
+          const now = new Date();
+          let startDate = startOfDay(now);
 
-    if (dateRange === 'today') {
-      startDate = startOfDay(now);
-    } else if (dateRange === '7days') {
-      startDate = subDays(startOfDay(now), 7);
-    } else if (dateRange === '30days') {
-      startDate = subDays(startOfDay(now), 30);
-    }
+          if (dateRange === '7days') startDate = subDays(startOfDay(now), 7);
+          if (dateRange === '30days') startDate = subDays(startOfDay(now), 30);
 
-    return expenses.filter(exp => {
-      const txDate = new Date(exp.date);
-      return isWithinInterval(txDate, { start: startDate, end: endOfDay(now) });
-    });
-  }, [expenses, dateRange]);
+          query = query.gte('date', startDate.toISOString())
+                       .lte('date', endOfDay(now).toISOString());
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        setExpenses(data as Expense[] || []);
+      } catch (error) {
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchExpenses();
+  }, [dateRange]);
 
   // Calculate KPIs
-  const totalExpense = filteredExpenses.reduce((acc, exp) => acc + exp.amount, 0);
-  const totalTransactions = filteredExpenses.length;
+  const totalExpense = expenses.reduce((acc, exp) => acc + exp.amount, 0);
+  const totalTransactions = expenses.length;
   
   // Prepare chart data (Group by date)
   const chartData = useMemo(() => {
     const grouped: Record<string, number> = {};
-    filteredExpenses.forEach(exp => {
+    expenses.forEach(exp => {
       const dateStr = format(new Date(exp.date), 'dd MMM', { locale: localeId });
       grouped[dateStr] = (grouped[dateStr] || 0) + exp.amount;
     });
     
     return Object.entries(grouped)
       .map(([date, amount]) => ({ date, amount }))
-      .reverse();
-  }, [filteredExpenses]);
+      .sort((a, b) => new Date(a.date + ' ' + new Date().getFullYear()).getTime() - new Date(b.date + ' ' + new Date().getFullYear()).getTime());
+  }, [expenses]);
 
   // Group by category
   const categoryData = useMemo(() => {
     const grouped: Record<string, number> = {};
-    filteredExpenses.forEach(exp => {
+    expenses.forEach(exp => {
       const catName = exp.category?.name || categories.find(c => c.id === exp.categoryId)?.name || 'Lainnya';
       grouped[catName] = (grouped[catName] || 0) + exp.amount;
     });
     return Object.entries(grouped)
       .map(([name, amount]) => ({ name, amount }))
       .sort((a, b) => b.amount - a.amount);
-  }, [filteredExpenses, categories]);
+  }, [expenses, categories]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
@@ -89,6 +102,12 @@ export default function ExpenseReportPage() {
         </div>
       }
     >
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-3xl mt-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#ba1a1a]" />
+        </div>
+      )}
+      
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">

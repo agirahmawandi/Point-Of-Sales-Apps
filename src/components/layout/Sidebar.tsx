@@ -268,6 +268,17 @@ export default function Sidebar() {
                 >
                   <span>Metode Pembayaran</span>
                 </NavLink>
+                <NavLink
+                  to="/settings/users"
+                  className={({ isActive }) => cn(
+                    "flex items-center gap-4 pl-[3.25rem] pr-4 py-2.5 rounded-xl text-[14px] transition-colors",
+                    isActive
+                      ? "text-[#254222] font-bold bg-[#99cc66]"
+                      : "text-[#cae4c5]/80 hover:bg-white/10 hover:text-white"
+                  )}
+                >
+                  <span>Manajemen Pengguna</span>
+                </NavLink>
               </Collapsible.Content>
             </Collapsible.Root>
           </>

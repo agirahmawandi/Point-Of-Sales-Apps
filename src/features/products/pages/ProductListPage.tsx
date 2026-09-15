@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { showSuccess, showError, showInfo } from '@/lib/toast';
 import { useNavigate } from 'react-router-dom';
 import { useProductStore } from '@/stores/productStore';
 import PageContainer from '@/components/layout/PageContainer';
@@ -35,7 +36,7 @@ export default function ProductListPage() {
       try {
         await deleteProduct(id);
       } catch (err: any) {
-        alert(err.message || 'Gagal menghapus produk');
+        showError(err.message || 'Gagal menghapus produk');
       }
     }
   };

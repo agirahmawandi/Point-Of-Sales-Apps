@@ -1,63 +1,72 @@
-import React, { useState, useMemo } from 'react';
-import { useTransactionStore } from '@/stores/transactionStore';
+import React, { useState, useMemo, useEffect } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
+import { supabase } from '@/lib/supabase';
+import type { Transaction } from '@/types/transaction';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer
 } from 'recharts';
 import { format, subDays, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { Download, TrendingUp, ShoppingBag, CreditCard } from 'lucide-react';
+import { Download, TrendingUp, ShoppingBag, CreditCard, Loader2 } from 'lucide-react';
 
 export default function SalesReportPage() {
-  const { transactions } = useTransactionStore();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [dateRange, setDateRange] = useState<'today' | '7days' | '30days' | 'all'>('30days');
+  // Fetch transactions from Supabase
+  useEffect(() => {
+    const fetchSales = async () => {
+      setIsLoading(true);
+      try {
+        let query = supabase.from('transactions').select('*').in('status', ['success', 'sukses']);
 
-  // Filter transactions based on date range
-  const filteredTransactions = useMemo(() => {
-    if (dateRange === 'all') return transactions;
+        if (dateRange !== 'all') {
+          const now = new Date();
+          let startDate = startOfDay(now);
 
-    const now = new Date();
-    let startDate = now;
+          if (dateRange === '7days') startDate = subDays(startOfDay(now), 7);
+          if (dateRange === '30days') startDate = subDays(startOfDay(now), 30);
 
-    if (dateRange === 'today') {
-      startDate = startOfDay(now);
-    } else if (dateRange === '7days') {
-      startDate = subDays(startOfDay(now), 7);
-    } else if (dateRange === '30days') {
-      startDate = subDays(startOfDay(now), 30);
-    }
+          query = query.gte('created_at', startDate.toISOString())
+                       .lte('created_at', endOfDay(now).toISOString());
+        }
 
-    return transactions.filter(t => {
-      const txDate = new Date(t.date || t.createdAt || new Date());
-      return isWithinInterval(txDate, { start: startDate, end: endOfDay(now) });
-    });
-  }, [transactions, dateRange]);
+        const { data, error } = await query;
+        if (error) throw error;
+        setTransactions(data as Transaction[] || []);
+      } catch (error) {
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSales();
+  }, [dateRange]);
 
   // Calculate KPIs
-  const totalRevenue = filteredTransactions.reduce((acc, t) => acc + (t.total || 0), 0);
-  const totalTransactions = filteredTransactions.length;
+  const totalRevenue = transactions.reduce((acc, t) => acc + (t.total || 0), 0);
+  const totalTransactions = transactions.length;
   const averageOrderValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
   
   const paymentMethodData = useMemo(() => {
     const counts: Record<string, number> = {};
-    filteredTransactions.forEach(t => {
+    transactions.forEach(t => {
       counts[t.paymentMethod] = (counts[t.paymentMethod] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [filteredTransactions]);
+  }, [transactions]);
 
   // Prepare chart data (Group by date)
   const chartData = useMemo(() => {
     const grouped: Record<string, number> = {};
-    filteredTransactions.forEach(t => {
+    transactions.forEach(t => {
       const dateStr = format(new Date(t.date || t.createdAt || new Date()), 'dd MMM', { locale: localeId });
       grouped[dateStr] = (grouped[dateStr] || 0) + (t.total || 0);
     });
     
     return Object.entries(grouped)
       .map(([date, revenue]) => ({ date, revenue }))
-      .reverse(); // Ensure chronological order if transactions are sorted newest first
-  }, [filteredTransactions]);
+      .sort((a, b) => new Date(a.date + ' ' + new Date().getFullYear()).getTime() - new Date(b.date + ' ' + new Date().getFullYear()).getTime());
+  }, [transactions]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
@@ -86,6 +95,12 @@ export default function SalesReportPage() {
         </div>
       }
     >
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-3xl mt-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#3755c3]" />
+        </div>
+      )}
+      
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">

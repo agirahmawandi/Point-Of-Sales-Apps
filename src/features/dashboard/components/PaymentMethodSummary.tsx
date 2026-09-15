@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { useTransactionStore } from '@/stores/transactionStore';
+import { useDashboardStore } from '@/stores/dashboardStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { QrCode, Banknote, CreditCard, ChevronDown, ChevronUp, Building2, Plus, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function PaymentMethodSummary() {
-  const { transactions } = useTransactionStore();
+  const { transactions } = useDashboardStore();
   const { bankAccounts } = useSettingsStore();
   const navigate = useNavigate();
   const [showAccounts, setShowAccounts] = useState(false);

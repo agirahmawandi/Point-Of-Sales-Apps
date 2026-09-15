@@ -8,10 +8,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { useTransactionStore } from '@/stores/transactionStore';
-import { useDashboardStore, getDashboardDateRange } from '@/stores/dashboardStore';
-import { format, subDays, eachDayOfInterval, differenceInDays } from 'date-fns';
-import { id as localeId } from 'date-fns/locale';
+import { useDashboardStore } from '@/stores/dashboardStore';
+import { Loader2 } from 'lucide-react';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -22,55 +20,37 @@ const formatCurrency = (value: number) => {
 };
 
 export default function RevenueChart() {
-  const { transactions } = useTransactionStore();
-  const dashboardState = useDashboardStore();
+  const { monthlyRevenue, isLoading } = useDashboardStore();
 
   const data = useMemo(() => {
-    const { startDate, endDate } = getDashboardDateRange(dashboardState);
-    
-    // Determine the interval of days
-    const diff = differenceInDays(endDate, startDate);
-    let intervalDays = diff >= 1 ? eachDayOfInterval({ start: startDate, end: endDate }) : [startDate];
-
-    // If it's just today/one day, maybe we still show a 7-day trend ending today?
-    // Let's show the exact interval. If it's 1 day, it will be a single point.
-    const chartData = intervalDays.map(d => ({
-        date: format(d, 'yyyy-MM-dd'),
-        name: format(d, 'dd MMM', { locale: localeId }),
-        revenue: 0
+    return monthlyRevenue.map(m => ({
+      name: m.month,
+      revenue: m.omzet
     }));
+  }, [monthlyRevenue]);
 
-    transactions.forEach(trx => {
-      if (trx.status === 'success') {
-        const trxDate = new Date(trx.date || trx.createdAt || Date.now());
-        if (trxDate >= startDate && trxDate <= endDate) {
-          const trxDateStr = format(trxDate, 'yyyy-MM-dd');
-          const dayMatch = chartData.find(d => d.date === trxDateStr);
-          if (dayMatch) {
-            dayMatch.revenue += trx.total;
-          }
-        }
-      }
-    });
+  const totalRevenueThisMonth = data.length > 0 ? data[data.length - 1].revenue : 0;
+  const target = 100000000; // Misal target bulanan 100 Juta
+  const isTargetMet = totalRevenueThisMonth >= target;
+  const targetPercentage = totalRevenueThisMonth > 0 ? ((totalRevenueThisMonth / target) * 100).toFixed(1) : '0.0';
 
-    return chartData;
-  }, [transactions, dashboardState]);
-
-  const totalRevenueToday = data[data.length - 1]?.revenue || 0;
-  const target = 4000000;
-  const isTargetMet = totalRevenueToday >= target;
-  const targetPercentage = totalRevenueToday > 0 ? ((totalRevenueToday / target) * 100).toFixed(1) : '0.0';
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-full min-h-[300px]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#3755c3]" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-[16px] font-bold text-[#0b1c30]">Tren Penjualan & Kunjungan Kasir</h2>
-          <p className="text-[12px] text-[#76777d]">Performa transaksi ritel konsolidasi 30 hari kalender</p>
+          <h2 className="text-[16px] font-bold text-[#0b1c30]">Tren Pendapatan Bulanan</h2>
+          <p className="text-[12px] text-[#76777d]">Performa omzet 12 bulan terakhir</p>
         </div>
         <div className="flex items-center gap-1 bg-[#eff4ff] p-1 rounded-xl">
           <button className="px-3 py-1 rounded-lg bg-white text-[12px] font-semibold text-[#0b1c30] shadow-sm">Grafik Omzet</button>
-          <button className="px-3 py-1 rounded-lg text-[12px] text-[#45464d] hover:text-[#0b1c30]">Volume Transaksi</button>
         </div>
       </div>
       
@@ -115,11 +95,11 @@ export default function RevenueChart() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <span className="w-3 h-3 rounded-full bg-[#3755c3] inline-block"></span>
-            <span className="text-[12px] text-[#0b1c30]">Penjualan Bersih (Rp)</span>
+            <span className="text-[12px] text-[#0b1c30]">Omzet (Bulan Ini)</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="w-4 h-0.5 bg-[#76777d] inline-block"></span>
-            <span className="text-[12px] text-[#76777d]">Target Harian (Rp {formatCurrency(target).replace('Rp', '').trim()})</span>
+            <span className="text-[12px] text-[#76777d]">Target Bulanan (Rp {formatCurrency(target).replace('Rp', '').trim()})</span>
           </div>
         </div>
         <div className={`text-[12px] font-semibold ${isTargetMet ? 'text-[#3755c3]' : 'text-[#ba1a1a]'}`}>

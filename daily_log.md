@@ -1,4 +1,26 @@
-# 📝 Log Pekerjaan & Handover (14 September 2026)
+# 📝 Log Pekerjaan & Handover (15 September 2026)
+
+## ✅ Pekerjaan yang Diselesaikan Hari Ini (Hotfix User Management & Phase 9)
+
+### 1. Perbaikan Navigasi (Sidebar)
+- Menambahkan link menu **"Manajemen Pengguna"** (`/settings/users`) ke dalam komponen `Sidebar.tsx` di bawah kategori Pengaturan yang sebelumnya terlewat.
+
+### 2. Penjelasan & Resolusi Keamanan Supabase Auth
+- Memastikan alur login sudah menggunakan Supabase Auth secara penuh (tidak lagi menggunakan data dummy).
+- Memberikan panduan terkait alur pembuatan user login (Supabase Auth) karena implementasi saat ini (Opsi B) hanya menangani CRUD untuk tabel `profiles` dari sisi *client*.
+- Memberikan solusi untuk isu *Row Level Security* (RLS) di tabel `profiles` di mana Admin tidak bisa mengubah *Role* profil pengguna lain. Solusi yang diberikan adalah *update* RLS Policy via SQL Editor di Supabase agar pengecekan id berdasar role Admin.
+
+### 3. Penyelesaian Phase 9 (Dashboard & Reports Refactor)
+- User setuju penggunaan SQL/RPC untuk Dashboard.
+- Pembuatan SQL RPC (`supabase_dashboard_rpc.sql`) untuk data statistik (`get_dashboard_stats`), revenue bulanan (`get_monthly_revenue`), dan top produk (`get_top_products`).
+- Integrasi RPC ke dalam `dashboardStore.ts`.
+- Refactoring UI Dashboard (`KPICards`, `RevenueChart`, `TopProductsChart`, `RecentTransactions`, `CashFlowChart`, `PaymentMethodSummary`) untuk menggunakan data `useDashboardStore` yang di-fetch dari Supabase.
+- Refactoring halaman Laporan (`SalesReportPage`, `ExpenseReportPage`, `ProfitLossReportPage`, `PurchaseReportPage`, `InventoryReportPage`) agar langsung fetch data menggunakan `.select()` ke tabel-tabel Supabase sesuai periode tanggal.
+- Selesai Phase 9.
+
+---
+
+# 📝 Log Pekerjaan Sebelumnya (14 September 2026)
 
 ## ✅ Pekerjaan yang Diselesaikan Hari Ini (Phase 8 - Settings)
 

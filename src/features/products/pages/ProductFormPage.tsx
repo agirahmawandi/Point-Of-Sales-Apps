@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { showSuccess, showError, showInfo } from '@/lib/toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -78,7 +79,7 @@ export default function ProductFormPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 1024 * 1024) { // 1MB limit
-        alert('Ukuran gambar maksimal 1MB');
+        showInfo('Ukuran gambar maksimal 1MB');
         return;
       }
       const reader = new FileReader();

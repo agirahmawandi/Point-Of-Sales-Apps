@@ -1,69 +1,34 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { useTransactionStore } from '@/stores/transactionStore';
-import { useProductStore } from '@/stores/productStore';
-import { useExpenseStore } from '@/stores/expenseStore';
-import { useDashboardStore, getDashboardDateRange } from '@/stores/dashboardStore';
+import { useDashboardStore } from '@/stores/dashboardStore';
+import { Loader2 } from 'lucide-react';
 
 export default function KPICards() {
-  const { transactions } = useTransactionStore();
-  const { products } = useProductStore();
-  const { expenses } = useExpenseStore();
-  const dashboardState = useDashboardStore();
-
-  const kpi = useMemo(() => {
-    const { startDate, endDate } = getDashboardDateRange(dashboardState);
-
-    let omzetToday = 0;
-    let hppToday = 0;
-    let expenseToday = 0;
-
-    // Hitung Omzet & HPP
-    transactions.forEach(trx => {
-      const trxDate = new Date(trx.date || trx.createdAt || Date.now());
-      if (trxDate >= startDate && trxDate <= endDate && trx.status === 'success') {
-        omzetToday += trx.total;
-        
-        // Hitung HPP
-        trx.items.forEach(item => {
-          const product = products.find(p => p.id === item.productId);
-          if (product) {
-            hppToday += (product.purchasePrice || product.buyPrice || 0) * item.quantity;
-          }
-        });
-      }
-    });
-
-    // Hitung Pengeluaran Operasional
-    expenses.forEach(exp => {
-      const expDate = new Date(exp.date);
-      if (expDate >= startDate && expDate <= endDate) {
-        expenseToday += exp.amount;
-      }
-    });
-
-    // Laba Bersih = Omzet - HPP - Expense
-    const labaBersih = omzetToday - hppToday - expenseToday;
-    
-    // Low Stock Alert
-    const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
-
-    // Kalkulasi margin
-    const margin = omzetToday > 0 ? ((labaBersih / omzetToday) * 100).toFixed(1) : '0.0';
-
-    return {
-      omzetToday,
-      hppToday,
-      expenseToday,
-      labaBersih,
-      margin,
-      lowStockCount
-    };
-  }, [transactions, products, expenses, dashboardState]);
+  const { stats, isLoading, error } = useDashboardStore();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(value);
   };
+
+  if (isLoading || !stats) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-[#3755c3]" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-200">
+        <p className="font-semibold">Gagal memuat data ringkasan.</p>
+        <p className="text-sm">{error}</p>
+      </div>
+    );
+  }
+
+  const { omzet, hpp, expense, laba, lowStockCount } = stats;
+  const margin = omzet > 0 ? ((laba / omzet) * 100).toFixed(1) : '0.0';
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -78,7 +43,7 @@ export default function KPICards() {
           </div>
           <div className="h-10 flex items-baseline gap-1 whitespace-nowrap">
             <span className="text-[16px] font-semibold text-[#76777d]">Rp</span>
-            <span className="text-2xl font-bold text-[#254222]">{formatCurrency(kpi.omzetToday)}</span>
+            <span className="text-2xl font-bold text-[#254222]">{formatCurrency(omzet)}</span>
           </div>
         </div>
         <div className="mt-4 pt-3 border-t border-[#cae4c5]/30 flex items-center justify-between gap-2">
@@ -101,7 +66,7 @@ export default function KPICards() {
           </div>
           <div className="h-10 flex items-baseline gap-1 whitespace-nowrap">
             <span className="text-[16px] font-semibold text-[#76777d]">Rp</span>
-            <span className="text-2xl font-bold text-[#254222]">{formatCurrency(kpi.hppToday)}</span>
+            <span className="text-2xl font-bold text-[#254222]">{formatCurrency(hpp)}</span>
           </div>
         </div>
         <div className="mt-4 pt-3 border-t border-[#cae4c5]/30 flex items-center justify-between gap-2">
@@ -117,7 +82,7 @@ export default function KPICards() {
           <div className="flex items-center justify-between gap-2 h-10 mb-2">
             <div className="flex items-center gap-1 min-w-0">
               <span className="text-[11px] font-bold text-[#76777d] uppercase tracking-wider truncate">Laba Bersih</span>
-              <span className="px-1.5 py-0.5 rounded bg-[#ece2b1] text-[#254222] text-[11px] font-bold whitespace-nowrap shrink-0">{kpi.margin}% Net</span>
+              <span className="px-1.5 py-0.5 rounded bg-[#ece2b1] text-[#254222] text-[11px] font-bold whitespace-nowrap shrink-0">{margin}% Net</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-[#cae4c5]/40 text-[#254222] flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-[22px]">account_balance_wallet</span>
@@ -125,12 +90,12 @@ export default function KPICards() {
           </div>
           <div className="h-10 flex items-baseline gap-1 whitespace-nowrap">
             <span className="text-[16px] font-semibold text-[#254222]">Rp</span>
-            <span className="text-2xl font-bold text-[#254222]">{formatCurrency(kpi.labaBersih)}</span>
+            <span className="text-2xl font-bold text-[#254222]">{formatCurrency(laba)}</span>
           </div>
         </div>
         <div className="mt-4 pt-3 border-t border-[#cae4c5]/30 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs text-[#76777d] truncate">Beban Ops: Rp {formatCurrency(kpi.expenseToday)}</span>
+            <span className="text-xs text-[#76777d] truncate">Beban Ops: Rp {formatCurrency(expense)}</span>
           </div>
         </div>
       </div>
@@ -145,12 +110,12 @@ export default function KPICards() {
             </div>
           </div>
           <div className="h-10 flex items-baseline gap-1 whitespace-nowrap">
-            <span className="text-2xl font-bold text-[#254222]">{kpi.lowStockCount}</span>
+            <span className="text-2xl font-bold text-[#254222]">{lowStockCount}</span>
             <span className="text-sm font-semibold text-[#254222] ml-1">Produk</span>
           </div>
         </div>
         <div className="mt-4 pt-3 border-t border-[#cae4c5]/30 flex items-center justify-between gap-2">
-          {kpi.lowStockCount > 0 ? (
+          {lowStockCount > 0 ? (
             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#ece2b1] text-[#254222] text-[11px] font-bold uppercase whitespace-nowrap">
               Perlu Restock
             </span>

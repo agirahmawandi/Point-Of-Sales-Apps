@@ -53,7 +53,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
       
       set({ categories });
     } catch (err: any) {
-      console.error('Error fetching categories:', err);
       set({ error: err.message });
     } finally {
       set({ isLoading: false });
@@ -84,7 +83,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
       
       set((state) => ({ categories: [...state.categories, newCategory] }));
     } catch (err: any) {
-      console.error('Error adding category:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -115,7 +113,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         )
       }));
     } catch (err: any) {
-      console.error('Error updating category:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -137,7 +134,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         categories: state.categories.filter(c => c.id !== id)
       }));
     } catch (err: any) {
-      console.error('Error deleting category:', err);
       set({ error: err.message });
       throw err; // Re-throw to allow component to handle if needed
     } finally {
@@ -184,7 +180,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
       
       set({ products });
     } catch (err: any) {
-      console.error('Error fetching products:', err);
       set({ error: err.message });
     } finally {
       set({ isLoading: false });
@@ -231,7 +226,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
       await get().fetchProducts();
       
     } catch (err: any) {
-      console.error('Error adding product:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -281,7 +275,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
       await get().fetchProducts();
       
     } catch (err: any) {
-      console.error('Error updating product:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -304,7 +297,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         products: state.products.filter(p => p.id !== id)
       }));
     } catch (err: any) {
-      console.error('Error deleting product:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -331,7 +323,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         )
       }));
     } catch (err: any) {
-      console.error('Error updating stock:', err);
       set({ error: err.message });
       throw err;
     } finally {

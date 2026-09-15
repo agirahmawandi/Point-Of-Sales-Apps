@@ -82,7 +82,6 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       
       set({ transactions });
     } catch (err: any) {
-      console.error('Error fetching transactions:', err);
       set({ error: err.message });
     } finally {
       set({ isLoading: false });
@@ -150,7 +149,6 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
       return transactionId;
     } catch (err: any) {
-      console.error('Error adding transaction:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -221,7 +219,6 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       
       return transaction;
     } catch (err) {
-      console.error('Error getting transaction:', err);
       return undefined;
     }
   },
@@ -251,7 +248,6 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
       await get().fetchTransactions();
     } catch (err: any) {
-      console.error('Error updating transaction status:', err);
       set({ error: err.message });
       throw err;
     } finally {
@@ -260,10 +256,9 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   },
 
   updateTransaction: (id, data) => {
-    console.warn('updateTransaction is a dummy function now');
   },
 
   resetTransactions: () => {
-    console.warn('resetTransactions is a dummy function now');
+    set({ transactions: [] });
   }
 }));

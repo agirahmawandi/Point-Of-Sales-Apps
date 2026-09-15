@@ -1,40 +1,60 @@
-import React, { useState, useMemo } from 'react';
-import { useTransactionStore } from '@/stores/transactionStore';
-import { useExpenseStore } from '@/stores/expenseStore';
+import React, { useState, useEffect } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
-import { format, subDays, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
-import { Download, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import type { Transaction } from '@/types/transaction';
+import type { Expense } from '@/types/expense';
+import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { Download, TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react';
 
 export default function ProfitLossReportPage() {
-  const { transactions } = useTransactionStore();
-  const { expenses } = useExpenseStore();
+  const [filteredSales, setFilteredSales] = useState<Transaction[]>([]);
+  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [dateRange, setDateRange] = useState<'today' | '7days' | '30days' | 'all'>('30days');
 
-  // Date filters
-  const dateFilter = (dateObj: Date | string | undefined, startDate: Date, endDate: Date) => {
-    if (!dateObj) return false;
-    const txDate = new Date(dateObj);
-    return isWithinInterval(txDate, { start: startDate, end: endDate });
-  };
+  // Fetch Data from Supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const now = new Date();
+        let startDate = startOfDay(now);
 
-  const { filteredSales, filteredExpenses } = useMemo(() => {
-    const now = new Date();
-    let startDate = now;
+        if (dateRange === '7days') startDate = subDays(startOfDay(now), 7);
+        else if (dateRange === '30days') startDate = subDays(startOfDay(now), 30);
+        else if (dateRange === 'all') startDate = new Date(0);
 
-    if (dateRange === 'today') startDate = startOfDay(now);
-    else if (dateRange === '7days') startDate = subDays(startOfDay(now), 7);
-    else if (dateRange === '30days') startDate = subDays(startOfDay(now), 30);
-    else startDate = new Date(0); // all time
+        // Fetch sales
+        let salesQuery = supabase
+          .from('transactions')
+          .select(`*, items:transaction_items(*)`)
+          .in('status', ['success', 'sukses'])
+          .not('payment_status', 'eq', 'tertunda');
 
-    return {
-      filteredSales: transactions.filter(t => 
-        dateFilter(t.date || t.createdAt, startDate, endOfDay(now)) &&
-        (t.status === 'success' || t.status === 'sukses') &&
-        t.paymentStatus !== 'tertunda'
-      ),
-      filteredExpenses: expenses.filter(e => dateFilter(e.date, startDate, endOfDay(now)))
+        // Fetch expenses
+        let expensesQuery = supabase
+          .from('expenses')
+          .select('*');
+
+        if (dateRange !== 'all') {
+          salesQuery = salesQuery.gte('created_at', startDate.toISOString()).lte('created_at', endOfDay(now).toISOString());
+          expensesQuery = expensesQuery.gte('date', startDate.toISOString()).lte('date', endOfDay(now).toISOString());
+        }
+
+        const [salesRes, expensesRes] = await Promise.all([salesQuery, expensesQuery]);
+        
+        if (salesRes.error) throw salesRes.error;
+        if (expensesRes.error) throw expensesRes.error;
+
+        setFilteredSales(salesRes.data as Transaction[] || []);
+        setFilteredExpenses(expensesRes.data as Expense[] || []);
+      } catch (error) {
+      } finally {
+        setIsLoading(false);
+      }
     };
-  }, [transactions, expenses, dateRange]);
+    fetchData();
+  }, [dateRange]);
 
   // Calculations
   const revenue = filteredSales.reduce((acc, t) => acc + (t.total || 0), 0);
@@ -86,6 +106,12 @@ export default function ProfitLossReportPage() {
         </div>
       }
     >
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-3xl mt-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#3755c3]" />
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Net Profit Summary Card */}
         <div className={`p-6 rounded-2xl shadow-sm border ${netProfit >= 0 ? 'bg-gradient-to-br from-[#e6f4ea] to-white border-[#99cc66]' : 'bg-gradient-to-br from-[#ffdad6] to-white border-red-200'}`}>

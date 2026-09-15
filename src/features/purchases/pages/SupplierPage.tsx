@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { showSuccess, showError } from '@/lib/toast';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import PageContainer from '@/components/layout/PageContainer';
 import { Search, Plus, Edit2, Trash2, Users, Building2, Phone, MapPin } from 'lucide-react';
@@ -50,12 +51,14 @@ export default function SupplierPage() {
     try {
       if (editingId) {
         await updateSupplier(editingId, formData);
+        showSuccess('Pemasok berhasil diperbarui');
       } else {
         await addSupplier(formData);
+        showSuccess('Pemasok berhasil ditambahkan');
       }
       setIsModalOpen(false);
     } catch (err: any) {
-      alert(`Gagal menyimpan pemasok: ${err.message}`);
+      showError(`Gagal menyimpan pemasok: ${err.message}`);
     }
   };
 
@@ -63,8 +66,9 @@ export default function SupplierPage() {
     if (window.confirm('Yakin ingin menghapus pemasok ini? Data PO terkait mungkin akan terpengaruh.')) {
       try {
         await deleteSupplier(id);
+        showSuccess('Pemasok berhasil dihapus');
       } catch (err: any) {
-        alert(`Gagal menghapus pemasok: ${err.message}`);
+        showError(`Gagal menghapus pemasok: ${err.message}`);
       }
     }
   };

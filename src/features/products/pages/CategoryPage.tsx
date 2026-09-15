@@ -3,6 +3,7 @@ import { useProductStore } from '@/stores/productStore';
 import PageContainer from '@/components/layout/PageContainer';
 import { Plus, Edit, Trash2, Tags, Check, X, Loader2 } from 'lucide-react';
 import type { Category } from '@/types';
+import { showSuccess, showError } from '@/lib/toast';
 
 export default function CategoryPage() {
   const { categories, isLoading, error, fetchCategories, addCategory, updateCategory, deleteCategory } = useProductStore();
@@ -20,8 +21,9 @@ export default function CategoryPage() {
     try {
       await addCategory({ name: newName.trim() });
       setNewName('');
+      showSuccess('Kategori berhasil ditambahkan');
     } catch (err: any) {
-      alert(err.message || 'Gagal menambah kategori');
+      showError(err.message || 'Gagal menambah kategori');
     }
   };
 
@@ -31,8 +33,9 @@ export default function CategoryPage() {
     try {
       await updateCategory(id, { name: editName.trim() });
       setIsEditing(null);
+      showSuccess('Kategori berhasil diperbarui');
     } catch (err: any) {
-      alert(err.message || 'Gagal mengubah kategori');
+      showError(err.message || 'Gagal mengubah kategori');
     }
   };
 
@@ -45,8 +48,9 @@ export default function CategoryPage() {
     if (confirm('Yakin ingin menghapus kategori ini?')) {
       try {
         await deleteCategory(id);
+        showSuccess('Kategori berhasil dihapus');
       } catch (err: any) {
-        alert(err.message || 'Gagal menghapus kategori');
+        showError(err.message || 'Gagal menghapus kategori');
       }
     }
   };

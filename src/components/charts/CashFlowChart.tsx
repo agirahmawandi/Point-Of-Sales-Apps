@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { ArrowDownLeft, ArrowUpRight, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useTransactionStore } from '@/stores/transactionStore';
 import { useExpenseStore } from '@/stores/expenseStore';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import { useFinanceStore } from '@/stores/financeStore';
@@ -9,15 +8,15 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useDashboardStore, getDashboardDateRange } from '@/stores/dashboardStore';
 
 export default function CashFlowChart() {
-  const { transactions } = useTransactionStore();
   const { expenses } = useExpenseStore();
   const { purchaseOrders } = usePurchaseStore();
   const { investorDeposits, profitShares, cashBalance, qrisBalance } = useFinanceStore();
   const { bankAccounts } = useSettingsStore();
   const dashboardState = useDashboardStore();
+  const { transactions } = dashboardState;
 
   const cashFlow = useMemo(() => {
-    const { startDate, endDate } = getDashboardDateRange(dashboardState);
+    const { startDate, endDate } = getDashboardDateRange(dashboardState.dateFilter, dashboardState.customStartDate, dashboardState.customEndDate);
 
     let inflow = 0;
     let outflow = 0;

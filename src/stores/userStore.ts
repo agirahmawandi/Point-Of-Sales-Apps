@@ -32,7 +32,6 @@ export const useUserStore = create<UserState>()((set, get) => ({
       
       set({ users: data as UserProfile[] });
     } catch (err) {
-      console.error('Failed to fetch users', err);
     } finally {
       set({ isLoading: false });
     }
@@ -54,7 +53,6 @@ export const useUserStore = create<UserState>()((set, get) => ({
       await get().fetchUsers();
       return { success: true };
     } catch (err: any) {
-      console.error('Failed to add user', err);
       return { success: false, error: err.message || 'Gagal menambahkan pengguna' };
     }
   },
@@ -73,7 +71,6 @@ export const useUserStore = create<UserState>()((set, get) => ({
       await get().fetchUsers();
       return { success: true };
     } catch (err: any) {
-      console.error('Failed to update user', err);
       return { success: false, error: err.message || 'Gagal mengubah pengguna' };
     }
   },
@@ -86,7 +83,6 @@ export const useUserStore = create<UserState>()((set, get) => ({
       await get().fetchUsers();
       return { success: true };
     } catch (err: any) {
-      console.error('Failed to delete user', err);
       return { success: false, error: err.message || 'Gagal menghapus pengguna' };
     }
   }

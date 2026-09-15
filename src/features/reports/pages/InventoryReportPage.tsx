@@ -1,18 +1,52 @@
-import React, { useMemo, useState } from 'react';
-import { useProductStore } from '@/stores/productStore';
+import React, { useMemo, useState, useEffect } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
-import { Download, PackageOpen, AlertTriangle, Wallet } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import type { Product, Category } from '@/types/product';
+import { Download, PackageOpen, AlertTriangle, Wallet, Loader2 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
 export default function InventoryReportPage() {
-  const { products, categories } = useProductStore();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
+  useEffect(() => {
+    const fetchInventory = async () => {
+      setIsLoading(true);
+      try {
+        const [prodRes, catRes] = await Promise.all([
+          supabase.from('products').select('*'),
+          supabase.from('categories').select('*')
+        ]);
+        
+        if (prodRes.error) throw prodRes.error;
+        if (catRes.error) throw catRes.error;
+
+        // Map snake_case to camelCase
+        const mappedProducts = (prodRes.data as any[]).map(p => ({
+          ...p,
+          categoryId: p.category_id,
+          sellingPrice: p.selling_price,
+          buyPrice: p.buy_price,
+          minStock: p.min_stock
+        }));
+
+        setProducts(mappedProducts as Product[] || []);
+        setCategories(catRes.data as Category[] || []);
+      } catch (error) {
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchInventory();
+  }, []);
+
   const totalProducts = products.length;
-  const totalStock = products.reduce((acc, p) => acc + p.stock, 0);
-  const totalAssetValue = products.reduce((acc, p) => acc + (p.stock * (p.sellingPrice || 0)), 0);
+  const totalStock = products.reduce((acc, p) => acc + (p.stock || 0), 0);
+  const totalAssetValue = products.reduce((acc, p) => acc + ((p.stock || 0) * (p.sellingPrice || 0)), 0);
   
-  const lowStockProducts = products.filter(p => p.stock <= p.minStock);
+  const lowStockProducts = products.filter(p => (p.stock || 0) <= (p.minStock || 0));
   const totalLowStock = lowStockProducts.length;
 
   // Chart data: Asset value by category
@@ -20,7 +54,7 @@ export default function InventoryReportPage() {
     const grouped: Record<string, number> = {};
     products.forEach(p => {
       const cat = categories.find(c => c.id === p.categoryId)?.name || 'Uncategorized';
-      grouped[cat] = (grouped[cat] || 0) + (p.stock * (p.sellingPrice || 0));
+      grouped[cat] = (grouped[cat] || 0) + ((p.stock || 0) * (p.sellingPrice || 0));
     });
 
     return Object.entries(grouped)
@@ -35,10 +69,11 @@ export default function InventoryReportPage() {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    p.sku.toLowerCase().includes(searchTerm.toLowerCase())
-  ).sort((a, b) => a.stock - b.stock); // Sort by lowest stock first
+  const filteredProducts = products.filter(p => {
+    const nameMatch = (p.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const skuMatch = (p.sku || '').toLowerCase().includes(searchTerm.toLowerCase());
+    return nameMatch || skuMatch;
+  }).sort((a, b) => (a.stock || 0) - (b.stock || 0)); // Sort by lowest stock first
 
   return (
     <PageContainer
@@ -51,6 +86,12 @@ export default function InventoryReportPage() {
         </button>
       }
     >
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-3xl mt-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#3755c3]" />
+        </div>
+      )}
+      
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center">
@@ -166,7 +207,7 @@ export default function InventoryReportPage() {
                         {p.minStock}
                       </td>
                       <td className="px-5 py-3 text-right font-bold text-[#3755c3]">
-                        {formatCurrency(p.stock * (p.sellingPrice || 0))}
+                        {formatCurrency((p.stock || 0) * (p.sellingPrice || 0))}
                       </td>
                     </tr>
                   );

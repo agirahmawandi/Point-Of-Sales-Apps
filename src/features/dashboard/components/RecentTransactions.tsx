@@ -1,27 +1,28 @@
 import React from 'react';
-import { History, Search, ArrowUpRight, ChevronRight, ReceiptText } from 'lucide-react';
+import { History, Search, ArrowUpRight, ChevronRight, ReceiptText, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useTransactionStore } from '@/stores/transactionStore';
 import { useDashboardStore, getDashboardDateRange } from '@/stores/dashboardStore';
 import { format } from 'date-fns';
 
 export default function RecentTransactions() {
-  const { transactions } = useTransactionStore();
   const dashboardState = useDashboardStore();
-  const { startDate, endDate } = getDashboardDateRange(dashboardState);
+  const { transactions, isLoading } = dashboardState;
   
-  // Ambil transaksi sesuai filter tanggal
-  const filteredTransactions = transactions.filter(trx => {
-    const trxDate = new Date(trx.date || trx.createdAt || Date.now());
-    return trxDate >= startDate && trxDate <= endDate;
-  });
-
-  // Ambil 5 transaksi terbaru dari hasil filter
-  const recentTransactions = filteredTransactions.slice(0, 5);
+  // Ambil 5 transaksi terbaru dari state transactions
+  const recentTransactions = transactions.slice(0, 5);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(value);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-[#3755c3]" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col justify-between h-full">
       <div>
@@ -101,7 +102,7 @@ export default function RecentTransactions() {
 
       <div className="mt-6 pt-3 flex flex-wrap items-center justify-between gap-3">
         <span className="text-[12px] text-[#76777d]">
-          Menampilkan <strong className="text-[#254222] font-semibold">{recentTransactions.length}</strong> dari <strong className="text-[#254222] font-semibold">{filteredTransactions.length}</strong> transaksi
+          Menampilkan <strong className="text-[#254222] font-semibold">{recentTransactions.length}</strong> dari <strong className="text-[#254222] font-semibold">{transactions.length}</strong> transaksi (limit 100)
         </span>
         <Link to="/reports/sales" className="text-[12px] font-bold text-[#254222] hover:underline inline-flex items-center gap-1">
           Buka Riwayat Lengkap <ChevronRight size={16} />
