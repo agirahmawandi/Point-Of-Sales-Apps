@@ -24,7 +24,13 @@
 - **[Update]**: Mengikutsertakan reset saldo rekening digital (`bank_accounts`) ke Rp 0 pada `supabase_reset_rpc.sql` dan melakukan *state reset* di `settingsStore.ts`.
 - Menambahkan *resetters* pada store Zustand untuk mengosongkan state UI seketika setelah database di-reset.
 
-### 5. Perencanaan Web Display (Katalog Pelanggan Publik)
+### 5. Fitur Satuan Produk & Kuantitas Desimal
+- **Database**: Mengubah tipe data stok produk, batas minimum stok, dan kuantitas transaksi dari `INTEGER` ke `NUMERIC(10,2)` agar mendukung angka desimal. 
+- **Produk**: Menambahkan input Satuan Barang (kg, liter, pcs, gram, dll) dengan default "kg" pada *Product Form*.
+- **POS / Kasir**: Memungkinkan input kuantitas barang secara desimal (contoh: 0.2 kg atau 1.5 kg) pada keranjang belanja dan form PO (pembelian).
+- **UI & Cetak**: Menampilkan label satuan barang di daftar inventaris produk dan di struk transaksi/nota.
+
+### 6. Perencanaan Web Display (Katalog Pelanggan Publik)
 - Diskusi dan penyusunan konsep arsiketur *Path-based routing* untuk menggabungkan aplikasi POS dan Web Display dalam 1 repository.
 - Menyusun dokumen PRD lengkap (`prd_web_display.md`) dan memecah implementasi menjadi tugas rinci (`task_web_display.md` - 10 Phase A-J).
 - Resolusi *open questions*: Menggunakan nomor profil toko untuk WhatsApp, produk stok 0 tetap tampil dengan badge, URL aplikasi kasir diubah menggunakan *secret path* (`pos-d5jm0seouq6bwhqy28ff8g30`).
