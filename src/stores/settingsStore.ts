@@ -211,5 +211,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   },
   
   resetBankBalances: () => {
+    set((state) => ({
+      bankAccounts: state.bankAccounts.map((acc) => ({ ...acc, balance: 0 })),
+    }));
   }
 }));

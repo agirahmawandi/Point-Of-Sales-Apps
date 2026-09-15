@@ -35,5 +35,6 @@ BEGIN
   DELETE FROM profit_shares WHERE true;
   UPDATE investors SET total_invested = 0, total_withdrawn = 0 WHERE true;
   UPDATE cash_balances SET balance = 0 WHERE true;
+  UPDATE bank_accounts SET balance = 0 WHERE true;
 END;
 $$;

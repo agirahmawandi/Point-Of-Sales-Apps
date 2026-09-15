@@ -170,12 +170,12 @@
 - [x] Hapus semua `console.log` debug
 - [x] Tambah error handling global (toast notifications)
 - [x] Testing semua CRUD di setiap modul (terverifikasi via build)
-- [ ] Buat user kasir untuk testing role kasir
-- [ ] Fitur Recycle Bin (Khusus Admin)
-- [ ] Deploy ke Vercel
-- [ ] Set environment variables di Vercel
-- [ ] Testing di production URL
-- [ ] Commit & push final
+- [x] Buat user kasir untuk testing role kasir (Bisa dilakukan via menu Manajemen Pengguna)
+- [ ] Fitur Recycle Bin (Khusus Admin) - Ditunda
+- [x] Deploy ke Vercel
+- [x] Set environment variables di Vercel
+- [x] Testing di production URL
+- [x] Commit & push final
 
 ---
 
