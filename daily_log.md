@@ -21,6 +21,7 @@
 ### 4. Perbaikan Reset Data & Laporan (Hotfix)
 - Memperbaiki bug _infinite loading_ di `InventoryReportPage` yang disebabkan referensi null pada data produk.
 - Menambahkan fungsi `reset_all_data` di Supabase RPC yang membersihkan *semua* transaksi, pengeluaran, pergerakan kas, deposit investor, dan profit sharing.
+- **[Update]**: Mengikutsertakan reset saldo rekening digital (`bank_accounts`) ke Rp 0 pada `supabase_reset_rpc.sql` dan melakukan *state reset* di `settingsStore.ts`.
 - Menambahkan *resetters* pada store Zustand untuk mengosongkan state UI seketika setelah database di-reset.
 
 ### 5. Perencanaan Web Display (Katalog Pelanggan Publik)
