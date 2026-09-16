@@ -15,7 +15,7 @@ const productSchema = z.object({
   sellingPrice: z.coerce.number().min(0, 'Harga jual tidak boleh negatif'),
   stock: z.coerce.number().min(0, 'Stok awal tidak boleh negatif'),
   minStock: z.coerce.number().min(0, 'Batas minimum stok tidak boleh negatif'),
-  unit: z.string().default('kg'),
+  unit: z.string().min(1, 'Satuan harus dipilih'),
   description: z.string().optional(),
   imageUrl: z.string().optional(),
 });
