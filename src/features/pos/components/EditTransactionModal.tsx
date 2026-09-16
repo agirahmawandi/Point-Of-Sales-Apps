@@ -125,7 +125,7 @@ export default function EditTransactionModal({
     setMarketplaceFeeStr(formatNumber(parseInt(raw, 10)));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (transactionType === 'online' && !orderNumber.trim()) {
       showInfo('Nomor Pesanan Marketplace wajib diisi!');
       return;
@@ -202,10 +202,13 @@ export default function EditTransactionModal({
       } : undefined,
     };
 
-    // 5. Save to transaction store
-    useTransactionStore.getState().updateTransaction(transaction.id, updatedTransaction);
-
-    onSaveSuccess();
+    try {
+      // 5. Save to transaction store
+      await useTransactionStore.getState().updateTransaction(transaction.id, updatedTransaction);
+      onSaveSuccess();
+    } catch (err: any) {
+      showInfo('Gagal menyimpan perubahan: ' + err.message);
+    }
   };
 
   return (
