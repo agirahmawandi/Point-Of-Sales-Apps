@@ -306,6 +306,7 @@ export default function SalesListPage() {
                 <th className="py-3.5 px-5 text-center">Item</th>
                 <th className="py-3.5 px-5 text-right">Potongan MP</th>
                 <th className="py-3.5 px-5 text-center">% Potongan</th>
+                <th className="py-3.5 px-5 text-right">HPP</th>
                 <th className="py-3.5 px-5 text-right">Total Bersih</th>
                 <th className="py-3.5 px-5 text-center">Status Pembayaran</th>
                 <th className="py-3.5 px-5 text-right">Aksi</th>
@@ -399,6 +400,12 @@ export default function SalesListPage() {
                         ) : (
                           <span className="text-slate-400 text-xs">-</span>
                         )}
+                      </td>
+
+                      {/* HPP */}
+                      <td className="px-5 py-3.5 text-right font-medium text-slate-500">
+                        <span className="text-[11px] mr-1">Rp</span>
+                        <span>{formatNumber(trx.hpp || 0)}</span>
                       </td>
 
                       {/* Total Tagihan */}
