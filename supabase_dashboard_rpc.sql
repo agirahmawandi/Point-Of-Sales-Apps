@@ -13,6 +13,8 @@ DECLARE
     v_expense NUMERIC := 0;
     v_total_transactions INT := 0;
     v_low_stock_count INT := 0;
+    v_piutang NUMERIC := 0;
+    v_hutang NUMERIC := 0;
 BEGIN
     -- Hitung Omzet dan Total Transaksi
     SELECT COALESCE(SUM(total), 0), COUNT(id)
@@ -43,13 +45,27 @@ BEGIN
     FROM products
     WHERE stock <= min_stock AND is_active = true;
 
+    -- Hitung Total Piutang (Penjualan Belum Dibayar) Global
+    SELECT COALESCE(SUM(total - COALESCE(amount_paid, 0)), 0)
+    INTO v_piutang
+    FROM transactions
+    WHERE payment_status = 'tertunda' AND status != 'batal';
+
+    -- Hitung Total Hutang (Pembelian Belum Dibayar) Global
+    SELECT COALESCE(SUM(total_amount - COALESCE(paid_amount, 0)), 0)
+    INTO v_hutang
+    FROM purchase_orders
+    WHERE payment_status IN ('utang', 'sebagian') AND status != 'batal';
+
     RETURN jsonb_build_object(
         'omzet', v_omzet,
         'hpp', v_hpp,
         'expense', v_expense,
         'laba', v_omzet - v_hpp - v_expense,
         'totalTransactions', v_total_transactions,
-        'lowStockCount', v_low_stock_count
+        'lowStockCount', v_low_stock_count,
+        'piutang', v_piutang,
+        'hutang', v_hutang
     );
 END;
 $$;

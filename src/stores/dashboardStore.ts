@@ -12,6 +12,8 @@ export interface DashboardStats {
   laba: number;
   totalTransactions: number;
   lowStockCount: number;
+  piutang: number;
+  hutang: number;
 }
 
 export interface MonthlyRevenue {
