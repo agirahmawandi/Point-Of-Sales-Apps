@@ -95,7 +95,7 @@ export default function PurchaseListPage() {
               <tr className="bg-[#eff4ff] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
                 <th className="py-3.5 px-5">No. PO & Tanggal</th>
                 <th className="py-3.5 px-5">Pemasok</th>
-                <th className="py-3.5 px-5 text-center">Total Item</th>
+                <th className="py-3.5 px-5">Item</th>
                 <th className="py-3.5 px-5 text-right">Total Nilai</th>
                 <th className="py-3.5 px-5 text-center">Status PO</th>
                 <th className="py-3.5 px-5 text-center">Hutang / Bayar</th>
@@ -123,8 +123,15 @@ export default function PurchaseListPage() {
                     <td className="px-5 py-3.5">
                       <div className="font-semibold text-[#0b1c30]">{po.supplier?.name || 'Unknown'}</div>
                     </td>
-                    <td className="px-5 py-3.5 text-center text-[#76777d]">
-                      {po.items.reduce((acc, item) => acc + item.quantity, 0)} pcs
+                    <td className="px-5 py-3.5 text-[#76777d]">
+                      <div className="flex flex-col">
+                        <span className="truncate max-w-[200px] text-xs font-medium" title={po.items.map(i => i.productName).join(', ')}>
+                          {po.items.map(i => i.productName).join(', ')}
+                        </span>
+                        <span className="text-[10px] opacity-70">
+                          {po.items.reduce((acc, item) => acc + item.quantity, 0)} pcs total
+                        </span>
+                      </div>
                     </td>
                     <td className="px-5 py-3.5 text-right font-bold text-[#0b1c30]">
                       <span className="text-[11px] font-medium text-[#76777d] mr-1">Rp</span>
