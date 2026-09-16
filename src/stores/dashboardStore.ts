@@ -144,11 +144,57 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
       if (trxError) throw trxError;
 
+      // Map transactions to match Transaction interface
+      const mappedTransactions: Transaction[] = (trxData || []).map((data: any) => ({
+        id: data.id,
+        invoiceNumber: data.invoice_number,
+        customerId: data.customer_id,
+        customerName: data.customer_name,
+        date: data.created_at,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+        transactionType: data.transaction_type,
+        onlineDetails: data.transaction_type === 'online' ? {
+          marketplace: data.marketplace || '',
+          storeName: data.store_name || '',
+          orderNumber: data.order_number || '',
+          trackingNumber: data.tracking_number,
+          customerName: data.customer_name || '',
+          customerAddress: data.customer_address
+        } : undefined,
+        subtotal: data.subtotal,
+        discount: data.discount_amount,
+        tax: data.tax_amount,
+        marketplaceFee: data.marketplace_fee,
+        total: data.total,
+        hpp: data.hpp,
+        profit: data.profit,
+        paymentMethod: data.payment_method,
+        bankAccountId: data.bank_account_id,
+        amountPaid: data.amount_paid,
+        change: data.change_amount,
+        cashierId: data.cashier_id,
+        cashierName: data.cashier_name,
+        status: data.status,
+        paymentTiming: data.payment_timing,
+        paymentStatus: data.payment_status,
+        items: (data.items || []).map((item: any) => ({
+          id: item.id,
+          productId: item.product_id,
+          name: item.product_name,
+          sku: item.sku,
+          price: item.price,
+          buyPrice: item.buy_price,
+          quantity: item.quantity,
+          subtotal: item.subtotal
+        }))
+      }));
+
       set({ 
         stats: statsData as DashboardStats,
         monthlyRevenue: (monthlyData as MonthlyRevenue[]) || [],
         topProducts: (topProductsData as TopProduct[]) || [],
-        transactions: (trxData as Transaction[]) || [],
+        transactions: mappedTransactions,
         isLoading: false 
       });
     } catch (err: any) {
