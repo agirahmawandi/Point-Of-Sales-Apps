@@ -1,12 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useFinanceStore } from '@/stores/financeStore';
 import { QrCode, Banknote, CreditCard, ChevronDown, ChevronUp, Building2, Plus, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function PaymentMethodSummary() {
   const { transactions } = useDashboardStore();
   const { bankAccounts } = useSettingsStore();
+  const { cashBalance, qrisBalance } = useFinanceStore();
   const navigate = useNavigate();
   const [showAccounts, setShowAccounts] = useState(false);
 
@@ -73,7 +75,7 @@ export default function PaymentMethodSummary() {
           </div>
           <div>
             <p className="text-[10px] font-bold text-[#76777d] uppercase tracking-wider">QRIS</p>
-            <p className="text-[13px] font-bold text-[#254222] leading-tight">{formatCurrency(summary.qris)}</p>
+            <p className="text-[13px] font-bold text-[#254222] leading-tight">{formatCurrency(qrisBalance)}</p>
           </div>
           <p className="text-[10px] text-[#76777d]">Scan & Pay</p>
         </div>
@@ -90,7 +92,7 @@ export default function PaymentMethodSummary() {
           </div>
           <div>
             <p className="text-[10px] font-bold text-[#76777d] uppercase tracking-wider">Tunai</p>
-            <p className="text-[13px] font-bold text-[#254222] leading-tight">{formatCurrency(summary.tunai)}</p>
+            <p className="text-[13px] font-bold text-[#254222] leading-tight">{formatCurrency(cashBalance)}</p>
           </div>
           <p className="text-[10px] text-[#76777d]">Kas Fisik</p>
         </div>
