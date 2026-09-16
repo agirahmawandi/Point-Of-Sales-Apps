@@ -285,56 +285,12 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   updateTransaction: async (id, data) => {
     set({ isLoading: true, error: null });
     try {
-      const trxPayload: any = { updated_at: new Date().toISOString() };
-      
-      if (data.transactionType !== undefined) trxPayload.transaction_type = data.transactionType;
-      if (data.subtotal !== undefined) trxPayload.subtotal = data.subtotal;
-      if (data.discount !== undefined) trxPayload.discount_amount = data.discount;
-      if (data.tax !== undefined) trxPayload.tax_amount = data.tax;
-      if (data.marketplaceFee !== undefined) trxPayload.marketplace_fee = data.marketplaceFee;
-      if (data.total !== undefined) trxPayload.total = data.total;
-      if (data.hpp !== undefined) trxPayload.hpp = data.hpp;
-      if (data.profit !== undefined) trxPayload.profit = data.profit;
-      if (data.paymentMethod !== undefined) trxPayload.payment_method = data.paymentMethod;
-      if (data.bankAccountId !== undefined) trxPayload.bank_account_id = data.bankAccountId;
-      if (data.paymentStatus !== undefined) trxPayload.payment_status = data.paymentStatus;
-      if (data.paymentTiming !== undefined) trxPayload.payment_timing = data.paymentTiming;
-      if (data.status !== undefined) trxPayload.status = data.status;
-      if (data.amountPaid !== undefined) trxPayload.amount_paid = data.amountPaid;
-      
-      if (data.onlineDetails !== undefined) {
-        trxPayload.marketplace = data.onlineDetails?.marketplace || null;
-        trxPayload.store_name = data.onlineDetails?.storeName || null;
-        trxPayload.order_number = data.onlineDetails?.orderNumber || null;
-        trxPayload.tracking_number = data.onlineDetails?.trackingNumber || null;
-        trxPayload.customer_name = data.onlineDetails?.customerName || null;
-        trxPayload.customer_address = data.onlineDetails?.customerAddress || null;
-      }
+      const { error: rpcError } = await supabase.rpc('edit_transaction', {
+        p_transaction_id: id,
+        payload: data
+      });
 
-      // 1. Update Header
-      const { error: headerError } = await supabase
-        .from('transactions')
-        .update(trxPayload)
-        .eq('id', id);
-
-      if (headerError) throw headerError;
-
-      // 2. Update Items
-      if (data.items && data.items.length > 0) {
-        for (const item of data.items) {
-          if (item.id) {
-            const { error: itemError } = await supabase
-              .from('transaction_items')
-              .update({
-                quantity: item.quantity,
-                price: item.price,
-                subtotal: item.subtotal
-              })
-              .eq('id', item.id);
-            if (itemError) throw itemError;
-          }
-        }
-      }
+      if (rpcError) throw rpcError;
 
       await get().fetchTransactions();
     } catch (err: any) {

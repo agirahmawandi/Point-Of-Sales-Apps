@@ -131,42 +131,9 @@ export default function EditTransactionModal({
       return;
     }
 
-    // 1. Sync stock differences
-    items.forEach(newItem => {
-      const origItem = transaction.items.find(i => i.id === newItem.id || i.productId === newItem.productId);
-      if (origItem) {
-        const qtyDiff = newItem.quantity - origItem.quantity;
-        if (qtyDiff > 0) {
-          // Quantity increased: reduce additional stock
-          reduceStock(newItem.productId, qtyDiff);
-        } else if (qtyDiff < 0) {
-          // Quantity decreased: restore stock
-          addStock(newItem.productId, Math.abs(qtyDiff));
-        }
-      }
-    });
-
-    // 2. Adjust Bank Balances
+    // 1. Adjust Bank Balances (handled by server via RPC)
     const isPending = paymentStatus === 'tertunda';
     const newAmountPaid = isPending ? 0 : total;
-
-    const oldBankAmount = (transaction.paymentMethod === 'card' && transaction.bankAccountId) 
-      ? (transaction.amountPaid || transaction.total) 
-      : 0;
-    
-    const newBankAmount = (paymentMethod === 'card' && bankAccountId && !isPending) 
-      ? newAmountPaid 
-      : 0;
-
-    // Deduct old amount from old bank
-    if (transaction.paymentMethod === 'card' && transaction.bankAccountId) {
-      updateBankBalance(transaction.bankAccountId, -oldBankAmount);
-    }
-    
-    // Add new amount to new bank
-    if (paymentMethod === 'card' && bankAccountId && !isPending) {
-      updateBankBalance(bankAccountId, newBankAmount);
-    }
 
     // 3. Recalculate HPP and Profit
     const newHpp = items.reduce((acc, item) => {
