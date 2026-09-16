@@ -48,8 +48,8 @@ BEGIN
     -- 3. Kembalikan data supplier lama
     IF v_old_supplier IS NOT NULL THEN
         UPDATE suppliers
-        SET total_purchases = GREATEST(0, COALESCE(total_purchases, 0) - v_old_total),
-            total_debt = GREATEST(0, COALESCE(total_debt, 0) - (v_old_total - v_old_payment)),
+        SET total_purchases = COALESCE(total_purchases, 0) - v_old_total,
+            total_debt = COALESCE(total_debt, 0) - (v_old_total - v_old_payment),
             updated_at = NOW()
         WHERE id = v_old_supplier;
     END IF;
@@ -58,7 +58,7 @@ BEGIN
     FOR v_old_item IN SELECT * FROM purchase_order_items WHERE purchase_order_id = p_po_id LOOP
         IF COALESCE(v_old_item.received_quantity, 0) > 0 THEN
             UPDATE products 
-            SET stock = GREATEST(0, stock - v_old_item.received_quantity), 
+            SET stock = stock - v_old_item.received_quantity, 
                 updated_at = NOW() 
             WHERE id = v_old_item.product_id;
         END IF;

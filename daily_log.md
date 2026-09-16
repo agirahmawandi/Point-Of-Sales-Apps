@@ -13,6 +13,11 @@
 ### 3. Visibilitas HPP pada Edit Transaksi
 - Menambahkan informasi kalkulasi **Total HPP (Modal)** di bawah *Subtotal Item* pada formulir *Edit Transaksi*. Hal ini krusial agar pengelola toko mengetahui estimasi laba kotor sebelum menyimpan perubahan pada transaksi lama.
 
+### 4. Edit Purchase Order (Pembelian)
+- Menambahkan fitur edit data pada daftar Purchase Order yang memungkinkan admin mengubah supplier, catatan, metode bayar, nama item, kuantitas, dan harga beli.
+- Mengimplementasikan RPC `edit_purchase_order` di Supabase untuk sinkronisasi (rollback) secara otomatis: jika PO yang diedit berstatus "Diterima" atau "Lunas", sistem akan menarik kembali stok lama dan menyesuaikan saldo rekening bank dengan nominal tagihan terbaru.
+- **[Hotfix]**: Menghapus fungsi pengaman `GREATEST(0)` pada logika rollback stok dan supplier di `supabase_edit_po_rpc.sql` agar transaksi *atomic* dapat memproses nilai negatif sementara secara akurat jika barang sudah laku terjual sebagian.
+
 ---
 
 # 📝 Log Pekerjaan Sebelumnya (15 September 2026)
