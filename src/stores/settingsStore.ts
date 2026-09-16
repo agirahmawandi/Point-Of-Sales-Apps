@@ -47,7 +47,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     email: '',
   },
   taxSettings: {
-    defaultTaxPercentage: 11,
+    defaultTaxPercentage: 0,
   },
   bankAccounts: [],
   isLoading: false,
@@ -74,7 +74,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
         // Create initial settings if empty
         const { data: newData, error: insertError } = await supabase.from('store_settings').insert({
           store_name: 'Frema Mart',
-          default_tax_percentage: 11
+          default_tax_percentage: 0
         }).select().single();
         
         if (!insertError && newData) {
@@ -86,7 +86,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
               email: newData.email || '',
             },
             taxSettings: {
-              defaultTaxPercentage: Number(newData.default_tax_percentage),
+              defaultTaxPercentage: Number(newData.default_tax_percentage) || 0,
             }
           });
         }

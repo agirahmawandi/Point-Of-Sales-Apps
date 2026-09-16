@@ -62,7 +62,7 @@ export const useCartStore = create<CartState>()(
     subtotal: 0,
     discountPercentage: 0,
     discountAmount: 0,
-    taxPercentage: 11, // Default 11% PPN
+    taxPercentage: 0, // Default 0%
     taxAmount: 0,
     marketplaceFee: 0,
     total: 0,
