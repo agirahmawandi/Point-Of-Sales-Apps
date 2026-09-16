@@ -231,16 +231,16 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Bottom Section: Top Sellers / Cash Flow / Recent Transactions */}
+      {/* Bottom Section: Top Sellers / Recent Transactions / Cash Flow */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         <div className="xl:col-span-4 bg-white rounded-xl shadow-sm border border-slate-100 p-6">
           <TopProductsChart />
         </div>
-        <div className="xl:col-span-3 bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-          <CashFlowChart />
-        </div>
         <div className="xl:col-span-5 bg-white rounded-xl shadow-sm border border-slate-100 p-6 overflow-hidden">
           <RecentTransactions />
+        </div>
+        <div className="xl:col-span-3 bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+          <CashFlowChart />
         </div>
       </div>
 
