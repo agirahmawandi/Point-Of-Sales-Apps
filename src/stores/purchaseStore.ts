@@ -226,15 +226,45 @@ export const usePurchaseStore = create<PurchaseState>((set, get) => ({
   updatePurchaseOrder: async (id, data) => {
     set({ isLoading: true, error: null });
     try {
-      const { error } = await supabase.from('purchase_orders').update({
-        status: data.status,
-        due_date: data.dueDate,
-        notes: data.notes,
-        updated_at: new Date().toISOString()
-      }).eq('id', id);
+      if (data.items) {
+        // Full edit with RPC
+        const payload = {
+          po_number: data.poNumber,
+          supplier_id: data.supplierId,
+          total_amount: data.totalAmount,
+          status: data.status,
+          payment_status: data.paymentStatus,
+          payment_method: data.paymentMethod,
+          bank_account_id: data.bankAccountId,
+          paid_amount: data.paidAmount,
+          due_date: data.dueDate,
+          notes: data.notes,
+          items: data.items.map(item => ({
+            product_id: item.productId,
+            product_name: item.productName,
+            sku: item.sku,
+            quantity: item.quantity,
+            received_quantity: item.receivedQuantity || 0,
+            buy_price: item.buyPrice,
+            subtotal: item.subtotal
+          }))
+        };
+        const { error } = await supabase.rpc('edit_purchase_order', { p_po_id: id, payload });
+        if (error) throw error;
+      } else {
+        // Simple update
+        const { error } = await supabase.from('purchase_orders').update({
+          status: data.status,
+          due_date: data.dueDate,
+          notes: data.notes,
+          updated_at: new Date().toISOString()
+        }).eq('id', id);
+        
+        if (error) throw error;
+      }
       
-      if (error) throw error;
       await get().fetchPurchaseOrders();
+      await get().fetchSuppliers(); // fetch suppliers because total_debt might change
     } catch (err: any) {
       set({ error: err.message });
       throw err;

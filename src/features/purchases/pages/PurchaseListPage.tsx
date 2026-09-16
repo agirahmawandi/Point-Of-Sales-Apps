@@ -5,13 +5,15 @@ import PageContainer from '@/components/layout/PageContainer';
 import { Search, Plus, Eye, CheckCircle2, AlertCircle, ShoppingBag } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import type { PurchaseOrderStatus } from '@/types/purchase';
+import type { PurchaseOrderStatus, PurchaseOrder } from '@/types/purchase';
+import { EditPurchaseOrderModal } from '../components/EditPurchaseOrderModal';
 
 export default function PurchaseListPage() {
   const navigate = useNavigate();
   const { purchaseOrders } = usePurchaseStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [editingPO, setEditingPO] = useState<PurchaseOrder | null>(null);
 
   const filteredPOs = purchaseOrders.filter(po => {
     const matchesSearch = po.poNumber.toLowerCase().includes(search.toLowerCase()) || 
@@ -155,6 +157,13 @@ export default function PurchaseListPage() {
                           </button>
                         )}
                         <button 
+                          onClick={() => setEditingPO(po)}
+                          className="p-1.5 text-[#76777d] hover:text-[#3755c3] hover:bg-[#eff4ff] rounded-lg transition-colors"
+                          title="Edit PO"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                        </button>
+                        <button 
                           onClick={() => navigate(`/purchases/${po.id}`)}
                           className="p-1.5 text-[#76777d] hover:text-[#3755c3] hover:bg-[#eff4ff] rounded-lg transition-colors"
                           title="Lihat Detail PO"
@@ -170,6 +179,13 @@ export default function PurchaseListPage() {
           </table>
         </div>
       </div>
+      
+      {editingPO && (
+        <EditPurchaseOrderModal 
+          po={editingPO} 
+          onClose={() => setEditingPO(null)} 
+        />
+      )}
     </PageContainer>
   );
 }
