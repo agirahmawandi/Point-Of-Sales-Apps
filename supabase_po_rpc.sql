@@ -87,6 +87,7 @@ DECLARE
     v_item JSONB;
     v_qty_received INTEGER;
     v_product_id UUID;
+    v_item_buy_price NUMERIC;
     v_all_received BOOLEAN := TRUE;
     v_current_status TEXT;
 BEGIN
@@ -98,14 +99,20 @@ BEGIN
         v_qty_received := (v_item->>'qty_received')::INTEGER;
 
         IF v_qty_received > 0 THEN
+            -- Ambil buy_price dari item PO ini
+            SELECT buy_price INTO v_item_buy_price
+            FROM purchase_order_items
+            WHERE purchase_order_id = v_po_id AND product_id = v_product_id;
+
             -- Update received_quantity di item
             UPDATE purchase_order_items
             SET received_quantity = received_quantity + v_qty_received
             WHERE purchase_order_id = v_po_id AND product_id = v_product_id;
 
-            -- Tambah stok di inventaris
+            -- Tambah stok dan perbarui harga beli di inventaris
             UPDATE products
             SET stock = stock + v_qty_received,
+                buy_price = v_item_buy_price,
                 updated_at = NOW()
             WHERE id = v_product_id;
         END IF;
