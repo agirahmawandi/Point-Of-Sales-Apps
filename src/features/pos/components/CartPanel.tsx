@@ -145,28 +145,24 @@ export default function CartPanel({ onOpenOnlineModal }: CartPanelProps) {
                         ({item.unit || 'kg'})
                       </span>
                     </h4>
-                    {transactionType === 'online' ? (
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-[10px] text-[#76777d]">Rp</span>
-                        <input 
-                          type="text"
-                          inputMode="numeric"
-                          value={new Intl.NumberFormat('id-ID').format(item.price)}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value.replace(/\D/g, ''), 10) || 0;
-                            updateItemPrice(item.id!, val);
-                          }}
-                          onFocus={(e) => e.target.select()}
-                          title="Klik untuk edit harga satuan online"
-                          className="w-24 px-1.5 py-0.5 text-[11px] font-bold text-[#254222] bg-[#cae4c5]/25 border border-[#cae4c5] rounded focus:bg-white focus:border-[#99cc66] outline-none"
-                        />
-                        <span className="text-[9px] text-[#254222] font-bold bg-[#cae4c5]/50 px-1.5 py-0.5 rounded border border-[#cae4c5]">
-                          Edit Harga
-                        </span>
-                      </div>
-                    ) : (
-                      <p className="text-[#76777d] text-[11px] mt-0.5">{formatCurrency(item.price)}</p>
-                    )}
+                    <div className="flex items-center gap-1 mt-1">
+                      <span className="text-[10px] text-[#76777d]">Rp</span>
+                      <input 
+                        type="text"
+                        inputMode="numeric"
+                        value={new Intl.NumberFormat('id-ID').format(item.price)}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value.replace(/\D/g, ''), 10) || 0;
+                          updateItemPrice(item.id!, val);
+                        }}
+                        onFocus={(e) => e.target.select()}
+                        title="Klik untuk edit harga satuan"
+                        className="w-24 px-1.5 py-0.5 text-[11px] font-bold text-[#254222] bg-[#cae4c5]/25 border border-[#cae4c5] rounded focus:bg-white focus:border-[#99cc66] outline-none"
+                      />
+                      <span className="text-[9px] text-[#254222] font-bold bg-[#cae4c5]/50 px-1.5 py-0.5 rounded border border-[#cae4c5]">
+                        Edit Harga
+                      </span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center bg-[#cae4c5]/30 rounded-lg p-0.5">
