@@ -7,6 +7,7 @@ import { useProductStore } from '@/stores/productStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useCustomerStore } from '@/stores/customerStore';
+import { useFinanceStore } from '@/stores/financeStore';
 import { X, Banknote, CreditCard, QrCode, Zap, Clock, AlertCircle } from 'lucide-react';
 import type { PaymentMethod } from '@/types';
 
@@ -32,8 +33,9 @@ export default function PaymentModal({ onClose }: PaymentModalProps) {
   } = useCartStore();
   const { addTransaction } = useTransactionStore();
   const { reduceStock } = useProductStore();
-  const { bankAccounts, updateBankBalance } = useSettingsStore();
+  const { bankAccounts, fetchBankAccounts } = useSettingsStore();
   const { addCustomer, recordTransaction, findCustomerByPhoneOrName } = useCustomerStore();
+  const { fetchCashBalances } = useFinanceStore();
 
   const [paymentTiming, setPaymentTiming] = useState<'sekarang' | 'tertunda'>('sekarang');
   const [method, setMethod] = useState<PaymentMethod>('cash');
@@ -146,9 +148,12 @@ export default function PaymentModal({ onClose }: PaymentModalProps) {
         onlineDetails: transactionType === 'online' ? onlineDetails : undefined
       });
 
-      // Update bank balance if applicable
-      if (method === 'card' && !isPending && selectedBankId) {
-        updateBankBalance(selectedBankId, total);
+      // Fetch fresh balances from Supabase
+      if (!isPending) {
+        Promise.all([
+          fetchCashBalances(),
+          fetchBankAccounts()
+        ]).catch(console.error);
       }
 
       // 2. Reduce Stock

@@ -110,8 +110,24 @@ BEGIN
         WHERE id = v_customer_id;
     END IF;
 
-    -- (Opsional/Bisa ditambahkan kemudian jika tabel cash_balances & bank_accounts sudah siap)
-    -- Jika menggunakan cash_balances, lakukan update di sini...
+    -- 4. Update Saldo Kas/Bank
+    IF payload->>'payment_timing' = 'sekarang' THEN
+        IF payload->>'payment_method' = 'cash' THEN
+            UPDATE cash_balances
+            SET balance = COALESCE(balance, 0) + v_total,
+                updated_at = NOW()
+            WHERE type = 'cash';
+        ELSIF payload->>'payment_method' = 'qris' THEN
+            UPDATE cash_balances
+            SET balance = COALESCE(balance, 0) + v_total,
+                updated_at = NOW()
+            WHERE type = 'qris';
+        ELSIF payload->>'payment_method' = 'card' AND NULLIF(payload->>'bank_account_id', '') IS NOT NULL THEN
+            UPDATE bank_accounts
+            SET balance = COALESCE(balance, 0) + v_total
+            WHERE id = (payload->>'bank_account_id')::UUID;
+        END IF;
+    END IF;
 
     RETURN jsonb_build_object('success', true, 'transaction_id', v_transaction_id);
 EXCEPTION
