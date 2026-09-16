@@ -108,25 +108,27 @@ export default function SalesListPage() {
     });
   }, [transactions, activeTab, searchTerm]);
 
-  const handleMarkAsPaid = (id: string) => {
-    const trx = transactions.find(t => t.id === id);
-    if (!trx) return;
+  const handleMarkAsPaid = async (id: string) => {
+    try {
+      // Panggil RPC untuk update transaksi & saldo di database
+      await useTransactionStore.getState().settleTransaction(
+        id, 
+        settleMethod, 
+        settleMethod === 'card' ? settleBankId : undefined
+      );
 
-    const remainingToPay = trx.total - (trx.amountPaid || 0);
+      // Refresh data saldo bank (Settings Store)
+      await useSettingsStore.getState().fetchBankAccounts();
+      
+      // Refresh data saldo kas & qris (Finance Store)
+      const { useFinanceStore } = await import('@/stores/financeStore');
+      await useFinanceStore.getState().fetchCashBalances();
 
-    // Update bank balance if applicable
-    if (settleMethod === 'card' && settleBankId) {
-      updateBankBalance(settleBankId, remainingToPay);
+      setConfirmModalId(null);
+      showToast('Transaksi berhasil ditandai Lunas!');
+    } catch (err: any) {
+      alert('Gagal melunasi: ' + err.message);
     }
-
-    updateTransaction(id, { 
-      paymentMethod: settleMethod, 
-      bankAccountId: settleMethod === 'card' ? settleBankId : undefined 
-    });
-    
-    updateTransactionPaymentStatus(id, 'lunas', 'success');
-    setConfirmModalId(null);
-    showToast('Transaksi berhasil ditandai Lunas!');
   };
 
   const showToast = (msg: string) => {
@@ -326,7 +328,7 @@ export default function SalesListPage() {
 
                       {/* No Struk & Order Details */}
                       <td className="px-5 py-3.5">
-                        <div className="font-bold text-[#254222]">{trx.id}</div>
+                        <div className="font-bold text-[#254222]">{trx.invoiceNumber || trx.id}</div>
                         {trx.transactionType === 'online' ? (
                           <div className="flex flex-col gap-0.5 mt-0.5">
                             <div className="flex items-center gap-1.5 flex-wrap">

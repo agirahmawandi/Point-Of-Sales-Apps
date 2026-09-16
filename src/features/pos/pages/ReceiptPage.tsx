@@ -129,7 +129,7 @@ export default function ReceiptPage() {
         <div className="px-6 py-4 border-b border-dashed border-slate-200 space-y-1.5 text-sm">
           <div className="flex justify-between">
             <span className="text-[#76777d]">No. Struk</span>
-            <span className="font-mono font-bold text-[#254222]">{trx.id}</span>
+            <span className="font-mono font-bold text-[#254222]">{trx.invoiceNumber || trx.id}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#76777d]">Tipe Pesanan</span>

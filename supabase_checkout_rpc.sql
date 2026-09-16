@@ -135,3 +135,65 @@ EXCEPTION
         RAISE EXCEPTION 'Checkout failed: %', SQLERRM;
 END;
 $$;
+
+-- Fungsi untuk melunasi transaksi tertunda
+CREATE OR REPLACE FUNCTION settle_transaction(
+    p_transaction_id UUID,
+    p_payment_method TEXT,
+    p_bank_account_id UUID
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_total NUMERIC;
+    v_payment_status TEXT;
+BEGIN
+    -- 1. Ambil total dan status dari transaksi
+    SELECT total, payment_status INTO v_total, v_payment_status
+    FROM transactions
+    WHERE id = p_transaction_id;
+
+    IF v_total IS NULL THEN
+        RAISE EXCEPTION 'Transaction not found';
+    END IF;
+
+    IF v_payment_status = 'lunas' THEN
+        RAISE EXCEPTION 'Transaction is already paid';
+    END IF;
+
+    -- 2. Update status transaksi
+    UPDATE transactions
+    SET payment_status = 'lunas',
+        payment_timing = 'sekarang',
+        status = 'success',
+        payment_method = p_payment_method,
+        bank_account_id = p_bank_account_id,
+        amount_paid = v_total,
+        updated_at = NOW()
+    WHERE id = p_transaction_id;
+
+    -- 3. Update Saldo Kas/Bank
+    IF p_payment_method = 'cash' THEN
+        UPDATE cash_balances
+        SET balance = COALESCE(balance, 0) + v_total,
+            updated_at = NOW()
+        WHERE type = 'cash';
+    ELSIF p_payment_method = 'qris' THEN
+        UPDATE cash_balances
+        SET balance = COALESCE(balance, 0) + v_total,
+            updated_at = NOW()
+        WHERE type = 'qris';
+    ELSIF p_payment_method = 'card' AND p_bank_account_id IS NOT NULL THEN
+        UPDATE bank_accounts
+        SET balance = COALESCE(balance, 0) + v_total
+        WHERE id = p_bank_account_id;
+    END IF;
+
+    RETURN jsonb_build_object('success', true, 'transaction_id', p_transaction_id);
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE EXCEPTION 'Settlement failed: %', SQLERRM;
+END;
+$$;

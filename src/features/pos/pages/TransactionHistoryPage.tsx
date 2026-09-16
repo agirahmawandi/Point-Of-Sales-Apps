@@ -78,7 +78,7 @@ export default function TransactionHistoryPage() {
                       {format(new Date(trx.date || trx.createdAt || Date.now()), 'dd MMM yyyy, HH:mm', { locale: localeId })}
                     </td>
                     <td className="px-5 py-3.5">
-                      <div className="font-bold text-[#3755c3]">{trx.id}</div>
+                      <div className="font-bold text-[#3755c3]">{trx.invoiceNumber || trx.id}</div>
                       {trx.transactionType === 'online' ? (
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#e0edff] text-[#173bab] border border-[#3755c3]/20">

@@ -11,6 +11,7 @@ interface TransactionState {
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => Promise<string>;
   getTransaction: (id: string) => Promise<Transaction | undefined>;
   updateTransactionPaymentStatus: (id: string, paymentStatus: 'lunas' | 'tertunda', status?: 'success' | 'pending') => Promise<void>;
+  settleTransaction: (id: string, paymentMethod: string, bankAccountId?: string) => Promise<void>;
   
   // Dummy functions to fix compilation for UI components that haven't been updated yet
   updateTransaction: (id: string, data: Partial<Transaction>) => void;
@@ -247,6 +248,30 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         .eq('id', id);
 
       if (error) throw error;
+
+      await get().fetchTransactions();
+    } catch (err: any) {
+      set({ error: err.message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  settleTransaction: async (id, paymentMethod, bankAccountId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data, error } = await supabase.rpc('settle_transaction', {
+        p_transaction_id: id,
+        p_payment_method: paymentMethod,
+        p_bank_account_id: bankAccountId || null
+      });
+
+      if (error) throw error;
+      
+      if (!data || !data.success) {
+        throw new Error('Gagal memproses pelunasan di database');
+      }
 
       await get().fetchTransactions();
     } catch (err: any) {

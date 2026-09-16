@@ -68,7 +68,7 @@ export default function RecentTransactions() {
               ) : (
                 recentTransactions.map((trx) => (
                   <tr key={trx.id} className="hover:bg-[#cae4c5]/15 transition-colors">
-                    <td className="py-3 px-3 font-bold text-[#254222]">{trx.id}</td>
+                    <td className="py-3 px-3 font-bold text-[#254222]">{trx.invoiceNumber || trx.id}</td>
                     <td className="py-3 px-3 text-[#76777d]">{format(new Date(trx.date || trx.createdAt || Date.now()), 'HH:mm')}</td>
                     <td className="py-3 px-3 font-semibold text-[#254222]">{trx.cashierName}</td>
                     <td className="py-3 px-3">
