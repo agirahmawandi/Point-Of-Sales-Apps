@@ -613,35 +613,8 @@ Tombol reset merah 🔴 di Dashboard kini juga mereset **seluruh data modul Keua
 Modal konfirmasi reset diperluas dengan 2 item baru:
 - 🏦 *Saldo Keuangan (Rekening, Kas, QRIS = 0)*
 - 💵 *Data Keuangan (Pindah Saldo, Setoran Investor, Bagi Hasil)*
- 
- # #   1 8 .   M o d u l   M a n a j e m e n   P e l a n g g a n   ( C u s t o m e r )   &   M e n u   S a l e s  
- -   * * S t r u k t u r   M e n u   B a r u : * *   M e n g u b a h   m e n u   \  
- L i s t  
- P e n j u a l a n \   m e n j a d i   g r u p   \ S a l e s \   y a n g   t e r d i r i   d a r i   \ L i s t  
- P e n j u a l a n \   d a n   \ L i s t  
- P e l a n g g a n \ .  
- -   * * P e n y i m p a n a n   D a t a   ( Z u s t a n d ) : * *   M e m b u a t   \ c u s t o m e r S t o r e . t s \   u n t u k   m e n y i m p a n   d a t a   p r o f i l   p e l a n g g a n   ( N a m a ,   T e l e p o n ,   A l a m a t ,   P l a t f o r m )   s e r t a   m e n g a k u m u l a s i k a n   \ 	 o t a l T r a n s a c t i o n s \   d a n   \ 	 o t a l S p e n t \ .  
- -   * * H a l a m a n   D a f t a r   P e l a n g g a n : * *   M e n a m b a h k a n   r u t e   \ / s a l e s / c u s t o m e r s \   u n t u k   m e n a m p i l k a n   t a b e l   d a f t a r   p e l a n g g a n .  
- -   * * I n t e g r a s i   K a s i r   O f f l i n e : * *   M e n a m b a h k a n   f i t u r   P o p u p   I n p u t   P e l a n g g a n   ( \ O f f l i n e C u s t o m e r M o d a l \ )   s a a t   a k a n   m e n y e l e s a i k a n   p e m b a y a r a n   o f f l i n e .   M e n c a k u p   p e n c a r i a n   n a m a / n o   h p   ( a n t i   d u p l i k a t )   a t a u   o p s i   * L e w a t i *   ( P e l a n g g a n   U m u m ) .  
- -   * * I n t e g r a s i   K a s i r   O n l i n e : * *   O t o m a t i s   m e n y i m p a n   n a m a ,   a l a m a t ,   d a n   p l a t f o r m   ( S h o p e e ,   T o k o p e d i a ,   d l l )   p e m b e l i   o n l i n e   k e   d a l a m   M a s t e r   D a t a   P e l a n g g a n .  
- -   * * T a b e l   L i s t   P e n j u a l a n : * *   K i n i   k o l o m   \  
- N o .  
- S t r u k \   j u g a   m e n a m p i l k a n   n a m a   P e l a n g g a n   y a n g   b e r t r a n s a k s i .  
-  
- # #   1 9 .   F i t u r   U p l o a d   F o t o   P r o d u k  
- -   M e n a m b a h k a n   f i t u r   u p l o a d   f o t o   ( o p s i o n a l ,   m a k s   1 M B )   p a d a   h a l a m a n   T a m b a h / E d i t   P r o d u k   ( \ P r o d u c t F o r m P a g e . t s x \ ) .  
- -   F o t o   p r o d u k   o t o m a t i s   d i k o n v e r s i   k e   f o r m a t   b a s e 6 4   d a n   d i s i m p a n   d i   d a t a b a s e   l o k a l .  
- -   M e n a m p i l k a n   t h u m b n a i l   f o t o   p r o d u k   p a d a   t a b e l   D a f t a r   P r o d u k   ( \ P r o d u c t L i s t P a g e . t s x \ ) .  
- -   M e n a m p i l k a n   f o t o   p r o d u k   ( a t a u   i c o n   d e f a u l t   j i k a   k o s o n g )   p a d a   g r i d   p r o d u k   d i   h a l a m a n   P O S   T e r m i n a l   ( \ P r o d u c t G r i d . t s x \ ) .  
-  
- # #   2 0 .   F i l t e r   R e n t a n g   W a k t u   D a s h b o a r d  
- -   M e n g a k t i f k a n   t o m b o l   f i l t e r   t a n g g a l   p a d a   h a l a m a n   D a s h b o a r d   ( \ D a s h b o a r d P a g e . t s x \ ) .  
- -   M e m b u a t   S t a t e   G l o b a l   b a r u   ( \ d a s h b o a r d S t o r e . t s \ )   u n t u k   m e n y i m p a n   f i l t e r   t a n g g a l   ( H a r i   I n i ,   K e m a r i n ,   M i n g g u   I n i ,   B u l a n   I n i ) .  
- -   F i l t e r   w a k t u   i n i   s e k a r a n g   m e m e n g a r u h i   k o m p o n e n - k o m p o n e n   b e r i k u t :  
-     -   R i n g k a s a n   K a r t u   K P I   ( O m z e t ,   H P P ,   L a b a   B e r s i h ) .  
-     -   G r a f i k   O m z e t   &   K u n j u n g a n   K a s i r   ( \ R e v e n u e C h a r t \ ) .  
-     -   G r a f i k   P r o d u k   T e r l a r i s   ( \ T o p P r o d u c t s C h a r t \ ) .  
-     -   R i n g k a s a n   A r u s   K a s   M a s u k   &   K e l u a r   ( \ C a s h F l o w C h a r t \ ) .  
-     -   D a f t a r   T r a n s a k s i   K a s i r   T e r b a r u   ( \ R e c e n t T r a n s a c t i o n s \ ) .  
- -   K o m p o n e n   * * S a l d o   G a b u n g a n   &   M e t o d e   P e m b a y a r a n * *   ( \ P a y m e n t M e t h o d S u m m a r y \ )   s e n g a j a   t i d a k   d i p e n g a r u h i   f i l t e r   s e s u a i   i n s t r u k s i ,   u n t u k   t e t a p   m e n a m p i l k a n   s a l d o   a k t u a l   s a a t   i n i .  
- 
+## 23. Pembaruan Antarmuka & Dashboard (16 September 2026)
+- **Modul List Penjualan**: Menambahkan kolom HPP di tabel riwayat transaksi penjualan untuk memonitor modal pokok.
+- **Tabel Item Transaksi (Sales & PO)**: Mengganti kolom Total Item yang tadinya hanya menampilkan kuantitas menjadi daftar nama produk pesanan (contoh: "Kopi, Teh").
+- **Dashboard Widget**: Memperbaiki pemetaan data (mapping) dari snake_case ke camelCase pada dashboardStore.ts, sehingga widget "Transaksi Kasir Terbaru" kembali menampilkan nomor faktur/invoice yang benar (bukan UUID) beserta nama kasir dan metode bayar.
+- **Edit Transaksi**: Menambahkan visibilitas kalkulasi **Total HPP (Modal)** pada ringkasan biaya modal Edit Transaksi.

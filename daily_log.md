@@ -1,6 +1,23 @@
-# 📝 Log Pekerjaan & Handover (15 September 2026)
+# 📝 Log Pekerjaan & Handover (16 September 2026)
 
-## ✅ Pekerjaan yang Diselesaikan Hari Ini (Hotfix User Management & Phase 9)
+## ✅ Pekerjaan yang Diselesaikan Hari Ini (Penyempurnaan UI/UX & Sinkronisasi Data)
+
+### 1. Penyempurnaan Tampilan List Penjualan & Purchase Order
+- **Kolom HPP**: Menambahkan kolom HPP pada tabel *List Penjualan* agar admin mudah memonitor nilai modal pokok (HPP) setiap transaksi secara transparan.
+- **Daftar Nama Item**: Mengubah kolom *Item* yang sebelumnya hanya menampilkan total angka (misal "3 pcs") menjadi daftar nama produk lengkap beserta total kuantitas (contoh: "Kopi Susu, Roti Bakar"). Berlaku pada antarmuka *List Penjualan* dan *Daftar Purchase Order*.
+
+### 2. Perbaikan Dashboard (Mapping Data Transaksi)
+- Memperbaiki *bug* pada `dashboardStore.ts` di mana *field* transaksi kasir terbaru dari *database* (format `snake_case` seperti `invoice_number`, `cashier_name`) tidak terpetakan dengan benar ke antarmuka aplikasi (*frontend* menggunakan `camelCase`).
+- Hasilnya, widget **Transaksi Kasir Terbaru** di Dasbor kembali menampilkan *Nomor Faktur* (Invoice Number) dengan rapi (menggantikan *UUID* abstrak), serta mengembalikan data *Kasir* dan *Metode Pembayaran* yang sebelumnya kosong.
+
+### 3. Visibilitas HPP pada Edit Transaksi
+- Menambahkan informasi kalkulasi **Total HPP (Modal)** di bawah *Subtotal Item* pada formulir *Edit Transaksi*. Hal ini krusial agar pengelola toko mengetahui estimasi laba kotor sebelum menyimpan perubahan pada transaksi lama.
+
+---
+
+# 📝 Log Pekerjaan Sebelumnya (15 September 2026)
+
+## ✅ Pekerjaan yang Diselesaikan (Hotfix User Management & Phase 9)
 
 ### 1. Perbaikan Navigasi (Sidebar)
 - Menambahkan link menu **"Manajemen Pengguna"** (`/settings/users`) ke dalam komponen `Sidebar.tsx` di bawah kategori Pengaturan yang sebelumnya terlewat.

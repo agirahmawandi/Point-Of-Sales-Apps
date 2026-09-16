@@ -341,15 +341,21 @@ export default function EditTransactionModal({
                 <div key={item.id} className="bg-white p-3 rounded-lg border border-slate-100 flex items-center justify-between gap-3 shadow-xs">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-[#254222] truncate">{item.name}</p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className="text-[10px] text-[#76777d]">Harga: Rp</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        value={formatNumber(item.price)}
-                        onChange={(e) => handleItemPriceChange(item.id!, e.target.value)}
-                        className="w-24 px-1.5 py-0.5 text-xs font-semibold text-[#254222] bg-[#cae4c5]/25 border border-[#cae4c5] rounded focus:bg-white focus:border-[#99cc66] outline-none"
-                      />
+                    <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400">HPP: Rp</span>
+                        <span className="text-[11px] font-semibold text-slate-500">{formatNumber(item.buyPrice || 0)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-[#76777d]">Harga: Rp</span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={formatNumber(item.price)}
+                          onChange={(e) => handleItemPriceChange(item.id!, e.target.value)}
+                          className="w-24 px-1.5 py-0.5 text-xs font-semibold text-[#254222] bg-[#cae4c5]/25 border border-[#cae4c5] rounded focus:bg-white focus:border-[#99cc66] outline-none"
+                        />
+                      </div>
                     </div>
                   </div>
 
