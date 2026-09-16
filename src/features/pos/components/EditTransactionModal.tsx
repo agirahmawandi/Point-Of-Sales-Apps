@@ -83,6 +83,7 @@ export default function EditTransactionModal({
 
   // Calculations
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const currentHpp = items.reduce((sum, item) => sum + ((item.buyPrice || 0) * item.quantity), 0);
   const marketplaceFee = parseInt(marketplaceFeeStr.replace(/\D/g, ''), 10) || 0;
   
   // Calculate % of marketplace fee relative to subtotal
@@ -389,6 +390,11 @@ export default function EditTransactionModal({
             <div className="flex justify-between text-[#76777d]">
               <span>Subtotal Item</span>
               <span className="font-bold text-[#254222]">{formatCurrency(subtotal)}</span>
+            </div>
+            
+            <div className="flex justify-between text-[#76777d]">
+              <span>Total HPP (Modal)</span>
+              <span className="font-semibold text-slate-500">{formatCurrency(currentHpp)}</span>
             </div>
 
             {transactionType === 'online' && (
