@@ -303,7 +303,7 @@ export default function SalesListPage() {
                 <th className="py-3.5 px-5">No. Struk / Info Pesanan</th>
                 <th className="py-3.5 px-5">Kasir</th>
                 <th className="py-3.5 px-5">Metode Bayar</th>
-                <th className="py-3.5 px-5 text-center">Item</th>
+                <th className="py-3.5 px-5">Item</th>
                 <th className="py-3.5 px-5 text-right">Potongan MP</th>
                 <th className="py-3.5 px-5 text-center">% Potongan</th>
                 <th className="py-3.5 px-5 text-right">HPP</th>
@@ -376,8 +376,15 @@ export default function SalesListPage() {
                       </td>
 
                       {/* Item */}
-                      <td className="px-5 py-3.5 text-center text-[#76777d]">
-                        {trx.items.reduce((acc, item) => acc + item.quantity, 0)} pcs
+                      <td className="px-5 py-3.5 text-[#76777d]">
+                        <div className="flex flex-col">
+                          <span className="truncate max-w-[200px] text-xs font-medium" title={trx.items.map(i => i.name).join(', ')}>
+                            {trx.items.map(i => i.name).join(', ')}
+                          </span>
+                          <span className="text-[10px] opacity-70">
+                            {trx.items.reduce((acc, item) => acc + item.quantity, 0)} pcs total
+                          </span>
+                        </div>
                       </td>
 
                       {/* Potongan Marketplace */}
