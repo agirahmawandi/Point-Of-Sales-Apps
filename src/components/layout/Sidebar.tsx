@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   ShoppingCart, 
@@ -50,7 +50,7 @@ export default function Sidebar() {
   const isKasir = user?.role === 'kasir';
 
   const menuItems = [
-    { title: 'Dashboard', icon: LayoutDashboard, path: '/' },
+    { title: 'Terminal POS', icon: Terminal, path: '/pos', badge: 'KASIR' },
     {
       title: 'Produk & Stok',
       icon: Boxes,
@@ -60,7 +60,6 @@ export default function Sidebar() {
         { title: 'Stok Opname', icon: ClipboardCheck, path: '/products/stock-opname' },
       ]
     },
-    { title: 'Terminal POS', icon: Terminal, path: '/pos', badge: 'KASIR' },
     {
       title: 'Sales',
       icon: Receipt,
@@ -131,15 +130,15 @@ export default function Sidebar() {
     >
       {/* Header Logo */}
       <div className="p-6 pb-4 flex items-center shrink-0">
-        <div className="flex items-center gap-4 w-full">
-          <div className="w-10 h-10 bg-[#99cc66] rounded-[10px] flex items-center justify-center text-[#254222] shrink-0 shadow-sm">
+        <Link to="/" className="flex items-center gap-4 w-full group cursor-pointer hover:opacity-90 transition-opacity">
+          <div className="w-10 h-10 bg-[#99cc66] rounded-[10px] flex items-center justify-center text-[#254222] shrink-0 shadow-sm group-hover:scale-105 transition-transform">
             <Store size={22} strokeWidth={2.5} />
           </div>
           <div className="flex flex-col min-w-0 flex-1">
             <span className="font-bold text-white text-[18px] tracking-tight truncate leading-none mb-1">Frema Mart</span>
             <span className="text-[12px] text-[#cae4c5]/70 truncate leading-none font-medium">Retail Management OS</span>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Nav */}
