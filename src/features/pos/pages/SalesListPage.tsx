@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import PageContainer from '@/components/layout/PageContainer';
@@ -27,12 +27,21 @@ import EditTransactionModal from '@/features/pos/components/EditTransactionModal
 
 export default function SalesListPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { transactions, updateTransactionPaymentStatus, updateTransaction } = useTransactionStore();
   const { bankAccounts, updateBankBalance } = useSettingsStore();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'offline' | 'online' | 'pending' | 'lunas'>('all');
   const [confirmModalId, setConfirmModalId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab && ['all', 'offline', 'online', 'pending', 'lunas'].includes(tab)) {
+      setActiveTab(tab as any);
+    }
+  }, [location.search]);
   
   // States for marking as paid
   const [settleMethod, setSettleMethod] = useState<PaymentMethod>('cash');

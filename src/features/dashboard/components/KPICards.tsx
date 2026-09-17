@@ -36,7 +36,7 @@ export default function KPICards() {
       <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">
         <div>
           <div className="flex items-center justify-between gap-2 h-10 mb-2">
-            <span className="text-[11px] font-bold text-[#76777d] uppercase tracking-wider truncate">Omzet</span>
+            <span className="text-[11px] font-bold text-[#76777d] uppercase tracking-wider truncate" title="Total Sales Yang Telah Dibayar">TOTAL SALES YANG TELAH DIBAYAR</span>
             <div className="w-10 h-10 rounded-xl bg-[#cae4c5]/30 text-[#254222] flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-[22px]">payments</span>
             </div>
@@ -48,10 +48,11 @@ export default function KPICards() {
         </div>
         <div className="mt-4 pt-3 border-t border-[#cae4c5]/30 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#cae4c5] text-[#254222] text-xs font-bold shrink-0">
-              Dari POS
-            </span>
+            <span className="text-xs text-[#76777d] truncate">Penjualan Telah Dibayar</span>
           </div>
+          <Link to="/sales?tab=lunas" className="text-sm font-bold text-[#254222] hover:underline inline-flex items-center gap-1 whitespace-nowrap">
+            Lihat <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </Link>
         </div>
       </div>
 
@@ -118,7 +119,7 @@ export default function KPICards() {
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs text-[#76777d] truncate">Penjualan Belum Dibayar</span>
           </div>
-          <Link to="/sales" className="text-sm font-bold text-[#254222] hover:underline inline-flex items-center gap-1 whitespace-nowrap">
+          <Link to="/sales?tab=pending" className="text-sm font-bold text-[#254222] hover:underline inline-flex items-center gap-1 whitespace-nowrap">
             Lihat <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
           </Link>
         </div>
@@ -142,7 +143,7 @@ export default function KPICards() {
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs text-[#76777d] truncate">Pembelian Belum Lunas</span>
           </div>
-          <Link to="/purchases" className="text-sm font-bold text-[#254222] hover:underline inline-flex items-center gap-1 whitespace-nowrap">
+          <Link to="/purchases?tab=utang" className="text-sm font-bold text-[#254222] hover:underline inline-flex items-center gap-1 whitespace-nowrap">
             Lihat <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
           </Link>
         </div>

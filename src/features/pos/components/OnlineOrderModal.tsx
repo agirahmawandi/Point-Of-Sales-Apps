@@ -14,6 +14,9 @@ const MARKETPLACE_OPTIONS = [
   'TikTok Shop',
   'Lazada',
   'Blibli',
+  'Shopee Food',
+  'GrabMart',
+  'Toco',
   'WhatsApp / Manual',
   'Lainnya'
 ];
@@ -77,7 +80,7 @@ export default function OnlineOrderModal({ isOpen, onClose }: OnlineOrderModalPr
 
   return (
     <div className="fixed inset-0 bg-[#254222]/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] border border-[#cae4c5]">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-[#cae4c5]">
         {/* Header */}
         <div className="p-4 border-b border-[#cae4c5]/40 flex justify-between items-center bg-[#cae4c5]/25">
           <div className="flex items-center gap-2">
@@ -106,7 +109,7 @@ export default function OnlineOrderModal({ isOpen, onClose }: OnlineOrderModalPr
               <ShoppingBag size={14} className="text-[#254222]" />
               <span>Platform / Marketplace *</span>
             </label>
-            <div className="grid grid-cols-3 gap-2 mb-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
               {MARKETPLACE_OPTIONS.map((mp) => (
                 <button
                   type="button"

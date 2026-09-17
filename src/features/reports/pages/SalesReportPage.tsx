@@ -33,7 +33,14 @@ export default function SalesReportPage() {
 
         const { data, error } = await query;
         if (error) throw error;
-        setTransactions(data as Transaction[] || []);
+        
+        const mappedData = (data || []).map((row: any) => ({
+          ...row,
+          createdAt: row.created_at,
+          paymentMethod: row.payment_method
+        }));
+        
+        setTransactions(mappedData as Transaction[]);
       } catch (error) {
       } finally {
         setIsLoading(false);

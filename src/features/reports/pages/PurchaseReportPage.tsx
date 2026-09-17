@@ -42,6 +42,9 @@ export default function PurchaseReportPage() {
         // map supplier data to match frontend structure if needed
         const mappedData = (data as any[]).map(d => ({
           ...d,
+          createdAt: d.created_at,
+          totalAmount: d.total_amount,
+          paidAmount: d.paid_amount,
           supplier: d.supplier || { name: 'Unknown' }
         }));
         

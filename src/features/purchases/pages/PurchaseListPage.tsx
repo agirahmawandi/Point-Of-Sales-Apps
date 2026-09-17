@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { usePurchaseStore } from '@/stores/purchaseStore';
 import PageContainer from '@/components/layout/PageContainer';
 import { Search, Plus, Eye, CheckCircle2, AlertCircle, ShoppingBag } from 'lucide-react';
@@ -10,16 +10,31 @@ import { EditPurchaseOrderModal } from '../components/EditPurchaseOrderModal';
 
 export default function PurchaseListPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { purchaseOrders } = usePurchaseStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'utang' | 'lunas'>('all');
   const [editingPO, setEditingPO] = useState<PurchaseOrder | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab && ['all', 'utang', 'lunas'].includes(tab)) {
+      setActiveTab(tab as any);
+    }
+  }, [location.search]);
 
   const filteredPOs = purchaseOrders.filter(po => {
     const matchesSearch = po.poNumber.toLowerCase().includes(search.toLowerCase()) || 
                           po.supplier?.name.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || po.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    
+    let matchesTab = true;
+    if (activeTab === 'utang') matchesTab = po.paymentStatus !== 'lunas';
+    if (activeTab === 'lunas') matchesTab = po.paymentStatus === 'lunas';
+
+    return matchesSearch && matchesStatus && matchesTab;
   });
 
   const formatNumber = (value: number) => {
@@ -65,8 +80,44 @@ export default function PurchaseListPage() {
     >
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
         {/* Toolbar */}
-        <div className="p-4 border-b border-[#eff4ff] flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
-          <div className="flex w-full sm:w-auto gap-3 flex-1 max-w-lg">
+        <div className="p-4 border-b border-[#eff4ff] flex flex-col xl:flex-row gap-4 justify-between items-center bg-white">
+          {/* Segmented Filter Tabs */}
+          <div className="flex items-center gap-1.5 p-1 bg-[#eff4ff] rounded-xl overflow-x-auto max-w-full">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                activeTab === 'all'
+                  ? 'bg-[#3755c3] text-white shadow-sm'
+                  : 'text-[#3755c3]/70 hover:text-[#3755c3]'
+              }`}
+            >
+              Semua ({purchaseOrders.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('utang')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === 'utang'
+                  ? 'bg-[#ffdad6] text-[#ba1a1a] shadow-sm'
+                  : 'text-[#3755c3]/70 hover:text-[#ba1a1a]'
+              }`}
+            >
+              <AlertCircle size={13} />
+              <span>Utang ({purchaseOrders.filter(po => po.paymentStatus !== 'lunas').length})</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('lunas')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === 'lunas'
+                  ? 'bg-[#e6f4ea] text-[#137333] shadow-sm'
+                  : 'text-[#3755c3]/70 hover:text-[#137333]'
+              }`}
+            >
+              <CheckCircle2 size={13} />
+              <span>Lunas ({purchaseOrders.filter(po => po.paymentStatus === 'lunas').length})</span>
+            </button>
+          </div>
+
+          <div className="flex w-full xl:w-auto gap-3 flex-1 max-w-lg">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#76777d]" size={18} />
               <input 

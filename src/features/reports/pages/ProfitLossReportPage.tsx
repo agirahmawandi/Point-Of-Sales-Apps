@@ -4,42 +4,39 @@ import { supabase } from '@/lib/supabase';
 import type { Transaction } from '@/types/transaction';
 import type { Expense } from '@/types/expense';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { id as localeId } from 'date-fns/locale';
 import { Download, TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-react';
 
 export default function ProfitLossReportPage() {
   const [filteredSales, setFilteredSales] = useState<Transaction[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [dateRange, setDateRange] = useState<'today' | '7days' | '30days' | 'all'>('30days');
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
   // Fetch Data from Supabase
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const now = new Date();
-        let startDate = startOfDay(now);
-
-        if (dateRange === '7days') startDate = subDays(startOfDay(now), 7);
-        else if (dateRange === '30days') startDate = subDays(startOfDay(now), 30);
-        else if (dateRange === 'all') startDate = new Date(0);
+        const startDate = new Date(selectedYear, selectedMonth, 1);
+        const endDate = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59, 999);
 
         // Fetch sales
         let salesQuery = supabase
           .from('transactions')
           .select(`*, items:transaction_items(*)`)
           .in('status', ['success', 'sukses'])
-          .not('payment_status', 'eq', 'tertunda');
+          .not('payment_status', 'eq', 'tertunda')
+          .gte('created_at', startDate.toISOString())
+          .lte('created_at', endDate.toISOString());
 
         // Fetch expenses
         let expensesQuery = supabase
           .from('expenses')
-          .select('*');
-
-        if (dateRange !== 'all') {
-          salesQuery = salesQuery.gte('created_at', startDate.toISOString()).lte('created_at', endOfDay(now).toISOString());
-          expensesQuery = expensesQuery.gte('date', startDate.toISOString()).lte('date', endOfDay(now).toISOString());
-        }
+          .select('*')
+          .gte('date', startDate.toISOString())
+          .lte('date', endDate.toISOString());
 
         const [salesRes, expensesRes] = await Promise.all([salesQuery, expensesQuery]);
         
@@ -54,7 +51,7 @@ export default function ProfitLossReportPage() {
       }
     };
     fetchData();
-  }, [dateRange]);
+  }, [selectedMonth, selectedYear]);
 
   // Calculations
   const revenue = filteredSales.reduce((acc, t) => acc + (t.total || 0), 0);
@@ -88,16 +85,31 @@ export default function ProfitLossReportPage() {
       title="Laporan Laba Rugi"
       description="Ringkasan kinerja keuangan toko (Pendapatan vs Pengeluaran)."
       actions={
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <select 
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value as any)}
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(Number(e.target.value))}
             className="h-10 px-3 rounded-xl border border-slate-200/80 text-[13px] font-medium text-[#0b1c30] bg-white shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
           >
-            <option value="today">Hari Ini</option>
-            <option value="7days">7 Hari Terakhir</option>
-            <option value="30days">30 Hari Terakhir</option>
-            <option value="all">Semua Waktu</option>
+            {Array.from({ length: 12 }).map((_, i) => (
+              <option key={i} value={i}>
+                {format(new Date(2000, i, 1), 'MMMM', { locale: localeId })}
+              </option>
+            ))}
+          </select>
+          <select 
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="h-10 px-3 rounded-xl border border-slate-200/80 text-[13px] font-medium text-[#0b1c30] bg-white shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+          >
+            {Array.from({ length: 5 }).map((_, i) => {
+              const year = new Date().getFullYear() - i;
+              return (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              );
+            })}
           </select>
           <button className="h-10 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-[#0b1c30] text-[13px] font-semibold transition-all shadow-sm flex items-center gap-2">
             <Download size={16} />

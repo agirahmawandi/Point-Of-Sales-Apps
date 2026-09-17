@@ -37,7 +37,14 @@ export default function ExpenseReportPage() {
 
         const { data, error } = await query;
         if (error) throw error;
-        setExpenses(data as Expense[] || []);
+        
+        const mappedData = (data || []).map((row: any) => ({
+          ...row,
+          categoryId: row.category_id,
+          createdAt: row.created_at
+        }));
+        
+        setExpenses(mappedData as Expense[]);
       } catch (error) {
       } finally {
         setIsLoading(false);
