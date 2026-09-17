@@ -27,7 +27,7 @@ export default function ExpenseCategoryPage() {
 
   const openAddModal = () => {
     setEditingId(null);
-    setFormData({ name: '', icon: '📋', description: '' });
+    setFormData({ name: '', icon: '', description: '' });
     setIsModalOpen(true);
   };
 
@@ -35,7 +35,7 @@ export default function ExpenseCategoryPage() {
     setEditingId(category.id);
     setFormData({
       name: category.name,
-      icon: category.icon || '📋',
+      icon: category.icon || '',
       description: category.description || '',
     });
     setIsModalOpen(true);
@@ -105,7 +105,6 @@ export default function ExpenseCategoryPage() {
           <table className="w-full text-left whitespace-nowrap">
             <thead>
               <tr className="bg-[#eff4ff] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
-                <th className="py-3.5 px-5 w-20 text-center">Ikon</th>
                 <th className="py-3.5 px-5">Nama Kategori</th>
                 <th className="py-3.5 px-5">Deskripsi</th>
                 <th className="py-3.5 px-5 text-right">Total Tercatat</th>
@@ -115,7 +114,7 @@ export default function ExpenseCategoryPage() {
             <tbody className="divide-y divide-[#eff4ff] text-[13px]">
               {filteredCategories.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-[#76777d]">
+                  <td colSpan={4} className="py-12 text-center text-[#76777d]">
                     <Layers size={40} className="mx-auto mb-2 text-slate-300" />
                     <p className="font-semibold text-[#0b1c30]">Belum ada kategori beban</p>
                   </td>
@@ -123,7 +122,6 @@ export default function ExpenseCategoryPage() {
               ) : (
                 filteredCategories.map(cat => (
                   <tr key={cat.id} className="hover:bg-[#eff4ff]/40 transition-colors">
-                    <td className="px-5 py-3.5 text-2xl text-center">{cat.icon}</td>
                     <td className="px-5 py-3.5 font-semibold text-[#0b1c30]">{cat.name}</td>
                     <td className="px-5 py-3.5 text-[#76777d]">{cat.description || '-'}</td>
                     <td className="px-5 py-3.5 font-bold text-[#0b1c30] text-right">
@@ -168,28 +166,16 @@ export default function ExpenseCategoryPage() {
             
             <form onSubmit={handleSubmit}>
               <div className="p-5 space-y-4 text-xs">
-                <div className="flex gap-3">
-                  <div className="w-20 shrink-0">
-                    <label className="block text-[13px] font-semibold text-[#0b1c30] mb-1.5">Emoji</label>
-                    <input 
-                      type="text" 
-                      value={formData.icon}
-                      onChange={e => setFormData({...formData, icon: e.target.value})}
-                      className="w-full h-10 px-2 border border-slate-200 rounded-xl focus:outline-none focus:border-[#3755c3] text-center text-lg"
-                      placeholder="⚡"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-[13px] font-semibold text-[#0b1c30] mb-1.5">Nama Kategori *</label>
-                    <input 
-                      type="text" 
-                      required
-                      value={formData.name}
-                      onChange={e => setFormData({...formData, name: e.target.value})}
-                      className="w-full h-10 px-3.5 border border-slate-200 rounded-xl focus:outline-none focus:border-[#3755c3] text-xs text-[#0b1c30]"
-                      placeholder="Listrik, Gaji, dll."
-                    />
-                  </div>
+                <div>
+                  <label className="block text-[13px] font-semibold text-[#0b1c30] mb-1.5">Nama Kategori *</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.name}
+                    onChange={e => setFormData({...formData, name: e.target.value})}
+                    className="w-full h-10 px-3.5 border border-slate-200 rounded-xl focus:outline-none focus:border-[#3755c3] text-xs text-[#0b1c30]"
+                    placeholder="Listrik, Gaji, dll."
+                  />
                 </div>
                 <div>
                   <label className="block text-[13px] font-semibold text-[#0b1c30] mb-1.5">Deskripsi / Penjelasan</label>

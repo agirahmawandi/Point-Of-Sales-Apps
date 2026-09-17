@@ -137,9 +137,8 @@ export default function ExpenseListPage() {
                       {format(new Date(exp.date), 'dd MMM yyyy', { locale: localeId })}
                     </td>
                     <td className="px-5 py-3.5">
-                      <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#e5eeff] text-[#0b1c30] text-xs font-semibold">
-                        <span>{exp.category?.icon || '📋'}</span>
-                        <span>{exp.category?.name}</span>
+                      <div className="flex items-center gap-2.5">
+                        <span className="font-semibold text-[#0b1c30]">{exp.category?.name || '-'}</span>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 font-medium text-[#0b1c30]">
@@ -201,7 +200,7 @@ export default function ExpenseListPage() {
                       className="w-full h-10 px-3 border border-slate-200 rounded-xl focus:outline-none focus:border-[#3755c3] text-xs text-[#0b1c30] bg-white"
                     >
                       {categories.map(c => (
-                        <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                        <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                     </select>
                   </div>
