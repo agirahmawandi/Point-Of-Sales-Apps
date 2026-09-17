@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Search, Bell, Plus, Calendar, ChevronRight } from 'lucide-react';
+import { Menu, Bell, Plus, Calendar, ChevronRight, Home } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { useUiStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -65,6 +65,10 @@ export default function TopBar() {
         
         {/* Breadcrumb */}
         <nav className="hidden sm:flex items-center gap-2 text-sm text-[#45464d]">
+          <Link to="/" className="text-[#c6c6cd] hover:text-[#99cc66] transition-colors" title="Dashboard">
+            <Home size={16} />
+          </Link>
+          <ChevronRight size={14} className="text-[#c6c6cd]" />
           <Link to={currentPath.parentPath} className="font-medium hover:text-[#99cc66] transition-colors">
             {currentPath.parent}
           </Link>
