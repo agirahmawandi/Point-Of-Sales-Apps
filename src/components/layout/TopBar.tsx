@@ -12,39 +12,46 @@ export default function TopBar() {
 
   // Comprehensive breadcrumb mapping
   const getBreadcrumb = (path: string) => {
-    const staticMap: Record<string, { parent: string, current: string }> = {
-      '/': { parent: 'Dashboard', current: 'Overview' },
-      '/products': { parent: 'Produk & Stok', current: 'Daftar Produk' },
-      '/products/new': { parent: 'Produk & Stok', current: 'Tambah Produk' },
-      '/products/categories': { parent: 'Produk & Stok', current: 'Kategori' },
-      '/products/stock-opname': { parent: 'Produk & Stok', current: 'Stok Opname' },
-      '/pos': { parent: 'Terminal POS', current: 'Kasir' },
-      '/pos/history': { parent: 'Terminal POS', current: 'Riwayat Transaksi' },
-      '/purchases': { parent: 'Pembelian', current: 'Purchase Order' },
-      '/purchases/new': { parent: 'Pembelian', current: 'Buat PO Baru' },
-      '/purchases/receive': { parent: 'Pembelian', current: 'Penerimaan Barang' },
-      '/purchases/suppliers': { parent: 'Pembelian', current: 'Pemasok' },
-      '/expenses': { parent: 'Keuangan', current: 'Pengeluaran Operasional' },
-      '/expenses/categories': { parent: 'Keuangan', current: 'Kategori Beban' },
-      '/reports/sales': { parent: 'Laporan', current: 'Laporan Penjualan' },
-      '/reports/purchases': { parent: 'Laporan', current: 'Laporan Pembelian' },
-      '/reports/inventory': { parent: 'Laporan', current: 'Laporan Inventaris' },
-      '/reports/expenses': { parent: 'Laporan', current: 'Laporan Pengeluaran' },
-      '/reports/profit-loss': { parent: 'Laporan', current: 'Laporan Laba Rugi' },
-      '/settings/store': { parent: 'Pengaturan', current: 'Profil Toko' },
-      '/settings/tax': { parent: 'Pengaturan', current: 'Pengaturan Pajak' },
-      '/settings/payments': { parent: 'Pengaturan', current: 'Metode Pembayaran' },
-      '/settings/users': { parent: 'Pengaturan', current: 'Manajemen Pengguna' },
+    const staticMap: Record<string, { parent: string, parentPath: string, current: string }> = {
+      '/': { parent: 'Dashboard', parentPath: '/', current: 'Overview' },
+      '/products': { parent: 'Produk & Stok', parentPath: '/products', current: 'Daftar Produk' },
+      '/products/new': { parent: 'Produk & Stok', parentPath: '/products', current: 'Tambah Produk' },
+      '/products/categories': { parent: 'Produk & Stok', parentPath: '/products', current: 'Kategori' },
+      '/products/stock-opname': { parent: 'Produk & Stok', parentPath: '/products', current: 'Stok Opname' },
+      '/pos': { parent: 'Terminal POS', parentPath: '/pos', current: 'Kasir' },
+      '/pos/history': { parent: 'Terminal POS', parentPath: '/sales', current: 'Riwayat Transaksi' },
+      '/sales': { parent: 'Sales', parentPath: '/sales', current: 'List Penjualan' },
+      '/sales/customers': { parent: 'Sales', parentPath: '/sales/customers', current: 'List Pelanggan' },
+      '/purchases': { parent: 'Pembelian', parentPath: '/purchases', current: 'Purchase Order' },
+      '/purchases/new': { parent: 'Pembelian', parentPath: '/purchases', current: 'Buat PO Baru' },
+      '/purchases/receive': { parent: 'Pembelian', parentPath: '/purchases', current: 'Penerimaan Barang' },
+      '/purchases/suppliers': { parent: 'Pembelian', parentPath: '/purchases/suppliers', current: 'Pemasok' },
+      '/expenses': { parent: 'Pengeluaran', parentPath: '/expenses', current: 'Daftar Pengeluaran' },
+      '/expenses/categories': { parent: 'Pengeluaran', parentPath: '/expenses/categories', current: 'Kategori Beban' },
+      '/finance/history': { parent: 'Keuangan', parentPath: '/finance/history', current: 'Histori Transaksi' },
+      '/finance/transfer': { parent: 'Keuangan', parentPath: '/finance/transfer', current: 'Pindah Saldo' },
+      '/finance/banks': { parent: 'Keuangan', parentPath: '/finance/banks', current: 'Daftar Bank' },
+      '/finance/investors': { parent: 'Keuangan', parentPath: '/finance/investors', current: 'Investor' },
+      '/finance/profit-share': { parent: 'Keuangan', parentPath: '/finance/profit-share', current: 'Bagi Hasil' },
+      '/reports/sales': { parent: 'Laporan', parentPath: '/reports/sales', current: 'Laporan Penjualan' },
+      '/reports/purchases': { parent: 'Laporan', parentPath: '/reports/purchases', current: 'Laporan Pembelian' },
+      '/reports/inventory': { parent: 'Laporan', parentPath: '/reports/inventory', current: 'Laporan Inventaris' },
+      '/reports/expenses': { parent: 'Laporan', parentPath: '/reports/expenses', current: 'Laporan Pengeluaran' },
+      '/reports/profit-loss': { parent: 'Laporan', parentPath: '/reports/profit-loss', current: 'Laporan Laba Rugi' },
+      '/settings/store': { parent: 'Pengaturan', parentPath: '/settings/store', current: 'Profil Toko' },
+      '/settings/tax': { parent: 'Pengaturan', parentPath: '/settings/tax', current: 'Pengaturan Pajak' },
+      '/settings/payments': { parent: 'Pengaturan', parentPath: '/settings/payments', current: 'Metode Pembayaran' },
+      '/settings/users': { parent: 'Pengaturan', parentPath: '/settings/users', current: 'Manajemen Pengguna' },
     };
 
     if (staticMap[path]) return staticMap[path];
-    if (path === '/pos/sales') return { parent: 'Terminal POS', current: 'List Penjualan' };
-    if (path.startsWith('/products/') && path.endsWith('/edit')) return { parent: 'Produk & Stok', current: 'Edit Produk' };
-    if (path.startsWith('/purchases/') && path.endsWith('/receive')) return { parent: 'Pembelian', current: 'Penerimaan Barang' };
-    if (path.startsWith('/purchases/')) return { parent: 'Pembelian', current: 'Detail PO' };
-    if (path.startsWith('/pos/receipt/')) return { parent: 'Terminal POS', current: 'Struk Transaksi' };
+    if (path === '/pos/sales') return { parent: 'Terminal POS', parentPath: '/pos', current: 'List Penjualan' };
+    if (path.startsWith('/products/') && path.endsWith('/edit')) return { parent: 'Produk & Stok', parentPath: '/products', current: 'Edit Produk' };
+    if (path.startsWith('/purchases/') && path.endsWith('/receive')) return { parent: 'Pembelian', parentPath: '/purchases', current: 'Penerimaan Barang' };
+    if (path.startsWith('/purchases/')) return { parent: 'Pembelian', parentPath: '/purchases', current: 'Detail PO' };
+    if (path.startsWith('/pos/receipt/')) return { parent: 'Terminal POS', parentPath: '/pos', current: 'Struk Transaksi' };
 
-    return { parent: 'Frema Mart', current: 'Overview' };
+    return { parent: 'Frema Mart', parentPath: '/', current: 'Overview' };
   };
   
   const currentPath = getBreadcrumb(location.pathname);
@@ -58,23 +65,14 @@ export default function TopBar() {
         
         {/* Breadcrumb */}
         <nav className="hidden sm:flex items-center gap-2 text-sm text-[#45464d]">
-          <span className="font-medium">{currentPath.parent}</span>
+          <Link to={currentPath.parentPath} className="font-medium hover:text-[#99cc66] transition-colors">
+            {currentPath.parent}
+          </Link>
           <ChevronRight size={14} className="text-[#c6c6cd]" />
-          <span className="font-semibold text-[#254222]">{currentPath.current}</span>
+          <Link to={location.pathname} className="font-semibold text-[#254222] hover:text-[#99cc66] transition-colors">
+            {currentPath.current}
+          </Link>
         </nav>
-
-        {/* Global Search */}
-        <div className="relative hidden md:flex items-center">
-          <Search className="absolute left-3 text-[#76777d]" size={18} />
-          <input 
-            type="text" 
-            className="h-10 w-64 lg:w-80 rounded-xl bg-[#cae4c5]/25 pl-9 pr-14 text-sm text-[#254222] placeholder:text-[#76777d] border border-[#cae4c5]/50 focus:outline-none focus:ring-1 focus:ring-[#99cc66] focus:border-[#99cc66] transition-all"
-            placeholder="Cari pesanan, SKU, atau pelanggan..." 
-          />
-          <div className="absolute right-2 flex items-center gap-1 rounded bg-[#cae4c5]/50 px-1.5 py-0.5 text-[#254222] text-[11px] font-bold uppercase">
-            Ctrl+K
-          </div>
-        </div>
       </div>
 
       <div className="flex items-center gap-3 lg:gap-4">
