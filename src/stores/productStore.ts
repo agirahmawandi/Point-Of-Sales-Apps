@@ -16,7 +16,9 @@ interface ProductState {
   fetchProducts: () => Promise<void>;
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
+  batchUpdateProducts: (updates: Partial<Product>[]) => Promise<void>;
   
   // Local state modifiers for sync operations (used in checkout/cart)
   reduceStock: (id: string, quantity: number) => void;
@@ -174,6 +176,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
         unit: item.unit || undefined,
         imageUrl: item.image_url || undefined,
         isActive: item.is_active,
+        marginPercentage: item.margin_percentage || 0,
+        packingCost: item.packing_cost || 0,
+        marketplaceFeePercentage: item.marketplace_fee_percentage || 0,
+        marketplacePrice: item.marketplace_price || 0,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
       }));
@@ -217,6 +223,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
           unit: productData.unit || null,
           image_url: productData.imageUrl || null,
           is_active: true,
+          margin_percentage: productData.marginPercentage || 0,
+          packing_cost: productData.packingCost || 0,
+          marketplace_fee_percentage: productData.marketplaceFeePercentage || 0,
+          marketplace_price: productData.marketplacePrice || 0,
         }])
         .select()
         .single();
@@ -264,6 +274,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
       if (productData.minStock !== undefined) updatePayload.min_stock = productData.minStock;
       if (productData.unit !== undefined) updatePayload.unit = productData.unit || null;
       if (productData.imageUrl !== undefined) updatePayload.image_url = productData.imageUrl || null;
+      if (productData.marginPercentage !== undefined) updatePayload.margin_percentage = productData.marginPercentage;
+      if (productData.packingCost !== undefined) updatePayload.packing_cost = productData.packingCost;
+      if (productData.marketplaceFeePercentage !== undefined) updatePayload.marketplace_fee_percentage = productData.marketplaceFeePercentage;
+      if (productData.marketplacePrice !== undefined) updatePayload.marketplace_price = productData.marketplacePrice;
 
       const { error } = await supabase
         .from('products')
@@ -296,6 +310,38 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set((state) => ({
         products: state.products.filter(p => p.id !== id)
       }));
+    } catch (err: any) {
+      set({ error: err.message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  batchUpdateProducts: async (updates) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updatePromises = updates.map(p => {
+        return supabase
+          .from('products')
+          .update({
+            sell_price: p.sellingPrice,
+            margin_percentage: p.marginPercentage,
+            packing_cost: p.packingCost,
+            marketplace_fee_percentage: p.marketplaceFeePercentage,
+            marketplace_price: p.marketplacePrice,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', p.id);
+      });
+
+      const results = await Promise.all(updatePromises);
+      
+      // Check if any of the updates failed
+      const hasError = results.find(r => r.error);
+      if (hasError) throw hasError.error;
+
+      await get().fetchProducts();
     } catch (err: any) {
       set({ error: err.message });
       throw err;

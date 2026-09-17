@@ -61,6 +61,7 @@ export default function Sidebar() {
       icon: Boxes,
       submenu: [
         { title: 'Daftar Produk', icon: Boxes, path: '/products' },
+        { title: 'Acuan Harga Jual', icon: Tags, path: '/products/price-reference' },
         { title: 'Kategori', icon: Tags, path: '/products/categories' },
         { title: 'Stok Opname', icon: ClipboardCheck, path: '/products/stock-opname' },
       ]

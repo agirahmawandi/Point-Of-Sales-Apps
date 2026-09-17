@@ -1,4 +1,31 @@
-# 📝 Log Pekerjaan & Handover (16 September 2026)
+# 📝 Log Pekerjaan & Handover (17 September 2026)
+
+## ✅ Pekerjaan yang Diselesaikan Hari Ini (Sinkronisasi Arus Kas & Acuan Harga)
+
+### 1. Refactoring Arsitektur Histori Transaksi (Cash Mutations)
+- **Tabel Mutasi Kas Terpadu**: Membuat tabel `cash_mutations` (melalui script `supabase_cash_mutations.sql`) sebagai *source-of-truth* (sumber kebenaran tunggal) untuk mencatat semua aliran kas (pemasukan & pengeluaran) baik itu via tunai, QRIS, maupun Bank.
+- **Backfill Data Lama**: Membuat script migrasi `supabase_backfill_mutations.sql` untuk memindahkan semua riwayat transaksi kasir, pengeluaran, transfer, dan setoran investor lama ke tabel `cash_mutations` dengan timestamp `created_at` yang tepat.
+- **Perbaikan Hak Akses (403 Forbidden)**: Menjalankan `GRANT ALL` dan RLS Policy pada tabel mutasi yang baru dibuat agar role `authenticated` (kasir/admin) bisa melakukan query tanpa kendala izin.
+- **Penyesuaian Zona Waktu (WIB)**: Mengupdate logika RPC untuk menyinkronkan pengisian `created_at` dengan fungsi `NOW()` agar waktu transaksi tidak terpatok pada jam 07:00 UTC (WIB).
+
+### 2. Peningkatan UI Histori Transaksi & Kategori Beban
+- **Informasi Rekening Transparan**: Halaman **Histori Transaksi** kini menampilkan secara detail nomor dan nama rekening bank pada kolom Metode Pembayaran jika sumber aliran dana menggunakan Bank.
+- **Pembersihan Ikon Kategori**: Menghilangkan input dan tampilan Emoji/Ikon 📋 pada halaman **Kategori Beban** dan dropdown saat pencatatan pengeluaran.
+- **Pembersihan Ikon Dashboard & Struk**: Menghapus ikon Piala (🏆) pada widget "Produk Terlaris" serta emoji (🏪, 🌐, ⏳, ✓) pada cetak struk agar terlihat lebih profesional dan minimalis.
+
+### 3. Fitur Baru: Acuan Harga Jual (Price Reference)
+- Menambahkan submenu baru **Acuan Harga Jual** di bawah "Produk & Stok".
+- Fitur ini berfungsi sebagai kalkulator interaktif sekaligus pengatur default Harga Jual Toko dan Harga Jual Marketplace secara otomatis dari HPP.
+- **Rumus Harga**:
+  - `Harga Jual (Toko) = HPP + (HPP × Margin%) + Biaya Packing`
+  - `Harga Jual (Online) = Harga Jual (Toko) / (100% - Potongan Marketplace%)`
+  - *Catatan:* Semua hasil kalkulasi otomatis **dibulatkan ke atas ke kelipatan Rp 500 terdekat** (misal 2.323 menjadi 2.500).
+- **Perubahan Database**: Menambahkan kolom `margin_percentage`, `packing_cost`, `marketplace_fee_percentage`, dan `marketplace_price` ke tabel `products` via script `supabase_price_reference.sql`.
+- **Integrasi POS**: Saat Margin/Biaya Packing diubah dan disimpan, sistem akan menimpa (`selling_price`) di database, sehingga Kasir langsung menggunakan harga baru tersebut saat bertransaksi.
+
+---
+
+# 📝 Log Pekerjaan Sebelumnya (16 September 2026)
 
 ## ✅ Pekerjaan yang Diselesaikan Hari Ini (Penyempurnaan UI/UX & Sinkronisasi Data)
 

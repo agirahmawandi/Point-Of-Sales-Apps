@@ -19,6 +19,7 @@ import ProductListPage from '@/features/products/pages/ProductListPage';
 import ProductFormPage from '@/features/products/pages/ProductFormPage';
 import CategoryPage from '@/features/products/pages/CategoryPage';
 import StockOpnamePage from '@/features/products/pages/StockOpnamePage';
+import PriceReferencePage from '@/features/products/pages/PriceReferencePage';
 // POS
 import POSTerminalPage from '@/features/pos/pages/POSTerminalPage';
 import TransactionHistoryPage from '@/features/pos/pages/TransactionHistoryPage';
@@ -78,6 +79,7 @@ const router = createBrowserRouter([
           { path: 'products', element: <ProductListPage /> },
           { path: 'products/new', element: <ProductFormPage /> },
           { path: 'products/:id/edit', element: <ProductFormPage /> },
+          { path: 'products/price-reference', element: <PriceReferencePage /> },
           { path: 'products/categories', element: <CategoryPage /> },
           { path: 'products/stock-opname', element: <StockOpnamePage /> },
 

@@ -23,6 +23,10 @@ export interface Product {
   sellPrice?: number;
   stock: number;
   minStock: number;
+  marginPercentage?: number;
+  packingCost?: number;
+  marketplaceFeePercentage?: number;
+  marketplacePrice?: number;
   imageUrl?: string;
   unit?: string;
   isActive?: boolean;

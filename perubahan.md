@@ -619,3 +619,20 @@ Modal konfirmasi reset diperluas dengan 2 item baru:
 - **Dashboard Widget**: Memperbaiki pemetaan data (mapping) dari snake_case ke camelCase pada dashboardStore.ts, sehingga widget "Transaksi Kasir Terbaru" kembali menampilkan nomor faktur/invoice yang benar (bukan UUID) beserta nama kasir dan metode bayar.
 - **Edit Transaksi**: Menambahkan visibilitas kalkulasi **Total HPP (Modal)** pada ringkasan biaya modal Edit Transaksi.
 - **Edit Purchase Order**: Penambahan fitur Edit pada daftar PO (Purchase Order) yang disertai fungsi sinkronisasi (rollback) cerdas. Apabila PO yang sudah diterima/dibayar diedit, sistem akan otomatis menyesuaikan pengembalian stok barang dan nominal rekening bank secara atomik melalui fungsi RPC `edit_purchase_order`. *(Hotfix: Perbaikan logika rollback stok dengan mencabut fungsi `GREATEST(0)` agar kalkulasi stok sementara yang bernilai negatif tetap diproses secara akurat saat terjadi pengeditan PO yang barangnya sebagian telah terjual).*
+
+---
+
+## 24. Refactoring Histori Transaksi, Pembersihan UI, dan Acuan Harga Jual (17 September 2026)
+
+### 1. Refactoring Data Histori Transaksi (Cash Mutations)
+- **Sentralisasi Arus Kas**: Memisahkan logika riwayat saldo dari tabel individual (Sales, Expenses, dll) ke dalam satu tabel `cash_mutations` terpadu. Kini `FinanceHistoryPage` membaca secara eksklusif dari satu sumber kebenaran (source-of-truth).
+- **Penyesuaian Waktu (WIB)**: Menambahkan fungsi RPC `insert_cash_mutation` dan script migrasi backfill untuk memastikan sinkronisasi waktu transaksi yang akurat secara timestamp menggunakan `NOW()`.
+
+### 2. Optimasi UI Struk & Kategori Beban
+- **Minimalisme UI**: Penghapusan input emoji pada form kategori beban untuk tampilan tabel dan form yang lebih bersih.
+- **Pembersihan Ikon**: Menghapus ikon trofi 🏆 pada widget "Produk Terlaris" di Dashboard, dan menghapus emoji dekoratif (seperti ikon toko, globe, jam pasir, centang) pada tampilan cetak Struk.
+
+### 3. Modul Acuan Harga Jual
+- **`PriceReferencePage.tsx`**: Pembuatan halaman kalkulator margin & harga jual di bawah menu "Produk & Stok". Fitur ini mempermudah penentuan Harga Jual Offline dan Online (Marketplace) berdasarkan persentase margin, biaya packing, dan potongan marketplace.
+- **Auto Rounding**: Sistem secara otomatis membulatkan hasil perhitungan harga ke atas ke kelipatan Rp 500 terdekat.
+- **Sinkronisasi Otomatis Kasir**: Fitur "Simpan Perubahan" menggunakan metode *bulk upsert* yang secara seketika menimpa kolom `selling_price` di database master produk. Hal ini memastikan Terminal POS (kasir) selalu mendapatkan harga jual paling mutakhir sesuai margin yang ditetapkan.
