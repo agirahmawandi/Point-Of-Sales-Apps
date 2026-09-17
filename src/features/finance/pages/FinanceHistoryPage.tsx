@@ -1,7 +1,4 @@
 import React, { useMemo } from 'react';
-import { useTransactionStore } from '@/stores/transactionStore';
-import { usePurchaseStore } from '@/stores/purchaseStore';
-import { useExpenseStore } from '@/stores/expenseStore';
 import { useFinanceStore } from '@/stores/financeStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import PageContainer from '@/components/layout/PageContainer';
@@ -31,11 +28,12 @@ type AnyTx = {
 };
 
 export default function TransactionHistoryPage() {
-  const { transactions } = useTransactionStore();
-  const { purchaseOrders } = usePurchaseStore();
-  const { expenses } = useExpenseStore();
-  const { balanceTransfers, investorDeposits } = useFinanceStore();
+  const { cashMutations, fetchCashMutations } = useFinanceStore();
   const { bankAccounts } = useSettingsStore();
+
+  React.useEffect(() => {
+    fetchCashMutations();
+  }, [fetchCashMutations]);
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Math.abs(v));
@@ -46,87 +44,9 @@ export default function TransactionHistoryPage() {
     return b ? `${b.bank} ${b.accountNumber}` : id;
   };
 
-  const allTx = useMemo<AnyTx[]>(() => {
-    const list: AnyTx[] = [];
-
-    // Sales
-    transactions.forEach((t: Transaction) => {
-      list.push({
-        id: t.id,
-        date: (t.date || t.createdAt || new Date()).toString(),
-        type: 'sale',
-        description: `Penjualan #${t.id} (${t.items.length} item)`,
-        amount: t.total,
-        direction: 'in',
-        method: t.paymentMethod === 'card'
-          ? `Transfer Bank (${getBankName(t.bankAccountId)})`
-          : t.paymentMethod === 'qris' ? 'QRIS'
-          : t.paymentMethod === 'cash' ? 'Tunai'
-          : t.paymentMethod,
-        status: t.paymentStatus === 'tertunda' ? 'Tertunda' : 'Lunas',
-      });
-    });
-
-    // Purchase payments
-    purchaseOrders.forEach((po) => {
-      if ((po.paidAmount || 0) > 0) {
-        list.push({
-          id: po.id,
-          date: po.createdAt,
-          type: 'purchase',
-          description: `Pembelian PO #${po.poNumber} - ${po.supplier?.name || '-'}`,
-          amount: po.paidAmount || 0,
-          direction: 'out',
-          method: 'Transfer / Tunai',
-          status: po.paymentStatus === 'lunas' ? 'Lunas' : 'Sebagian',
-        });
-      }
-    });
-
-    // Expenses
-    expenses.forEach((e) => {
-      list.push({
-        id: e.id,
-        date: e.date,
-        type: 'expense',
-        description: `${e.category} — ${e.description}`,
-        amount: e.amount,
-        direction: 'out',
-        method: e.paymentMethod || 'Tunai',
-        status: 'Selesai',
-      });
-    });
-
-    // Balance transfers
-    balanceTransfers.forEach((t) => {
-      list.push({
-        id: t.id,
-        date: t.date,
-        type: 'transfer',
-        description: `Pindah Saldo: ${t.fromType === 'bank' ? getBankName(t.fromBankId) : t.fromType} → ${t.toType === 'bank' ? getBankName(t.toBankId) : t.toType}`,
-        amount: t.amount,
-        direction: 'out',
-        method: 'Internal Transfer',
-        status: 'Selesai',
-      });
-    });
-
-    // Investor deposits
-    investorDeposits.forEach((d) => {
-      list.push({
-        id: d.id,
-        date: d.date,
-        type: 'investor',
-        description: `Dana Investor: ${d.investorName}`,
-        amount: d.amount,
-        direction: 'in',
-        method: d.method === 'transfer' ? `Transfer Bank (${getBankName(d.bankAccountId)})` : 'Tunai',
-        status: 'Diterima',
-      });
-    });
-
-    return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [transactions, purchaseOrders, expenses, balanceTransfers, investorDeposits]);
+  const allTx = useMemo(() => {
+    return cashMutations;
+  }, [cashMutations]);
 
   const typeConfig: Record<string, { label: string; icon: React.ElementType; color: string; bg: string }> = {
     sale: { label: 'Penjualan', icon: ShoppingCart, color: 'text-[#137333]', bg: 'bg-[#e6f4ea]' },
@@ -134,6 +54,7 @@ export default function TransactionHistoryPage() {
     expense: { label: 'Pengeluaran', icon: TrendingDown, color: 'text-red-600', bg: 'bg-red-50' },
     transfer: { label: 'Pindah Saldo', icon: ArrowLeftRight, color: 'text-[#3755c3]', bg: 'bg-[#eff4ff]' },
     investor: { label: 'Investor', icon: Banknote, color: 'text-[#254222]', bg: 'bg-[#cae4c5]' },
+    profit_share: { label: 'Bagi Hasil', icon: Banknote, color: 'text-[#254222]', bg: 'bg-[#cae4c5]' },
   };
 
   return (
@@ -157,8 +78,15 @@ export default function TransactionHistoryPage() {
             <tbody className="divide-y divide-[#cae4c5]/30 text-[13px]">
               {allTx.length > 0 ? (
                 allTx.map((tx) => {
-                  const cfg = typeConfig[tx.type];
+                  const cfg = typeConfig[tx.type] || typeConfig.transfer;
                   const Icon = cfg.icon;
+                  const isBank = ['card', 'transfer', 'transfer bank', 'kartu kredit'].includes(tx.paymentMethod.toLowerCase());
+                  const displayMethod = isBank 
+                    ? `Transfer Bank (${getBankName(tx.bankAccountId)})`
+                    : tx.paymentMethod === 'cash' || tx.paymentMethod.toLowerCase() === 'tunai' ? 'Tunai'
+                    : tx.paymentMethod === 'qris' || tx.paymentMethod.toLowerCase() === 'qris' ? 'QRIS'
+                    : tx.paymentMethod;
+                    
                   return (
                     <tr key={`${tx.type}-${tx.id}`} className="hover:bg-[#cae4c5]/10 transition-colors">
                       <td className="px-5 py-3.5 text-[#76777d] text-xs">
@@ -171,17 +99,11 @@ export default function TransactionHistoryPage() {
                         </span>
                       </td>
                       <td className="px-5 py-3.5 font-medium text-[#254222] max-w-xs truncate">{tx.description}</td>
-                      <td className="px-5 py-3.5 text-[#76777d] text-xs">{tx.method}</td>
+                      <td className="px-5 py-3.5 text-[#76777d] text-xs">{displayMethod}</td>
                       <td className="px-5 py-3.5 text-center">
-                        {tx.status === 'Tertunda' ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#ece2b1] text-[#254222] text-[11px] font-bold">
-                            <Clock size={10} /> Tertunda
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#cae4c5] text-[#254222] text-[11px] font-bold">
-                            <CheckCircle2 size={10} /> {tx.status}
-                          </span>
-                        )}
+                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#cae4c5] text-[#254222] text-[11px] font-bold">
+                            <CheckCircle2 size={10} /> Selesai
+                         </span>
                       </td>
                       <td className={`px-5 py-3.5 text-right font-bold text-sm ${tx.direction === 'in' ? 'text-[#137333]' : 'text-[#ba1a1a]'}`}>
                         {tx.direction === 'in' ? '+' : '-'}{formatCurrency(tx.amount)}

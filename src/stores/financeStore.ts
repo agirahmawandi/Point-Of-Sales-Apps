@@ -1,6 +1,18 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 
+export interface CashMutation {
+  id: string;
+  date: string;
+  type: 'sale' | 'purchase' | 'expense' | 'transfer' | 'investor' | 'profit_share';
+  referenceId?: string;
+  description: string;
+  amount: number;
+  direction: 'in' | 'out';
+  paymentMethod: string;
+  bankAccountId?: string;
+}
+
 export interface Investor {
   id: string;
   name: string;
@@ -60,11 +72,13 @@ interface FinanceState {
   investorDeposits: InvestorDeposit[];
   profitShares: ProfitShare[];
   balanceTransfers: BalanceTransfer[];
+  cashMutations: CashMutation[];
   cashBalance: number;
   qrisBalance: number;
   isLoading: boolean;
 
   fetchInvestors: () => Promise<void>;
+  fetchCashMutations: () => Promise<void>;
   fetchCashBalances: () => Promise<void>;
   fetchBalanceTransfers: () => Promise<void>;
   fetchProfitShares: () => Promise<void>;
@@ -88,6 +102,7 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
   investorDeposits: [],
   profitShares: [],
   balanceTransfers: [],
+  cashMutations: [],
   cashBalance: 0,
   qrisBalance: 0,
   isLoading: false,
@@ -114,6 +129,24 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  fetchCashMutations: async () => {
+    try {
+      const { data, error } = await supabase.from('cash_mutations').select('*').order('date', { ascending: false });
+      if (error) throw error;
+      set({ cashMutations: data.map((d: any) => ({
+        id: d.id,
+        date: d.date,
+        type: d.type,
+        referenceId: d.reference_id,
+        description: d.description,
+        amount: d.amount,
+        direction: d.direction,
+        paymentMethod: d.payment_method,
+        bankAccountId: d.bank_account_id
+      })) });
+    } catch (e) { /* silenced */ }
   },
 
   fetchCashBalances: async () => {

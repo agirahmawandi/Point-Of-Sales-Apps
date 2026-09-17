@@ -3,11 +3,12 @@ import PageContainer from '@/components/layout/PageContainer';
 import { supabase } from '@/lib/supabase';
 import type { Product, Category } from '@/types/product';
 import { Download, PackageOpen, AlertTriangle, Wallet, Loader2 } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+
 
 export default function InventoryReportPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [stockReport, setStockReport] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -15,25 +16,28 @@ export default function InventoryReportPage() {
     const fetchInventory = async () => {
       setIsLoading(true);
       try {
-        const [prodRes, catRes] = await Promise.all([
+        const [prodRes, catRes, stockRes] = await Promise.all([
           supabase.from('products').select('*'),
-          supabase.from('categories').select('*')
+          supabase.from('categories').select('*'),
+          supabase.rpc('get_stock_report')
         ]);
         
         if (prodRes.error) throw prodRes.error;
         if (catRes.error) throw catRes.error;
+        if (stockRes.error) console.error('Error fetching stock report:', stockRes.error);
 
         // Map snake_case to camelCase
         const mappedProducts = (prodRes.data as any[]).map(p => ({
           ...p,
           categoryId: p.category_id,
-          sellingPrice: p.selling_price,
+          sellingPrice: p.sell_price,
           buyPrice: p.buy_price,
           minStock: p.min_stock
         }));
 
         setProducts(mappedProducts as Product[] || []);
         setCategories(catRes.data as Category[] || []);
+        setStockReport(stockRes.data || []);
       } catch (error) {
       } finally {
         setIsLoading(false);
@@ -48,22 +52,6 @@ export default function InventoryReportPage() {
   
   const lowStockProducts = products.filter(p => (p.stock || 0) <= (p.minStock || 0));
   const totalLowStock = lowStockProducts.length;
-
-  // Chart data: Asset value by category
-  const categoryData = useMemo(() => {
-    const grouped: Record<string, number> = {};
-    products.forEach(p => {
-      const cat = categories.find(c => c.id === p.categoryId)?.name || 'Uncategorized';
-      grouped[cat] = (grouped[cat] || 0) + ((p.stock || 0) * (p.sellingPrice || 0));
-    });
-
-    return Object.entries(grouped)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .filter(item => item.value > 0); // Only categories with assets
-  }, [products, categories]);
-
-  const COLORS = ['#3755c3', '#99cc66', '#f59e0b', '#ec4899', '#8b5cf6', '#0ea5e9'];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
@@ -97,7 +85,7 @@ export default function InventoryReportPage() {
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-center">
           <div className="flex items-center gap-2 text-[#76777d] mb-2">
             <Wallet size={18} />
-            <span className="text-[13px] font-medium">Total Nilai Aset</span>
+            <span className="text-[13px] font-medium">Total Nilai Aset (Harga Jual)</span>
           </div>
           <h3 className="text-xl font-bold text-[#0b1c30]">{formatCurrency(totalAssetValue)}</h3>
         </div>
@@ -127,44 +115,9 @@ export default function InventoryReportPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Chart */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h3 className="text-base font-bold text-[#0b1c30] mb-6">Nilai Aset per Kategori</h3>
-          <div className="h-[300px] w-full">
-            {categoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip 
-                    formatter={(value: any) => formatCurrency(value)}
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
-                  />
-                  <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-400">
-                Data kategori kosong
-              </div>
-            )}
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 gap-6">
         {/* Snapshot Table */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
           <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <h3 className="text-base font-bold text-[#0b1c30]">Snapshot Stok Saat Ini</h3>
             <input 
@@ -180,10 +133,10 @@ export default function InventoryReportPage() {
               <thead>
                 <tr className="bg-slate-50 text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
                   <th className="py-3 px-5">Produk</th>
+                  <th className="py-3 px-5 text-right">Harga Beli</th>
                   <th className="py-3 px-5 text-right">Harga Jual</th>
                   <th className="py-3 px-5 text-center">Stok</th>
-                  <th className="py-3 px-5 text-center">Min. Stok</th>
-                  <th className="py-3 px-5 text-right">Nilai Aset</th>
+                  <th className="py-3 px-5 text-right">Nilai Aset (Harga Jual)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-[13px]">
@@ -196,15 +149,15 @@ export default function InventoryReportPage() {
                         <div className="text-[11px] text-slate-500">{p.sku}</div>
                       </td>
                       <td className="px-5 py-3 text-right text-[#0b1c30] font-medium">
+                        {formatCurrency(p.buyPrice || 0)}
+                      </td>
+                      <td className="px-5 py-3 text-right text-[#0b1c30] font-medium">
                         {formatCurrency(p.sellingPrice || 0)}
                       </td>
                       <td className="px-5 py-3 text-center">
                         <span className={`inline-block px-2.5 py-1 rounded-lg text-xs font-bold ${isLow ? 'bg-[#ffdad6] text-[#ba1a1a]' : 'bg-[#e6f4ea] text-[#137333]'}`}>
                           {p.stock}
                         </span>
-                      </td>
-                      <td className="px-5 py-3 text-center text-slate-500 font-medium">
-                        {p.minStock}
                       </td>
                       <td className="px-5 py-3 text-right font-bold text-[#3755c3]">
                         {formatCurrency((p.stock || 0) * (p.sellingPrice || 0))}
@@ -220,6 +173,16 @@ export default function InventoryReportPage() {
                   </tr>
                 )}
               </tbody>
+              <tfoot className="bg-slate-50 border-t border-slate-100">
+                <tr>
+                  <td colSpan={4} className="px-5 py-4 text-right font-bold text-[#0b1c30]">
+                    Total Nilai Keseluruhan Aset
+                  </td>
+                  <td className="px-5 py-4 text-right font-bold text-[#3755c3]">
+                    {formatCurrency(totalAssetValue)}
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
           {filteredProducts.length > 15 && (
@@ -227,6 +190,52 @@ export default function InventoryReportPage() {
               <span className="text-[12px] text-slate-500">Menampilkan 15 item dengan stok terendah. Gunakan fitur Ekspor Excel untuk melihat seluruh data.</span>
             </div>
           )}
+        </div>
+
+        {/* Laporan Stok Barang Table */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+          <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <h3 className="text-base font-bold text-[#0b1c30]">Laporan Stok Barang (Pembelian vs Penjualan)</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left whitespace-nowrap">
+              <thead>
+                <tr className="bg-slate-50 text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
+                  <th className="py-3 px-5">Produk</th>
+                  <th className="py-3 px-5 text-center">Stok Pembelian</th>
+                  <th className="py-3 px-5 text-center">Stok Penjualan</th>
+                  <th className="py-3 px-5 text-center">Sisa Stok</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-[13px]">
+                {stockReport.length > 0 ? (
+                  stockReport.map(item => (
+                    <tr key={item.product_id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-5 py-3">
+                        <div className="font-semibold text-[#0b1c30]">{item.product_name}</div>
+                        <div className="text-[11px] text-slate-500">{item.sku}</div>
+                      </td>
+                      <td className="px-5 py-3 text-center text-[#0b1c30] font-medium">
+                        {item.total_purchased}
+                      </td>
+                      <td className="px-5 py-3 text-center text-[#ba1a1a] font-medium">
+                        {item.total_sold}
+                      </td>
+                      <td className="px-5 py-3 text-center font-bold text-[#3755c3]">
+                        {item.current_stock}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="px-5 py-10 text-center text-slate-400">
+                      Data stok belum tersedia. (Jalankan query get_stock_report di database)
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </PageContainer>
