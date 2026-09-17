@@ -120,7 +120,7 @@ export default function ReceiptPage() {
 
         {/* Store Info */}
         <div className="px-6 pt-6 pb-4 border-b border-dashed border-slate-200 text-center">
-          <h2 className="text-xl font-black text-[#254222] tracking-tight">🏪 Frema Mart</h2>
+          <h2 className="text-xl font-black text-[#254222] tracking-tight">Frema Mart</h2>
           <p className="text-[#76777d] text-xs mt-1">Supermarket & Retail Groceries</p>
           <p className="text-[#76777d] text-xs">Customer Service: (021) 7890-1234</p>
         </div>
@@ -136,11 +136,11 @@ export default function ReceiptPage() {
             <span className="font-bold text-xs uppercase">
               {trx.transactionType === 'online' ? (
                 <span className="px-2 py-0.5 rounded-md bg-[#cae4c5] text-[#254222]">
-                  🌐 Online ({trx.onlineDetails?.marketplace || 'Marketplace'})
+                  Online ({trx.onlineDetails?.marketplace || 'Marketplace'})
                 </span>
               ) : (
                 <span className="px-2 py-0.5 rounded-md bg-[#cae4c5]/40 text-[#254222]">
-                  🏪 Offline (Toko)
+                  Offline (Toko)
                 </span>
               )}
             </span>
@@ -246,7 +246,7 @@ export default function ReceiptPage() {
             <span className={`font-bold px-2 py-0.5 rounded text-xs uppercase ${
               isPending ? 'bg-[#ece2b1] text-[#254222] border border-[#ece2b1]' : 'bg-[#cae4c5] text-[#254222] border border-[#cae4c5]'
             }`}>
-              {isPending ? '⏳ Tertunda' : '✓ Lunas'}
+              {isPending ? 'Tertunda' : 'Lunas'}
             </span>
           </div>
           {!isPending && (
