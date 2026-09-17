@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import type { Transaction, PaymentMethod } from '@/types';
 import EditTransactionModal from '@/features/pos/components/EditTransactionModal';
+import TransactionDetailModal from '@/features/pos/components/TransactionDetailModal';
 
 export default function SalesListPage() {
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ export default function SalesListPage() {
   const [settleBankId, setSettleBankId] = useState(bankAccounts[0]?.id || '');
 
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [detailTransaction, setDetailTransaction] = useState<Transaction | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const formatNumber = (value: number) => {
@@ -330,7 +332,11 @@ export default function SalesListPage() {
                     : null;
 
                   return (
-                    <tr key={trx.id} className="hover:bg-[#cae4c5]/15 transition-colors">
+                    <tr 
+                      key={trx.id} 
+                      className="hover:bg-[#cae4c5]/15 transition-colors cursor-pointer"
+                      onClick={() => setDetailTransaction(trx)}
+                    >
                       {/* Waktu */}
                       <td className="px-5 py-3.5 text-[#76777d]">
                         {format(new Date(trx.date || trx.createdAt || Date.now()), 'dd MMM yyyy, HH:mm', { locale: localeId })}
@@ -450,7 +456,10 @@ export default function SalesListPage() {
                         <div className="flex items-center justify-end gap-1.5">
                           {/* Tombol Edit */}
                           <button
-                            onClick={() => setEditingTransaction(trx)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingTransaction(trx);
+                            }}
                             className="bg-white hover:bg-[#cae4c5]/30 text-[#254222] px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition-colors border border-[#cae4c5]"
                             title="Edit data pesanan, item, potongan & status pembayaran"
                           >
@@ -461,7 +470,10 @@ export default function SalesListPage() {
                           {/* Tombol Tandai Lunas (Jika Tertunda) */}
                           {isPending && (
                             <button
-                              onClick={() => setConfirmModalId(trx.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setConfirmModalId(trx.id);
+                              }}
                               className="bg-[#cae4c5] hover:bg-[#b8d8b2] text-[#254222] px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition-colors border border-[#cae4c5]"
                               title="Tandai pembayaran telah lunas/cair"
                             >
@@ -472,7 +484,10 @@ export default function SalesListPage() {
 
                           {/* Tombol Lihat Struk */}
                           <button 
-                            onClick={() => navigate(`/pos/receipt/${trx.id}`)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/pos/receipt/${trx.id}`);
+                            }}
                             className="text-[#254222] hover:bg-[#cae4c5]/30 px-2 py-1 rounded-lg text-[11px] font-bold uppercase inline-flex items-center gap-1 transition-colors"
                             title="Lihat / Cetak Struk"
                           >
@@ -507,6 +522,14 @@ export default function SalesListPage() {
             setEditingTransaction(null);
             showToast('Perubahan transaksi berhasil disimpan!');
           }}
+        />
+      )}
+
+      {/* Modal Detail Transaksi */}
+      {detailTransaction && (
+        <TransactionDetailModal
+          transaction={detailTransaction}
+          onClose={() => setDetailTransaction(null)}
         />
       )}
 

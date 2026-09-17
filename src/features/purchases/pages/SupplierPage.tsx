@@ -80,7 +80,7 @@ export default function SupplierPage() {
       actions={
         <button 
           onClick={openAddModal}
-          className="h-10 px-4 rounded-xl bg-[#3755c3] hover:bg-[#2a429c] text-white text-[13px] font-semibold transition-all shadow-sm flex items-center gap-2"
+          className="h-10 px-4 rounded-xl bg-[#254222] hover:bg-[#1b3119] text-white text-[13px] font-semibold transition-all shadow-sm flex items-center gap-2"
         >
           <Plus size={18} />
           <span>Tambah Pemasok</span>
@@ -89,7 +89,7 @@ export default function SupplierPage() {
     >
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
         {/* Toolbar */}
-        <div className="p-4 border-b border-[#eff4ff] flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
+        <div className="p-4 border-b border-[#cae4c5] flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#76777d]" size={18} />
             <input 
@@ -97,7 +97,7 @@ export default function SupplierPage() {
               placeholder="Cari nama toko atau kontak person..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 rounded-xl bg-[#eff4ff] text-[13px] text-[#0b1c30] placeholder-[#76777d] border border-transparent focus:outline-none focus:bg-white focus:border-[#3755c3]/30 focus:ring-2 focus:ring-[#3755c3]/15 transition-all"
+              className="w-full h-10 pl-10 pr-4 rounded-xl bg-[#cae4c5] text-[13px] text-[#0b1c30] placeholder-[#76777d] border border-transparent focus:outline-none focus:bg-white focus:border-[#254222]/30 focus:ring-2 focus:ring-[#254222]/15 transition-all"
             />
           </div>
           <div className="text-xs font-semibold text-[#76777d]">
@@ -109,7 +109,7 @@ export default function SupplierPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left whitespace-nowrap">
             <thead>
-              <tr className="bg-[#eff4ff] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
+              <tr className="bg-[#cae4c5] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
                 <th className="py-3.5 px-5">Nama Pemasok</th>
                 <th className="py-3.5 px-5">Kontak Person</th>
                 <th className="py-3.5 px-5 text-right">Total Pembelian</th>
@@ -117,7 +117,7 @@ export default function SupplierPage() {
                 <th className="py-3.5 px-5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#eff4ff] text-[13px]">
+            <tbody className="divide-y divide-[#cae4c5] text-[13px]">
               {filteredSuppliers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-[#76777d]">
@@ -128,10 +128,10 @@ export default function SupplierPage() {
                 </tr>
               ) : (
                 filteredSuppliers.map(supplier => (
-                  <tr key={supplier.id} className="hover:bg-[#eff4ff]/40 transition-colors">
+                  <tr key={supplier.id} className="hover:bg-[#cae4c5]/40 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="font-semibold text-[#0b1c30] flex items-center gap-2">
-                        <Building2 size={16} className="text-[#3755c3]" />
+                        <Building2 size={16} className="text-[#254222]" />
                         <span>{supplier.name}</span>
                       </div>
                       <div className="text-xs text-[#76777d] mt-0.5 truncate max-w-[260px]">{supplier.address || '-'}</div>
@@ -157,7 +157,7 @@ export default function SupplierPage() {
                       <div className="flex items-center justify-end gap-1.5">
                         <button 
                           onClick={() => openEditModal(supplier)}
-                          className="p-1.5 text-[#76777d] hover:text-[#3755c3] hover:bg-[#eff4ff] rounded-lg transition-colors"
+                          className="p-1.5 text-[#76777d] hover:text-[#254222] hover:bg-[#cae4c5] rounded-lg transition-colors"
                           title="Edit Pemasok"
                         >
                           <Edit2 size={16} />
@@ -183,7 +183,7 @@ export default function SupplierPage() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-[#0b1c30]/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh] border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-5 border-b border-[#eff4ff] bg-[#eff4ff]/60">
+            <div className="p-5 border-b border-[#cae4c5] bg-[#cae4c5]/60">
               <h2 className="text-[16px] font-bold text-[#0b1c30]">
                 {editingId ? 'Edit Data Pemasok' : 'Tambah Pemasok Baru'}
               </h2>
@@ -198,7 +198,7 @@ export default function SupplierPage() {
                     required
                     value={formData.name}
                     onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#254222] focus:ring-2 focus:ring-[#254222]/20 transition-all"
                     placeholder="Contoh: PT Sumber Pangan Makmur"
                   />
                 </div>
@@ -208,7 +208,7 @@ export default function SupplierPage() {
                     type="text" 
                     value={formData.contactPerson}
                     onChange={e => setFormData({...formData, contactPerson: e.target.value})}
-                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#254222] focus:ring-2 focus:ring-[#254222]/20 transition-all"
                     placeholder="Contoh: Pak Budi"
                   />
                 </div>
@@ -219,7 +219,7 @@ export default function SupplierPage() {
                       type="text" 
                       value={formData.phone}
                       onChange={e => setFormData({...formData, phone: e.target.value})}
-                      className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+                      className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#254222] focus:ring-2 focus:ring-[#254222]/20 transition-all"
                       placeholder="0812..."
                     />
                   </div>
@@ -229,7 +229,7 @@ export default function SupplierPage() {
                       type="email" 
                       value={formData.email}
                       onChange={e => setFormData({...formData, email: e.target.value})}
-                      className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+                      className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#254222] focus:ring-2 focus:ring-[#254222]/20 transition-all"
                       placeholder="sales@vendor.com"
                     />
                   </div>
@@ -240,13 +240,13 @@ export default function SupplierPage() {
                     value={formData.address}
                     onChange={e => setFormData({...formData, address: e.target.value})}
                     rows={3}
-                    className="w-full p-3 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all resize-none"
+                    className="w-full p-3 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#254222] focus:ring-2 focus:ring-[#254222]/20 transition-all resize-none"
                     placeholder="Jl. Pergudangan Indah No..."
                   />
                 </div>
               </div>
               
-              <div className="p-4 border-t border-[#eff4ff] bg-[#eff4ff]/20 flex justify-end gap-2.5 shrink-0">
+              <div className="p-4 border-t border-[#cae4c5] bg-[#cae4c5]/20 flex justify-end gap-2.5 shrink-0">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
@@ -256,7 +256,7 @@ export default function SupplierPage() {
                 </button>
                 <button 
                   type="submit" 
-                  className="h-10 px-5 rounded-xl bg-[#3755c3] hover:bg-[#2a429c] text-white text-xs font-semibold shadow-sm transition-all"
+                  className="h-10 px-5 rounded-xl bg-[#254222] hover:bg-[#1b3119] text-white text-xs font-semibold shadow-sm transition-all"
                 >
                   Simpan Pemasok
                 </button>

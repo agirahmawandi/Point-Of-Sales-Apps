@@ -143,7 +143,7 @@ export default function PurchaseFormPage() {
       actions={
         <button 
           onClick={() => navigate('/purchases')} 
-          className="h-10 px-4 rounded-xl bg-white text-[#0b1c30] border border-slate-200/80 shadow-sm hover:bg-[#eff4ff] text-[13px] font-semibold flex items-center gap-2 transition-all"
+          className="h-10 px-4 rounded-xl bg-white text-[#0b1c30] border border-slate-200/80 shadow-sm hover:bg-[#cae4c5] text-[13px] font-semibold flex items-center gap-2 transition-all"
         >
           <ArrowLeft size={16} />
           <span>Batal & Kembali</span>
@@ -162,7 +162,7 @@ export default function PurchaseFormPage() {
                 <select 
                   value={supplierId}
                   onChange={e => setSupplierId(e.target.value)}
-                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] bg-white shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] bg-white shadow-sm focus:outline-none focus:border-[#254222] focus:ring-2 focus:ring-[#254222]/20 transition-all"
                 >
                   <option value="">-- Pilih Pemasok --</option>
                   {suppliers.map(s => (
@@ -177,13 +177,13 @@ export default function PurchaseFormPage() {
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   rows={3}
-                  className="w-full p-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all resize-none"
+                  className="w-full p-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] placeholder-[#76777d] shadow-sm focus:outline-none focus:border-[#254222] focus:ring-2 focus:ring-[#254222]/20 transition-all resize-none"
                   placeholder="Instruksi pengiriman atau catatan nomor referensi..."
                 />
               </div>
 
               {/* Pilihan Status Pembayaran */}
-              <div className="pt-3 border-t border-[#eff4ff]">
+              <div className="pt-3 border-t border-[#cae4c5]">
                 <label className="block text-[13px] font-semibold text-[#0b1c30] mb-2">Status Pembayaran Tagihan</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -191,7 +191,7 @@ export default function PurchaseFormPage() {
                     onClick={() => setPaymentStatusOption('utang')}
                     className={`p-2.5 rounded-xl border text-xs font-semibold text-center transition-all ${
                       paymentStatusOption === 'utang'
-                        ? 'border-[#3755c3] bg-[#eff4ff] text-[#3755c3]'
+                        ? 'border-[#254222] bg-[#cae4c5] text-[#254222]'
                         : 'border-slate-200 bg-white text-[#76777d] hover:bg-slate-50'
                     }`}
                   >
@@ -218,7 +218,7 @@ export default function PurchaseFormPage() {
 
               {/* Pilihan Metode Pembayaran (Hanya jika Lunas) */}
               {paymentStatusOption === 'lunas' && (
-                <div className="pt-3 border-t border-[#eff4ff] animate-in fade-in slide-in-from-top-2">
+                <div className="pt-3 border-t border-[#cae4c5] animate-in fade-in slide-in-from-top-2">
                   <label className="block text-[13px] font-semibold text-[#0b1c30] mb-2">Metode Pembayaran</label>
                   <div className="grid grid-cols-2 gap-2 mb-3">
                     <button
@@ -226,7 +226,7 @@ export default function PurchaseFormPage() {
                       onClick={() => setPaymentMethodOption('tunai')}
                       className={`p-2.5 rounded-xl border text-xs font-semibold text-center transition-all ${
                         paymentMethodOption === 'tunai'
-                          ? 'border-[#3755c3] bg-[#eff4ff] text-[#3755c3]'
+                          ? 'border-[#254222] bg-[#cae4c5] text-[#254222]'
                           : 'border-slate-200 bg-white text-[#76777d] hover:bg-slate-50'
                       }`}
                     >
@@ -237,7 +237,7 @@ export default function PurchaseFormPage() {
                       onClick={() => setPaymentMethodOption('transfer')}
                       className={`p-2.5 rounded-xl border text-xs font-semibold text-center transition-all ${
                         paymentMethodOption === 'transfer'
-                          ? 'border-[#3755c3] bg-[#eff4ff] text-[#3755c3]'
+                          ? 'border-[#254222] bg-[#cae4c5] text-[#254222]'
                           : 'border-slate-200 bg-white text-[#76777d] hover:bg-slate-50'
                       }`}
                     >
@@ -251,7 +251,7 @@ export default function PurchaseFormPage() {
                       <select
                         value={selectedBankId}
                         onChange={(e) => setSelectedBankId(e.target.value)}
-                        className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-[#0b1c30] focus:outline-none focus:border-[#3755c3]"
+                        className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-[#0b1c30] focus:outline-none focus:border-[#254222]"
                       >
                         {bankAccounts.map(b => (
                           <option key={b.id} value={b.id}>{b.bank} - {b.accountNumber} (Saldo: Rp {(b.balance || 0).toLocaleString('id-ID')})</option>
@@ -268,18 +268,18 @@ export default function PurchaseFormPage() {
         {/* Right Column: Item Catalog & Table */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-[#eff4ff] bg-white flex items-center justify-between">
+            <div className="p-4 border-b border-[#cae4c5] bg-white flex items-center justify-between">
               <h3 className="text-[15px] font-bold text-[#0b1c30] flex items-center gap-2">
-                <PackagePlus size={18} className="text-[#3755c3]" />
+                <PackagePlus size={18} className="text-[#254222]" />
                 <span>Daftar Item Pesanan</span>
               </h3>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#eff4ff] text-[#3755c3]">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#cae4c5] text-[#254222]">
                 {items.length} Item
               </span>
             </div>
             
             {/* Search Input for Products */}
-            <div className="p-4 border-b border-[#eff4ff] relative bg-white">
+            <div className="p-4 border-b border-[#cae4c5] relative bg-white">
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#76777d]" size={18} />
                 <input 
@@ -287,13 +287,13 @@ export default function PurchaseFormPage() {
                   placeholder="Ketik nama atau SKU produk untuk ditambahkan..." 
                   value={searchProduct}
                   onChange={(e) => setSearchProduct(e.target.value)}
-                  className="w-full h-10 pl-10 pr-4 rounded-xl bg-[#eff4ff] text-[13px] text-[#0b1c30] placeholder-[#76777d] border border-transparent focus:outline-none focus:bg-white focus:border-[#3755c3]/30 focus:ring-2 focus:ring-[#3755c3]/15 transition-all"
+                  className="w-full h-10 pl-10 pr-4 rounded-xl bg-[#cae4c5] text-[13px] text-[#0b1c30] placeholder-[#76777d] border border-transparent focus:outline-none focus:bg-white focus:border-[#254222]/30 focus:ring-2 focus:ring-[#254222]/15 transition-all"
                 />
               </div>
               
               {/* Dropdown Results */}
               {searchProduct && (
-                <div className="absolute z-20 left-4 right-4 top-[calc(100%-6px)] mt-1 bg-white border border-slate-200/80 rounded-xl shadow-xl max-h-60 overflow-y-auto divide-y divide-[#eff4ff]">
+                <div className="absolute z-20 left-4 right-4 top-[calc(100%-6px)] mt-1 bg-white border border-slate-200/80 rounded-xl shadow-xl max-h-60 overflow-y-auto divide-y divide-[#cae4c5]">
                   {filteredProducts.length === 0 ? (
                     <div className="p-4 text-center text-xs text-[#76777d]">Produk tidak ditemukan.</div>
                   ) : (
@@ -302,13 +302,13 @@ export default function PurchaseFormPage() {
                         key={p.id}
                         type="button"
                         onClick={() => handleAddProduct(p)}
-                        className="w-full text-left px-4 py-2.5 hover:bg-[#eff4ff]/60 flex justify-between items-center transition-colors"
+                        className="w-full text-left px-4 py-2.5 hover:bg-[#cae4c5]/60 flex justify-between items-center transition-colors"
                       >
                         <div>
                           <div className="font-semibold text-xs text-[#0b1c30]">{p.name}</div>
                           <div className="text-[11px] text-[#76777d] font-mono">{p.sku} | Stok: {p.stock}</div>
                         </div>
-                        <Plus size={16} className="text-[#3755c3]" />
+                        <Plus size={16} className="text-[#254222]" />
                       </button>
                     ))
                   )}
@@ -320,7 +320,7 @@ export default function PurchaseFormPage() {
             <div className="overflow-x-auto min-h-[200px]">
               <table className="w-full text-left whitespace-nowrap">
                 <thead>
-                  <tr className="bg-[#eff4ff] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
+                  <tr className="bg-[#cae4c5] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
                     <th className="py-3 px-4 w-12 text-center">#</th>
                     <th className="py-3 px-4">Produk</th>
                     <th className="py-3 px-4 w-28 text-center">Qty</th>
@@ -329,7 +329,7 @@ export default function PurchaseFormPage() {
                     <th className="py-3 px-4 w-12 text-right"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#eff4ff] text-[13px]">
+                <tbody className="divide-y divide-[#cae4c5] text-[13px]">
                   {items.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-12 text-center text-[#76777d]">
@@ -338,7 +338,7 @@ export default function PurchaseFormPage() {
                     </tr>
                   ) : (
                     items.map((item, idx) => (
-                      <tr key={item.id} className="hover:bg-[#eff4ff]/30 transition-colors">
+                      <tr key={item.id} className="hover:bg-[#cae4c5]/30 transition-colors">
                         <td className="py-3 px-4 text-center text-[#76777d] text-xs">{idx + 1}</td>
                         <td className="py-3 px-4">
                           <div className="font-semibold text-[#0b1c30]">{item.productName}</div>
@@ -351,7 +351,7 @@ export default function PurchaseFormPage() {
                             step="0.01"
                             value={item.quantity || ''}
                             onChange={(e) => updateItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                            className="w-20 h-8 text-center rounded-lg border border-slate-200 text-xs font-bold text-[#0b1c30] focus:outline-none focus:border-[#3755c3]"
+                            className="w-20 h-8 text-center rounded-lg border border-slate-200 text-xs font-bold text-[#0b1c30] focus:outline-none focus:border-[#254222]"
                           />
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -360,7 +360,7 @@ export default function PurchaseFormPage() {
                             min="0"
                             value={item.buyPrice || ''}
                             onChange={(e) => updateItem(idx, 'buyPrice', parseInt(e.target.value) || 0)}
-                            className="w-28 h-8 px-2 text-right rounded-lg border border-slate-200 text-xs font-bold text-[#0b1c30] focus:outline-none focus:border-[#3755c3]"
+                            className="w-28 h-8 px-2 text-right rounded-lg border border-slate-200 text-xs font-bold text-[#0b1c30] focus:outline-none focus:border-[#254222]"
                           />
                         </td>
                         <td className="py-3 px-4 text-right font-bold text-[#0b1c30]">
@@ -380,10 +380,10 @@ export default function PurchaseFormPage() {
                   )}
                 </tbody>
                 {items.length > 0 && (
-                  <tfoot className="bg-[#eff4ff]/60 border-t border-[#eff4ff]">
+                  <tfoot className="bg-[#cae4c5]/60 border-t border-[#cae4c5]">
                     <tr>
                       <td colSpan={4} className="py-3.5 px-4 text-right font-bold text-[#0b1c30]">Total Purchase Order:</td>
-                      <td className="py-3.5 px-4 text-right font-bold text-[#3755c3] text-base">
+                      <td className="py-3.5 px-4 text-right font-bold text-[#254222] text-base">
                         <span className="text-xs mr-1">Rp</span>{formatNumber(totalAmount)}
                       </td>
                       <td></td>
@@ -400,7 +400,7 @@ export default function PurchaseFormPage() {
               type="button"
               onClick={() => handleSave('draft')}
               disabled={!isValid}
-              className="h-10 px-4 bg-white border border-slate-200 text-[#0b1c30] font-semibold text-[13px] rounded-xl hover:bg-[#eff4ff] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2"
+              className="h-10 px-4 bg-white border border-slate-200 text-[#0b1c30] font-semibold text-[13px] rounded-xl hover:bg-[#cae4c5] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2"
             >
               <Save size={16} />
               <span>Simpan Draft</span>
@@ -409,7 +409,7 @@ export default function PurchaseFormPage() {
               type="button"
               onClick={() => handleSave('dikirim')}
               disabled={!isValid}
-              className="h-10 px-5 bg-white border border-[#3755c3]/30 text-[#3755c3] hover:bg-[#eff4ff] font-semibold text-[13px] rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2"
+              className="h-10 px-5 bg-white border border-[#254222]/30 text-[#254222] hover:bg-[#cae4c5] font-semibold text-[13px] rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2"
             >
               <Send size={16} />
               <span>Kirim PO ke Pemasok</span>
@@ -418,7 +418,7 @@ export default function PurchaseFormPage() {
               type="button"
               onClick={() => handleSave('diterima')}
               disabled={!isValid}
-              className="h-10 px-5 bg-[#3755c3] hover:bg-[#2a429c] text-white font-semibold text-[13px] rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2"
+              className="h-10 px-5 bg-[#254222] hover:bg-[#1b3119] text-white font-semibold text-[13px] rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-2"
             >
               <CheckCircle2 size={16} />
               <span>Langsung Selesai & Diterima</span>

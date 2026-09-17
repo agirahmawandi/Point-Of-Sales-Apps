@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import type { PurchaseOrderStatus, PurchaseOrder } from '@/types/purchase';
 import { EditPurchaseOrderModal } from '../components/EditPurchaseOrderModal';
+import PurchaseOrderDetailModal from '../components/PurchaseOrderDetailModal';
 
 export default function PurchaseListPage() {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function PurchaseListPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'all' | 'utang' | 'lunas'>('all');
   const [editingPO, setEditingPO] = useState<PurchaseOrder | null>(null);
+  const [detailPO, setDetailPO] = useState<PurchaseOrder | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -44,9 +46,9 @@ export default function PurchaseListPage() {
   const getStatusBadge = (status: PurchaseOrderStatus) => {
     switch (status) {
       case 'draft':
-        return <span className="px-2.5 py-0.5 bg-[#eff4ff] text-[#76777d] rounded-lg text-[11px] font-bold uppercase tracking-wider border border-[#d3e4fe]">Draft</span>;
+        return <span className="px-2.5 py-0.5 bg-[#cae4c5] text-[#76777d] rounded-lg text-[11px] font-bold uppercase tracking-wider border border-[#cae4c5]">Draft</span>;
       case 'dikirim':
-        return <span className="px-2.5 py-0.5 bg-[#d3e4fe] text-[#3755c3] rounded-lg text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 w-max"><AlertCircle size={12}/> Dikirim</span>;
+        return <span className="px-2.5 py-0.5 bg-[#cae4c5] text-[#254222] rounded-lg text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 w-max"><AlertCircle size={12}/> Dikirim</span>;
       case 'diterima_sebagian':
         return <span className="px-2.5 py-0.5 bg-[#fef3c7] text-[#92400e] rounded-lg text-[11px] font-bold uppercase tracking-wider w-max">Parsial</span>;
       case 'diterima':
@@ -71,7 +73,7 @@ export default function PurchaseListPage() {
       actions={
         <button 
           onClick={() => navigate('/purchases/new')}
-          className="h-10 px-4 rounded-xl bg-[#3755c3] hover:bg-[#2a429c] text-white text-[13px] font-semibold transition-all shadow-sm flex items-center gap-2"
+          className="h-10 px-4 rounded-xl bg-[#254222] hover:bg-[#1b3119] text-white text-[13px] font-semibold transition-all shadow-sm flex items-center gap-2"
         >
           <Plus size={18} />
           <span>Buat PO Baru</span>
@@ -80,15 +82,15 @@ export default function PurchaseListPage() {
     >
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
         {/* Toolbar */}
-        <div className="p-4 border-b border-[#eff4ff] flex flex-col xl:flex-row gap-4 justify-between items-center bg-white">
+        <div className="p-4 border-b border-[#cae4c5] flex flex-col xl:flex-row gap-4 justify-between items-center bg-white">
           {/* Segmented Filter Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-[#eff4ff] rounded-xl overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1.5 p-1 bg-[#cae4c5] rounded-xl overflow-x-auto max-w-full">
             <button
               onClick={() => setActiveTab('all')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 activeTab === 'all'
-                  ? 'bg-[#3755c3] text-white shadow-sm'
-                  : 'text-[#3755c3]/70 hover:text-[#3755c3]'
+                  ? 'bg-[#254222] text-white shadow-sm'
+                  : 'text-[#254222]/70 hover:text-[#254222]'
               }`}
             >
               Semua ({purchaseOrders.length})
@@ -98,7 +100,7 @@ export default function PurchaseListPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'utang'
                   ? 'bg-[#ffdad6] text-[#ba1a1a] shadow-sm'
-                  : 'text-[#3755c3]/70 hover:text-[#ba1a1a]'
+                  : 'text-[#254222]/70 hover:text-[#ba1a1a]'
               }`}
             >
               <AlertCircle size={13} />
@@ -109,7 +111,7 @@ export default function PurchaseListPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeTab === 'lunas'
                   ? 'bg-[#e6f4ea] text-[#137333] shadow-sm'
-                  : 'text-[#3755c3]/70 hover:text-[#137333]'
+                  : 'text-[#254222]/70 hover:text-[#137333]'
               }`}
             >
               <CheckCircle2 size={13} />
@@ -125,13 +127,13 @@ export default function PurchaseListPage() {
                 placeholder="Cari No. PO atau nama pemasok..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 rounded-xl bg-[#eff4ff] text-[13px] text-[#0b1c30] placeholder-[#76777d] border border-transparent focus:outline-none focus:bg-white focus:border-[#3755c3]/30 focus:ring-2 focus:ring-[#3755c3]/15 transition-all"
+                className="w-full h-10 pl-10 pr-4 rounded-xl bg-[#cae4c5] text-[13px] text-[#0b1c30] placeholder-[#76777d] border border-transparent focus:outline-none focus:bg-white focus:border-[#254222]/30 focus:ring-2 focus:ring-[#254222]/15 transition-all"
               />
             </div>
             <select 
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-10 px-3.5 rounded-xl border border-slate-200/80 text-[13px] font-medium text-[#0b1c30] bg-white shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all"
+              className="h-10 px-3.5 rounded-xl border border-slate-200/80 text-[13px] font-medium text-[#0b1c30] bg-white shadow-sm focus:outline-none focus:border-[#254222] focus:ring-2 focus:ring-[#254222]/20 transition-all"
             >
               <option value="all">Semua Status PO</option>
               <option value="draft">Draft</option>
@@ -145,7 +147,7 @@ export default function PurchaseListPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left whitespace-nowrap">
             <thead>
-              <tr className="bg-[#eff4ff] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
+              <tr className="bg-[#cae4c5] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
                 <th className="py-3.5 px-5">No. PO & Tanggal</th>
                 <th className="py-3.5 px-5">Pemasok</th>
                 <th className="py-3.5 px-5">Item</th>
@@ -155,7 +157,7 @@ export default function PurchaseListPage() {
                 <th className="py-3.5 px-5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#eff4ff] text-[13px]">
+            <tbody className="divide-y divide-[#cae4c5] text-[13px]">
               {filteredPOs.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-[#76777d]">
@@ -166,9 +168,13 @@ export default function PurchaseListPage() {
                 </tr>
               ) : (
                 filteredPOs.map(po => (
-                  <tr key={po.id} className="hover:bg-[#eff4ff]/40 transition-colors">
+                  <tr 
+                    key={po.id} 
+                    className="hover:bg-[#cae4c5]/40 transition-colors cursor-pointer"
+                    onClick={() => setDetailPO(po)}
+                  >
                     <td className="px-5 py-3.5">
-                      <div className="font-mono font-bold text-[#3755c3]">{po.poNumber}</div>
+                      <div className="font-mono font-bold text-[#254222]">{po.poNumber}</div>
                       <div className="text-xs text-[#76777d] mt-0.5">
                         {format(new Date(po.createdAt), 'dd MMM yyyy', { locale: localeId })}
                       </div>
@@ -200,7 +206,10 @@ export default function PurchaseListPage() {
                       <div className="flex items-center justify-end gap-2">
                         {(po.status === 'dikirim' || po.status === 'diterima_sebagian') && (
                           <button 
-                            onClick={() => navigate(`/purchases/${po.id}/receive`)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/purchases/${po.id}/receive`);
+                            }}
                             className="h-8 px-3 rounded-lg bg-[#e6f4ea] hover:bg-[#cbf0d2] text-[#137333] text-xs font-semibold flex items-center gap-1 transition-colors"
                           >
                             <CheckCircle2 size={13} />
@@ -208,15 +217,21 @@ export default function PurchaseListPage() {
                           </button>
                         )}
                         <button 
-                          onClick={() => setEditingPO(po)}
-                          className="p-1.5 text-[#76777d] hover:text-[#3755c3] hover:bg-[#eff4ff] rounded-lg transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingPO(po);
+                          }}
+                          className="p-1.5 text-[#76777d] hover:text-[#254222] hover:bg-[#cae4c5] rounded-lg transition-colors"
                           title="Edit PO"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                         </button>
                         <button 
-                          onClick={() => navigate(`/purchases/${po.id}`)}
-                          className="p-1.5 text-[#76777d] hover:text-[#3755c3] hover:bg-[#eff4ff] rounded-lg transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/purchases/${po.id}`);
+                          }}
+                          className="p-1.5 text-[#76777d] hover:text-[#254222] hover:bg-[#cae4c5] rounded-lg transition-colors"
                           title="Lihat Detail PO"
                         >
                           <Eye size={17} />
@@ -235,6 +250,13 @@ export default function PurchaseListPage() {
         <EditPurchaseOrderModal 
           po={editingPO} 
           onClose={() => setEditingPO(null)} 
+        />
+      )}
+
+      {detailPO && (
+        <PurchaseOrderDetailModal
+          po={detailPO}
+          onClose={() => setDetailPO(null)}
         />
       )}
     </PageContainer>

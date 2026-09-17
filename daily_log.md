@@ -23,6 +23,13 @@
 - **Perubahan Database**: Menambahkan kolom `margin_percentage`, `packing_cost`, `marketplace_fee_percentage`, dan `marketplace_price` ke tabel `products` via script `supabase_price_reference.sql`.
 - **Integrasi POS**: Saat Margin/Biaya Packing diubah dan disimpan, sistem akan menimpa (`selling_price`) di database, sehingga Kasir langsung menggunakan harga baru tersebut saat bertransaksi.
 
+### 4. Peningkatan List Penjualan & Purchase Order (Popup Detail)
+- **List Penjualan**: Menambahkan fitur **Popup Detail Transaksi** (`TransactionDetailModal.tsx`) pada tabel List Penjualan. Kini, mengklik baris (row) manapun di tabel akan langsung memunculkan informasi lengkap penjualan tersebut (rincian item pesanan, total, diskon, hingga info pembeli dan resi pengiriman untuk order online).
+- **Daftar Purchase Order**: Menambahkan fitur serupa (`PurchaseOrderDetailModal.tsx`). Mengklik baris (row) di tabel PO akan memunculkan informasi detail mengenai pesanan pembelian (informasi supplier, status pengiriman, catatan, rincian barang, dan status pembayaran / sisa utang).
+
+### 5. Harmonisasi Tema Warna
+- **Modul Pembelian**: Mengubah tema warna dasar (biru) pada seluruh halaman modul Pembelian (Purchase Order, Penerimaan Barang, Pemasok, dan Form Buat PO) menjadi tema hijau gelap (`#254222`) dan hijau muda (`#cae4c5`) agar senada dengan modul Penjualan (Sales).
+
 ---
 
 # 📝 Log Pekerjaan Sebelumnya (16 September 2026)

@@ -46,16 +46,16 @@ export default function ReceiveGoodsPage() {
         description="Pilih Purchase Order yang barangnya telah tiba di toko untuk diverifikasi kuantitas fisiknya."
       >
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="p-4 border-b border-[#eff4ff] bg-white flex items-center justify-between">
+          <div className="p-4 border-b border-[#cae4c5] bg-white flex items-center justify-between">
             <h3 className="text-[15px] font-bold text-[#0b1c30]">Daftar PO Menunggu Penerimaan</h3>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-lg bg-[#eff4ff] text-[#3755c3]">
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-lg bg-[#cae4c5] text-[#254222]">
               {pendingPOs.length} Pengiriman
             </span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left whitespace-nowrap">
               <thead>
-                <tr className="bg-[#eff4ff] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
+                <tr className="bg-[#cae4c5] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
                   <th className="py-3.5 px-5">No. PO</th>
                   <th className="py-3.5 px-5">Pemasok</th>
                   <th className="py-3.5 px-5">Tanggal PO</th>
@@ -63,7 +63,7 @@ export default function ReceiveGoodsPage() {
                   <th className="py-3.5 px-5 text-right">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#eff4ff] text-[13px]">
+              <tbody className="divide-y divide-[#cae4c5] text-[13px]">
                 {pendingPOs.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-12 text-center text-[#76777d]">
@@ -74,21 +74,21 @@ export default function ReceiveGoodsPage() {
                   </tr>
                 ) : (
                   pendingPOs.map(po => (
-                    <tr key={po.id} className="hover:bg-[#eff4ff]/40 transition-colors">
-                      <td className="px-5 py-3.5 font-mono font-bold text-[#3755c3]">{po.poNumber}</td>
+                    <tr key={po.id} className="hover:bg-[#cae4c5]/40 transition-colors">
+                      <td className="px-5 py-3.5 font-mono font-bold text-[#254222]">{po.poNumber}</td>
                       <td className="px-5 py-3.5 font-semibold text-[#0b1c30]">{po.supplier?.name}</td>
                       <td className="px-5 py-3.5 text-[#76777d]">
                         {format(new Date(po.createdAt), 'dd MMM yyyy', { locale: localeId })}
                       </td>
                       <td className="px-5 py-3.5 text-center">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-[#d3e4fe] text-[#3755c3] rounded-lg text-[11px] font-bold uppercase">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-[#cae4c5] text-[#254222] rounded-lg text-[11px] font-bold uppercase">
                           {po.status === 'dikirim' ? 'Dikirim' : 'Parsial'}
                         </span>
                       </td>
                       <td className="px-5 py-3.5 text-right">
                         <Link 
                           to={`/purchases/${po.id}/receive`}
-                          className="h-8 px-4 bg-[#3755c3] hover:bg-[#2a429c] text-white rounded-xl text-xs font-semibold transition-all inline-flex items-center gap-1.5 shadow-sm"
+                          className="h-8 px-4 bg-[#254222] hover:bg-[#1b3119] text-white rounded-xl text-xs font-semibold transition-all inline-flex items-center gap-1.5 shadow-sm"
                         >
                           <CheckCircle2 size={14} />
                           <span>Proses Penerimaan</span>
@@ -195,7 +195,7 @@ export default function ReceiveGoodsPage() {
       actions={
         <button 
           onClick={() => navigate('/purchases')} 
-          className="h-10 px-4 rounded-xl bg-white text-[#0b1c30] border border-slate-200/80 shadow-sm hover:bg-[#eff4ff] text-[13px] font-semibold flex items-center gap-2 transition-all"
+          className="h-10 px-4 rounded-xl bg-white text-[#0b1c30] border border-slate-200/80 shadow-sm hover:bg-[#cae4c5] text-[13px] font-semibold flex items-center gap-2 transition-all"
         >
           <ArrowLeft size={16} />
           <span>Kembali ke Daftar PO</span>
@@ -206,7 +206,7 @@ export default function ReceiveGoodsPage() {
         {/* Left Column: PO Info */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-            <h3 className="text-[15px] font-bold text-[#0b1c30] mb-3 border-b border-[#eff4ff] pb-2">Informasi PO</h3>
+            <h3 className="text-[15px] font-bold text-[#0b1c30] mb-3 border-b border-[#cae4c5] pb-2">Informasi PO</h3>
             
             <div className="space-y-3.5 text-xs">
               <div>
@@ -215,7 +215,7 @@ export default function ReceiveGoodsPage() {
               </div>
               <div>
                 <p className="text-[#76777d] mb-0.5">Total Nilai PO</p>
-                <p className="font-bold text-sm text-[#3755c3]">{formatCurrency(po.totalAmount)}</p>
+                <p className="font-bold text-sm text-[#254222]">{formatCurrency(po.totalAmount)}</p>
               </div>
               <div>
                 <p className="text-[#76777d] mb-0.5">Catatan Pesanan</p>
@@ -226,7 +226,7 @@ export default function ReceiveGoodsPage() {
 
           {/* Kartu Status Pembayaran & Auto Sync Harga */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 space-y-3">
-            <h3 className="text-[15px] font-bold text-[#0b1c30] border-b border-[#eff4ff] pb-2 flex items-center justify-between">
+            <h3 className="text-[15px] font-bold text-[#0b1c30] border-b border-[#cae4c5] pb-2 flex items-center justify-between">
               <span>Status Pembayaran</span>
               {po.paymentStatus === 'lunas' || markPaidNow ? (
                 <span className="text-[#137333] text-xs font-bold bg-[#e6f4ea] px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -330,12 +330,12 @@ export default function ReceiveGoodsPage() {
           </div>
           
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-            <h3 className="text-[15px] font-bold text-[#0b1c30] mb-3 border-b border-[#eff4ff] pb-2">Catatan Penerimaan</h3>
+            <h3 className="text-[15px] font-bold text-[#0b1c30] mb-3 border-b border-[#cae4c5] pb-2">Catatan Penerimaan</h3>
             <textarea 
               value={receiveNotes}
               onChange={e => setReceiveNotes(e.target.value)}
               rows={3}
-              className="w-full p-3 rounded-xl border border-slate-200 text-xs text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#3755c3] resize-none"
+              className="w-full p-3 rounded-xl border border-slate-200 text-xs text-[#0b1c30] placeholder-[#76777d] focus:outline-none focus:border-[#254222] resize-none"
               placeholder="Contoh: Barang tiba dalam kondisi baik, kardus utuh..."
             />
           </div>
@@ -344,7 +344,7 @@ export default function ReceiveGoodsPage() {
         {/* Right Column: Items Verification Table */}
         <div className="lg:col-span-3">
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-[#eff4ff] bg-white flex justify-between items-center">
+            <div className="p-4 border-b border-[#cae4c5] bg-white flex justify-between items-center">
               <h3 className="text-[15px] font-bold text-[#0b1c30]">Verifikasi Kuantitas Fisik & Harga Beli</h3>
               <div className="flex items-center gap-1.5 text-xs text-[#76777d]">
                 <AlertTriangle size={15} className="text-amber-500" />
@@ -355,7 +355,7 @@ export default function ReceiveGoodsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left whitespace-nowrap">
                 <thead>
-                  <tr className="bg-[#eff4ff] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
+                  <tr className="bg-[#cae4c5] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
                     <th className="py-3.5 px-4 w-12 text-center">#</th>
                     <th className="py-3.5 px-4">Produk</th>
                     <th className="py-3.5 px-4 text-right">Harga Beli PO</th>
@@ -364,7 +364,7 @@ export default function ReceiveGoodsPage() {
                     <th className="py-3.5 px-4 text-center">Selisih</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#eff4ff] text-[13px]">
+                <tbody className="divide-y divide-[#cae4c5] text-[13px]">
                   {po.items.map((item, idx) => {
                     const received = receivedItems[item.id] || 0;
                     const diff = received - item.quantity;
@@ -373,7 +373,7 @@ export default function ReceiveGoodsPage() {
                     const isPriceChanged = oldPrice > 0 && oldPrice !== item.buyPrice;
                     
                     return (
-                      <tr key={item.id} className="hover:bg-[#eff4ff]/30 transition-colors">
+                      <tr key={item.id} className="hover:bg-[#cae4c5]/30 transition-colors">
                         <td className="py-3.5 px-4 text-center text-[#76777d] text-xs">{idx + 1}</td>
                         <td className="py-3.5 px-4">
                           <div className="font-semibold text-[#0b1c30]">{item.productName}</div>
@@ -403,7 +403,7 @@ export default function ReceiveGoodsPage() {
                             max={item.quantity}
                             value={received.toString()}
                             onChange={(e) => handleQtyChange(item.id, parseInt(e.target.value) || 0)}
-                            className="w-24 h-8 px-2 text-center rounded-lg border border-slate-200 text-xs font-bold text-[#0b1c30] focus:outline-none focus:border-[#3755c3]"
+                            className="w-24 h-8 px-2 text-center rounded-lg border border-slate-200 text-xs font-bold text-[#0b1c30] focus:outline-none focus:border-[#254222]"
                           />
                         </td>
                         <td className="py-3.5 px-4 text-center">
@@ -412,7 +412,7 @@ export default function ReceiveGoodsPage() {
                               {diff}
                             </span>
                           ) : diff > 0 ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#d3e4fe] text-[#3755c3] text-xs font-bold">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#cae4c5] text-[#254222] text-xs font-bold">
                               +{diff}
                             </span>
                           ) : (
@@ -428,10 +428,10 @@ export default function ReceiveGoodsPage() {
               </table>
             </div>
             
-            <div className="p-4 border-t border-[#eff4ff] bg-[#eff4ff]/20 flex justify-end">
+            <div className="p-4 border-t border-[#cae4c5] bg-[#cae4c5]/20 flex justify-end">
               <button 
                 onClick={handleReceive}
-                className="h-10 px-6 bg-[#3755c3] hover:bg-[#2a429c] text-white font-semibold text-[13px] rounded-xl transition-all flex items-center gap-2 shadow-sm"
+                className="h-10 px-6 bg-[#254222] hover:bg-[#1b3119] text-white font-semibold text-[13px] rounded-xl transition-all flex items-center gap-2 shadow-sm"
               >
                 <CheckCircle2 size={18} />
                 <span>Konfirmasi Penerimaan Barang</span>

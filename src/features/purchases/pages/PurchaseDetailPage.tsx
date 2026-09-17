@@ -38,8 +38,8 @@ export default function PurchaseDetailPage() {
 
   const getStatusBadge = (status: PurchaseOrderStatus) => {
     switch (status) {
-      case 'draft': return <span className="px-2.5 py-0.5 bg-[#eff4ff] text-[#76777d] rounded-lg text-[11px] font-bold uppercase border border-[#d3e4fe]">Draft</span>;
-      case 'dikirim': return <span className="px-2.5 py-0.5 bg-[#d3e4fe] text-[#3755c3] rounded-lg text-[11px] font-bold uppercase border border-[#708cfd]/30">Dikirim</span>;
+      case 'draft': return <span className="px-2.5 py-0.5 bg-[#cae4c5] text-[#76777d] rounded-lg text-[11px] font-bold uppercase border border-[#cae4c5]">Draft</span>;
+      case 'dikirim': return <span className="px-2.5 py-0.5 bg-[#cae4c5] text-[#254222] rounded-lg text-[11px] font-bold uppercase border border-[#708cfd]/30">Dikirim</span>;
       case 'diterima_sebagian': return <span className="px-2.5 py-0.5 bg-[#fef3c7] text-[#92400e] rounded-lg text-[11px] font-bold uppercase border border-amber-200">Parsial</span>;
       case 'diterima': return <span className="px-2.5 py-0.5 bg-[#e6f4ea] text-[#137333] rounded-lg text-[11px] font-bold uppercase border border-[#a8dab5]/40">Selesai</span>;
       case 'batal': return <span className="px-2.5 py-0.5 bg-[#ffdad6] text-[#ba1a1a] rounded-lg text-[11px] font-bold uppercase border border-red-200">Batal</span>;
@@ -98,7 +98,7 @@ export default function PurchaseDetailPage() {
       actions={
         <button 
           onClick={() => navigate('/purchases')} 
-          className="h-10 px-4 rounded-xl bg-white text-[#0b1c30] border border-slate-200/80 shadow-sm hover:bg-[#eff4ff] text-[13px] font-semibold flex items-center gap-2 transition-all"
+          className="h-10 px-4 rounded-xl bg-white text-[#0b1c30] border border-slate-200/80 shadow-sm hover:bg-[#cae4c5] text-[13px] font-semibold flex items-center gap-2 transition-all"
         >
           <ArrowLeft size={16} />
           <span>Kembali</span>
@@ -109,7 +109,7 @@ export default function PurchaseDetailPage() {
         {/* Left Col: Info & Payment */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-            <h3 className="text-[15px] font-bold text-[#0b1c30] mb-3 border-b border-[#eff4ff] pb-2">Informasi Umum</h3>
+            <h3 className="text-[15px] font-bold text-[#0b1c30] mb-3 border-b border-[#cae4c5] pb-2">Informasi Umum</h3>
             <div className="space-y-3 text-xs">
               <div>
                 <p className="text-[#76777d] mb-0.5">Tanggal Dibuat</p>
@@ -132,7 +132,7 @@ export default function PurchaseDetailPage() {
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-            <h3 className="text-[15px] font-bold text-[#0b1c30] mb-4 border-b border-[#eff4ff] pb-2 flex items-center justify-between">
+            <h3 className="text-[15px] font-bold text-[#0b1c30] mb-4 border-b border-[#cae4c5] pb-2 flex items-center justify-between">
               <span>Status Pembayaran</span>
               {po.paymentStatus === 'lunas' ? (
                 <span className="text-[#137333] flex items-center gap-1 text-xs bg-[#e6f4ea] px-2.5 py-1 rounded-lg font-bold uppercase"><CheckCircle2 size={13}/> Lunas</span>
@@ -159,7 +159,7 @@ export default function PurchaseDetailPage() {
             {remainingDebt > 0 && (
               <button 
                 onClick={() => setIsPaymentModalOpen(true)}
-                className="w-full h-10 flex items-center justify-center gap-2 bg-[#3755c3] hover:bg-[#2a429c] text-white rounded-xl font-semibold text-xs transition-all shadow-sm"
+                className="w-full h-10 flex items-center justify-center gap-2 bg-[#254222] hover:bg-[#1b3119] text-white rounded-xl font-semibold text-xs transition-all shadow-sm"
               >
                 <CreditCard size={16} />
                 <span>Bayar Hutang Tagihan PO</span>
@@ -168,14 +168,14 @@ export default function PurchaseDetailPage() {
 
             {/* Payment History */}
             {po.paymentNotes && (
-              <div className="mt-4 pt-4 border-t border-[#eff4ff]">
+              <div className="mt-4 pt-4 border-t border-[#cae4c5]">
                 <div className="flex items-center gap-1.5 mb-2">
                   <History size={14} className="text-[#76777d]" />
                   <span className="text-[11px] font-bold text-[#76777d] uppercase tracking-wide">Riwayat Pembayaran</span>
                 </div>
                 <div className="space-y-1.5">
                   {po.paymentNotes.split(' | ').map((note, i) => (
-                    <p key={i} className="text-xs text-[#0b1c30] bg-[#eff4ff]/60 px-2.5 py-1.5 rounded-lg border border-[#d3e4fe]/50">
+                    <p key={i} className="text-xs text-[#0b1c30] bg-[#cae4c5]/60 px-2.5 py-1.5 rounded-lg border border-[#cae4c5]/50">
                       {note}
                     </p>
                   ))}
@@ -188,15 +188,15 @@ export default function PurchaseDetailPage() {
         {/* Right Col: Items Table */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-4 border-b border-[#eff4ff] bg-white flex items-center gap-2">
-              <FileText size={18} className="text-[#3755c3]" />
+            <div className="p-4 border-b border-[#cae4c5] bg-white flex items-center gap-2">
+              <FileText size={18} className="text-[#254222]" />
               <h3 className="text-[15px] font-bold text-[#0b1c30]">Daftar Item Pesanan</h3>
             </div>
             
             <div className="overflow-x-auto">
               <table className="w-full text-left whitespace-nowrap">
                 <thead>
-                  <tr className="bg-[#eff4ff] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
+                  <tr className="bg-[#cae4c5] text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
                     <th className="py-3.5 px-4 w-12 text-center">#</th>
                     <th className="py-3.5 px-4">Produk</th>
                     <th className="py-3.5 px-4 text-right">Harga Beli</th>
@@ -205,14 +205,14 @@ export default function PurchaseDetailPage() {
                     <th className="py-3.5 px-4 text-right">Subtotal</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#eff4ff] text-[13px]">
+                <tbody className="divide-y divide-[#cae4c5] text-[13px]">
                   {po.items.map((item, idx) => {
                     const curProd = products.find(p => p.id === item.productId);
                     const masterCost = curProd?.purchasePrice || curProd?.buyPrice || 0;
                     const isDiff = masterCost > 0 && masterCost !== item.buyPrice;
 
                     return (
-                      <tr key={item.id} className="hover:bg-[#eff4ff]/30 transition-colors">
+                      <tr key={item.id} className="hover:bg-[#cae4c5]/30 transition-colors">
                         <td className="py-3.5 px-4 text-center text-[#76777d] text-xs">{idx + 1}</td>
                         <td className="py-3.5 px-4">
                           <div className="font-semibold text-[#0b1c30]">{item.productName}</div>
@@ -226,7 +226,7 @@ export default function PurchaseDetailPage() {
                         <td className="py-3.5 px-4 text-right">
                           <div className="font-bold text-[#0b1c30]">{formatCurrency(item.buyPrice)}</div>
                           {isDiff && (
-                            <div className="text-[10px] text-[#3755c3] font-medium">➔ PO Baru</div>
+                            <div className="text-[10px] text-[#254222] font-medium">➔ PO Baru</div>
                           )}
                         </td>
                       <td className="py-3.5 px-4 text-center font-semibold text-[#0b1c30]">{item.quantity}</td>
@@ -242,10 +242,10 @@ export default function PurchaseDetailPage() {
                   );
                 })}
                 </tbody>
-                <tfoot className="bg-[#eff4ff]/60 border-t border-[#eff4ff]">
+                <tfoot className="bg-[#cae4c5]/60 border-t border-[#cae4c5]">
                   <tr>
                     <td colSpan={5} className="py-4 px-4 text-right font-bold text-[#0b1c30] text-xs uppercase tracking-wide">Total Pembelian PO:</td>
-                    <td className="py-4 px-4 text-right font-bold text-[#3755c3] text-base">{formatCurrency(po.totalAmount)}</td>
+                    <td className="py-4 px-4 text-right font-bold text-[#254222] text-base">{formatCurrency(po.totalAmount)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -258,16 +258,16 @@ export default function PurchaseDetailPage() {
       {isPaymentModalOpen && (
         <div className="fixed inset-0 bg-[#0b1c30]/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden border border-slate-100">
-            <div className="p-5 border-b border-[#eff4ff] bg-[#eff4ff]/60">
+            <div className="p-5 border-b border-[#cae4c5] bg-[#cae4c5]/60">
               <h2 className="text-[16px] font-bold text-[#0b1c30] flex items-center gap-2">
-                <Receipt size={18} className="text-[#3755c3]" />
+                <Receipt size={18} className="text-[#254222]" />
                 <span>Bayar Tagihan PO</span>
               </h2>
             </div>
             
             <form onSubmit={handlePayment}>
               <div className="p-5 space-y-4">
-                <div className="bg-[#eff4ff] text-[#0b1c30] px-4 py-3 rounded-xl flex justify-between items-center text-xs font-semibold border border-[#d3e4fe]">
+                <div className="bg-[#cae4c5] text-[#0b1c30] px-4 py-3 rounded-xl flex justify-between items-center text-xs font-semibold border border-[#cae4c5]">
                   <span>Sisa Hutang:</span>
                   <span className="text-sm font-bold text-[#ba1a1a]">{formatCurrency(remainingDebt)}</span>
                 </div>
@@ -281,13 +281,13 @@ export default function PurchaseDetailPage() {
                     max={remainingDebt}
                     value={paymentAmount}
                     onChange={e => setPaymentAmount(e.target.value)}
-                    className="w-full h-10 px-3.5 border border-slate-200 rounded-xl focus:outline-none focus:border-[#3755c3] font-bold text-[#0b1c30]"
+                    className="w-full h-10 px-3.5 border border-slate-200 rounded-xl focus:outline-none focus:border-[#254222] font-bold text-[#0b1c30]"
                     placeholder="Contoh: 1500000"
                   />
                   <button 
                     type="button" 
                     onClick={() => setPaymentAmount(remainingDebt.toString())}
-                    className="text-xs text-[#3755c3] font-semibold hover:underline mt-1.5"
+                    className="text-xs text-[#254222] font-semibold hover:underline mt-1.5"
                   >
                     Bayar Lunas Penuh (Rp {new Intl.NumberFormat('id-ID').format(remainingDebt)})
                   </button>
@@ -298,7 +298,7 @@ export default function PurchaseDetailPage() {
                   <select 
                     value={paymentMethod}
                     onChange={e => setPaymentMethod(e.target.value)}
-                    className="w-full h-10 px-3.5 border border-slate-200 rounded-xl focus:outline-none focus:border-[#3755c3] text-sm text-[#0b1c30] bg-white"
+                    className="w-full h-10 px-3.5 border border-slate-200 rounded-xl focus:outline-none focus:border-[#254222] text-sm text-[#0b1c30] bg-white"
                   >
                     <option value="Tunai">Tunai / Kas</option>
                     <option value="Transfer Bank">Transfer Bank</option>
@@ -312,7 +312,7 @@ export default function PurchaseDetailPage() {
                     <select
                       value={selectedBankId}
                       onChange={(e) => setSelectedBankId(e.target.value)}
-                      className="w-full h-10 px-3 rounded-lg border border-[#3755c3]/30 bg-[#eff4ff]/30 text-sm font-semibold text-[#0b1c30] focus:outline-none focus:border-[#3755c3]"
+                      className="w-full h-10 px-3 rounded-lg border border-[#254222]/30 bg-[#cae4c5]/30 text-sm font-semibold text-[#0b1c30] focus:outline-none focus:border-[#254222]"
                     >
                       {bankAccounts.map(b => (
                         <option key={b.id} value={b.id}>{b.bank} - {b.accountNumber} (Saldo: Rp {(b.balance || 0).toLocaleString('id-ID')})</option>
@@ -322,7 +322,7 @@ export default function PurchaseDetailPage() {
                 )}
               </div>
               
-              <div className="p-4 border-t border-[#eff4ff] bg-[#eff4ff]/20 flex justify-end gap-2 shrink-0">
+              <div className="p-4 border-t border-[#cae4c5] bg-[#cae4c5]/20 flex justify-end gap-2 shrink-0">
                 <button 
                   type="button" 
                   onClick={() => setIsPaymentModalOpen(false)}
@@ -332,7 +332,7 @@ export default function PurchaseDetailPage() {
                 </button>
                 <button 
                   type="submit" 
-                  className="h-9 px-5 bg-[#3755c3] text-white text-xs font-semibold hover:bg-[#2a429c] rounded-xl transition-all shadow-sm"
+                  className="h-9 px-5 bg-[#254222] text-white text-xs font-semibold hover:bg-[#1b3119] rounded-xl transition-all shadow-sm"
                 >
                   Proses Bayar
                 </button>
