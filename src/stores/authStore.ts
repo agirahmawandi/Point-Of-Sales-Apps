@@ -23,7 +23,7 @@ function buildUser(
     id: authUser.id,
     name: profile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
     email: authUser.email || '',
-    role: ((profile?.role || authUser.user_metadata?.role || 'kasir') as UserRole),
+    role: ((profile?.role || authUser.user_metadata?.role || 'kasir').toLowerCase() as UserRole),
     avatar: profile?.avatar ?? authUser.user_metadata?.avatar_url,
   };
 }
