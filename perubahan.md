@@ -636,3 +636,10 @@ Modal konfirmasi reset diperluas dengan 2 item baru:
 - **`PriceReferencePage.tsx`**: Pembuatan halaman kalkulator margin & harga jual di bawah menu "Produk & Stok". Fitur ini mempermudah penentuan Harga Jual Offline dan Online (Marketplace) berdasarkan persentase margin, biaya packing, dan potongan marketplace.
 - **Auto Rounding**: Sistem secara otomatis membulatkan hasil perhitungan harga ke atas ke kelipatan Rp 500 terdekat.
 - **Sinkronisasi Otomatis Kasir**: Fitur "Simpan Perubahan" menggunakan metode *bulk upsert* yang secara seketika menimpa kolom `selling_price` di database master produk. Hal ini memastikan Terminal POS (kasir) selalu mendapatkan harga jual paling mutakhir sesuai margin yang ditetapkan.
+
+### 4. Interaktivitas Tabel & Popup Detail
+- **Tabel List Penjualan**: Menambahkan event klik pada baris tabel (row click) yang akan memunculkan komponen `TransactionDetailModal.tsx`. Modal ini menampilkan rincian komprehensif terkait penjualan (item pesanan, total, diskon, metode pembayaran, hingga informasi pelanggan/resi marketplace).
+- **Tabel Daftar Purchase Order**: Menambahkan event serupa pada tabel PO untuk memunculkan `PurchaseOrderDetailModal.tsx`. Modal ini merangkum status pesanan, sisa hutang, tanggal jatuh tempo, dan rincian item.
+
+### 5. Harmonisasi Tema Warna (Modul Pembelian)
+- **Konsistensi Visual**: Menerapkan tema warna hijau gelap (`#254222`) dan hijau muda (`#cae4c5`) pada seluruh fitur di modul Pembelian (Daftar Purchase Order, Buat PO, Penerimaan Barang, dan Pemasok). Tema ini sekarang seragam dan senada dengan skema warna pada modul Sales.

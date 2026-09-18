@@ -30,6 +30,13 @@
 ### 5. Harmonisasi Tema Warna
 - **Modul Pembelian**: Mengubah tema warna dasar (biru) pada seluruh halaman modul Pembelian (Purchase Order, Penerimaan Barang, Pemasok, dan Form Buat PO) menjadi tema hijau gelap (`#254222`) dan hijau muda (`#cae4c5`) agar senada dengan modul Penjualan (Sales).
 
+## 🔜 Rencana Pekerjaan Selanjutnya (Fitur Produk Rusak)
+- **Menu Produk Rusak (*Write-off*)**: Membuat submenu baru di bawah "Produk & Stok" untuk mendata barang rusak, hilang, atau kadaluarsa.
+- **Otomatisasi Stok & Keuangan**:
+  - Mengurangi stok fisik produk secara otomatis berdasarkan input jumlah barang rusak.
+  - Mencatat kerugian modal (`Jumlah Rusak × HPP`) secara otomatis sebagai **Pengeluaran (Expense)** dengan kategori khusus (misalnya "Beban Kerusakan Barang").
+  - Memastikan kerugian ini langsung berdampak dan mengurangi **Laba Bersih** pada laporan Laba/Rugi di bulan pelaporan, sehingga laporan keuangan ritel menjadi 100% akurat.
+
 ---
 
 # 📝 Log Pekerjaan Sebelumnya (16 September 2026)
