@@ -74,7 +74,7 @@ export default function DashboardPage() {
   };
 
   const lowStockCount = products.filter(p => p.stock <= p.minStock).length;
-  const isAdmin = user?.role === 'admin';
+  const isAdminUtama = user?.role === 'admin_utama';
 
   const handleExecuteReset = async () => {
     try {
@@ -150,7 +150,7 @@ export default function DashboardPage() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-[#254222] tracking-tight">Dashboard Overview</h1>
-            {isAdmin && (
+            {isAdminUtama && (
               <button
                 onClick={() => setIsResetModalOpen(true)}
                 title="Reset Seluruh Transaksi & Stok Produk (Admin Only)"
@@ -224,7 +224,7 @@ export default function DashboardPage() {
       )}
 
       {/* Summary KPI Cards */}
-      <KPICards />
+      <KPICards isKasir={user?.role === 'kasir'} />
 
       {/* Payment Methods Summary + Revenue Chart */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">

@@ -3,6 +3,7 @@ import { AppRouter } from './routes';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useAuthStore } from '@/stores/authStore';
 import { Toaster } from 'sonner';
+import ResetPasswordModal from '@/features/auth/components/ResetPasswordModal';
 
 export default function App() {
   const initAuth = useAuthStore((state) => state.initAuth);
@@ -15,6 +16,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <AppRouter />
+      <ResetPasswordModal />
       <Toaster
         position="top-right"
         richColors

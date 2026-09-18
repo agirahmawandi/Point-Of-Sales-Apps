@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTransactionStore } from '@/stores/transactionStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useAuthStore } from '@/stores/authStore';
 import PageContainer from '@/components/layout/PageContainer';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
@@ -29,6 +30,8 @@ import TransactionDetailModal from '@/features/pos/components/TransactionDetailM
 export default function SalesListPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuthStore();
+  const isKasir = user?.role === 'kasir';
   const { transactions, updateTransactionPaymentStatus, updateTransaction } = useTransactionStore();
   const { bankAccounts, updateBankBalance } = useSettingsStore();
   
@@ -455,17 +458,19 @@ export default function SalesListPage() {
                       <td className="px-5 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {/* Tombol Edit */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingTransaction(trx);
-                            }}
-                            className="bg-white hover:bg-[#cae4c5]/30 text-[#254222] px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition-colors border border-[#cae4c5]"
-                            title="Edit data pesanan, item, potongan & status pembayaran"
-                          >
-                            <Pencil size={12} />
-                            <span>Edit</span>
-                          </button>
+                          {!isKasir && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingTransaction(trx);
+                              }}
+                              className="bg-white hover:bg-[#cae4c5]/30 text-[#254222] px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition-colors border border-[#cae4c5]"
+                              title="Edit data pesanan, item, potongan & status pembayaran"
+                            >
+                              <Pencil size={12} />
+                              <span>Edit</span>
+                            </button>
+                          )}
 
                           {/* Tombol Tandai Lunas (Jika Tertunda) */}
                           {isPending && (

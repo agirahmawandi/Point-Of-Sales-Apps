@@ -73,26 +73,50 @@ export const useAuthStore = create<AuthState>()(
             return { success: false, error: 'Email atau password salah' };
           }
 
-          // Coba ambil profil dari DB
-          const { data: profile } = await supabase
+          // Coba ambil profil dari DB berdasarkan ID
+          let { data: profile } = await supabase
             .from('profiles')
             .select('name, role, avatar')
             .eq('id', data.user.id)
             .single();
 
-          const user = buildUser(data.user, profile);
-
-          set({ user, isAuthenticated: true });
-
           // Sync profil ke DB jika belum ada
           if (!profile) {
-            await supabase.from('profiles').insert({
+            // Cek apakah ada profil yatim (dibuat dari Manajemen Pengguna sebelum Auth dibuat)
+            const { data: orphanedProfile } = await supabase
+              .from('profiles')
+              .select('id, name, role, avatar')
+              .eq('email', data.user.email)
+              .single();
+
+            const roleToUse = orphanedProfile?.role || data.user.user_metadata?.role || 'kasir';
+            const nameToUse = orphanedProfile?.name || data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User';
+
+            // Hapus profil yatim TERLEBIH DAHULU agar tidak melanggar constraint UNIQUE pada kolom email
+            if (orphanedProfile) {
+              await supabase.from('profiles').delete().eq('id', orphanedProfile.id);
+            }
+
+            // Insert profil baru dengan ID yang benar dari Auth
+            const { data: newProfile, error: insertError } = await supabase.from('profiles').insert({
               id: data.user.id,
-              name: user.name,
-              email: user.email,
-              role: user.role,
-            }).select().single();
+              name: nameToUse,
+              email: data.user.email,
+              role: roleToUse,
+              avatar: orphanedProfile?.avatar || data.user.user_metadata?.avatar_url
+            }).select('name, role, avatar').single();
+
+            if (insertError) {
+              console.error("Gagal insert profile baru:", insertError);
+              // Fallback agar tetap bisa login meskipun insert gagal
+              profile = { name: nameToUse, role: roleToUse, avatar: null };
+            } else {
+              profile = newProfile;
+            }
           }
+
+          const user = buildUser(data.user, profile);
+          set({ user, isAuthenticated: true });
 
           return { success: true };
         } catch (err: any) {
@@ -113,7 +137,7 @@ export const useAuthStore = create<AuthState>()(
         const { user, isAuthenticated } = get();
         if (!isAuthenticated || !user) return false;
         if (!requiredRole) return true;
-        if (user.role === 'admin') return true;
+        if (user.role === 'admin_utama') return true;
         return user.role === requiredRole;
       },
     }),

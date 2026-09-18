@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { Loader2 } from 'lucide-react';
 
-export default function KPICards() {
+export default function KPICards({ isKasir = false }: { isKasir?: boolean }) {
   const { stats, isLoading, error } = useDashboardStore();
 
   const formatCurrency = (value: number) => {
@@ -57,7 +57,8 @@ export default function KPICards() {
       </div>
 
       {/* Card 2: HPP Hari Ini */}
-      <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">
+      {!isKasir && (
+        <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">
         <div>
           <div className="flex items-center justify-between gap-2 h-10 mb-2">
             <span className="text-[11px] font-bold text-[#76777d] uppercase tracking-wider truncate">HPP</span>
@@ -76,9 +77,11 @@ export default function KPICards() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Card 3: Laba Bersih */}
-      <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">
+      {!isKasir && (
+        <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">
         <div>
           <div className="flex items-center justify-between gap-2 h-10 mb-2">
             <div className="flex items-center gap-1 min-w-0">
@@ -100,6 +103,7 @@ export default function KPICards() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Card 4: Total Piutang */}
       <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">
@@ -126,7 +130,8 @@ export default function KPICards() {
       </div>
 
       {/* Card 5: Total Hutang */}
-      <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">
+      {!isKasir && (
+        <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">
         <div>
           <div className="flex items-center justify-between gap-2 h-10 mb-2">
             <span className="text-[11px] font-bold text-[#76777d] uppercase tracking-wider truncate">Hutang Supplier</span>
@@ -148,6 +153,7 @@ export default function KPICards() {
           </Link>
         </div>
       </div>
+      )}
 
       {/* Card 6: Peringatan Stok */}
       <div className="p-4 rounded-xl bg-white shadow-sm border border-[#cae4c5]/60 flex flex-col justify-between h-full">

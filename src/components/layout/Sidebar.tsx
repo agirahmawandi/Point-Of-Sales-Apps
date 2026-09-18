@@ -54,6 +54,9 @@ export default function Sidebar() {
   };
 
   const isKasir = user?.role === 'kasir';
+  const isAdmin = user?.role === 'admin';
+  const isAdminUtama = user?.role === 'admin_utama';
+  const isOperationalAdmin = isAdmin || isAdminUtama;
 
   const menuItems = [
     { title: 'Terminal POS', icon: Terminal, path: '/pos', badge: 'KASIR' },
@@ -76,7 +79,7 @@ export default function Sidebar() {
         { title: 'List Pelanggan', icon: Users, path: '/sales/customers' },
       ]
     },
-    ...(!isKasir ? [{
+    ...(isOperationalAdmin ? [{
       title: 'Pembelian',
       icon: ShoppingBag,
       badge: 'PO',
@@ -87,7 +90,7 @@ export default function Sidebar() {
         { title: 'Pemasok', icon: Users, path: '/purchases/suppliers' },
       ]
     }] : []),
-    ...(!isKasir ? [{
+    ...(isOperationalAdmin ? [{
       title: 'Pengeluaran',
       icon: Wallet,
       submenu: [
@@ -95,7 +98,7 @@ export default function Sidebar() {
         { title: 'Kategori Beban', icon: Tag, path: '/expenses/categories' },
       ]
     }] : []),
-    ...(!isKasir ? [{
+    ...(isAdminUtama ? [{
       title: 'Keuangan',
       icon: Landmark,
       submenu: [
@@ -263,7 +266,7 @@ export default function Sidebar() {
         ))}
 
         {/* Settings */}
-        {!isKasir && (
+        {isAdminUtama && (
           <>
             <div className="my-4 mx-2 border-t border-white/10" />
             <Collapsible.Root
@@ -354,7 +357,7 @@ export default function Sidebar() {
           {!sidebarCollapsed && (
             <div className="flex flex-col truncate">
               <span className="text-[14px] font-bold text-white truncate leading-tight">{user?.name || 'Admin Frema'}</span>
-              <span className="text-[11px] text-[#cae4c5]/70 uppercase font-bold tracking-wider mt-1">{user?.role || 'SUPER ADMIN'}</span>
+              <span className="text-[11px] text-[#cae4c5]/70 uppercase font-bold tracking-wider mt-1">{user?.role === 'admin_utama' ? 'ADMIN UTAMA' : (user?.role || 'KASIR')}</span>
             </div>
           )}
         </div>

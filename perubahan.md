@@ -2,6 +2,15 @@
 
 File ini mencatat penyesuaian UI/UX dan alur kerja yang dilakukan di luar dari rancangan awal `implementation_plan.md`, dengan fokus utama pada **Optimasi Tampilan PC/Desktop**.
 
+## Pembagian Hak Akses 3-Tingkat (18 September 2026)
+- **Tipe Data Global**: Memperbarui tipe `UserRole` dari 2 tingkat menjadi 3 tingkat: `admin_utama`, `admin`, dan `kasir` (`src/types/common.ts`).
+- **Pembatasan Dashboard**: Fitur Reset Data dan metrik sensitif (HPP, Laba Bersih, Hutang) sekarang disembunyikan untuk Kasir, menyisakan Peringatan Stok, Omzet, dan Piutang (`DashboardPage.tsx`, `KPICards.tsx`).
+- **Navigasi Sidebar**: Hak akses menu dibedakan. `admin_utama` memiliki akses penuh, `admin` hanya operasional (tanpa Keuangan dan Pengaturan), dan `kasir` hanya Dashboard dan Penjualan (`Sidebar.tsx`).
+- **Edit Transaksi**: Membatasi aksi "Edit" di tabel transaksi (SalesListPage) agar tidak bisa dilakukan oleh `kasir`.
+- **Manajemen Pengguna**: Mendukung pemilihan dan tampilan lencana/badge khusus (berikon mahkota) untuk `admin_utama` di tabel manajemen pengguna (`UserManagementPage.tsx`).
+- **Sinkronisasi Profil & Supabase Auth**: Memperbaiki masalah duplikasi *constraint email* pada `authStore.ts` di mana profil yang dibuat via UI berhasil diserap (absorb) menjadi profil login nyata saat pengguna pertama kali masuk, mencegah reset akses (fallback ke kasir).
+- **Fitur Reset Password (Pop-up)**: Membangun form `ResetPasswordModal.tsx` terintegrasi di `App.tsx` yang secara otomatis menangkap sinyal URL hash *recovery* sebelum terhapus oleh React Router, memungkinkan reset password berjalan tanpa halaman *dedicated*.
+
 ## Fitur Produk Rusak (18 September 2026)
 - **Modul Baru**: Menambahkan sistem pencatatan produk rusak / write-off. Termasuk pembuatan halaman daftar (`WriteOffListPage.tsx`), form modal (`WriteOffFormModal.tsx`), store khusus (`writeOffStore.ts`), dan tipe data `ProductWriteOff`.
 - **Integritas Database**: Menambahkan SQL RPC `create_write_off` untuk mencatat log kerugian dan memotong stok fisik secara atomik dalam satu transaksi.

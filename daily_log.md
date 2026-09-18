@@ -11,6 +11,10 @@
 - **Dashboard Laba Bersih**: Memperbarui RPC `get_dashboard_stats` dan `get_monthly_revenue` (`supabase_dashboard_rpc.sql`) agar ringkasan *Card* "Laba Bersih" dan tren grafik di beranda juga memasukkan faktor produk rusak.
 - **Laporan Inventaris / Stok Barang**: Menambahkan kolom "Produk Rusak" (`total_write_offs`) pada antarmuka *InventoryReportPage* dan memperbarui RPC `get_stock_report` (`supabase_stock_report_rpc.sql`) agar rumus stok historis (Pembelian - Penjualan - Rusak = Sisa) lebih lengkap dan mudah dibaca.
 
+### 3. Otentikasi & Reset Password
+- **Penyelesaian Bug Profil**: Memperbaiki masalah arsitektur pada `authStore.ts` di mana pembuatan profil baru dari UI bertabrakan dengan Supabase Auth (constraint email unik), yang menyebabkan profil kasir hilang atau ter-reset ke peran default. Kode kini men-sinkronkan profil yatim (*orphaned profiles*) secara rapi.
+- **Form Reset Password**: Membuat modal `ResetPasswordModal.tsx` yang mendeteksi token URL (mode *Recovery*) secara instan sebelum tertimpa React Router. Modal ini memungkinkan kasir mengganti kata sandi secara mandiri setelah menekan link dari email Supabase.
+
 ---
 
 # 📝 Log Pekerjaan Sebelumnya (17 September 2026)

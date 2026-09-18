@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { showSuccess, showError, showInfo } from '@/lib/toast';
 import PageContainer from '@/components/layout/PageContainer';
-import { Plus, Search, Edit2, Trash2, Shield, User, Mail, X, Save } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Shield, User, Mail, X, Save, Crown } from 'lucide-react';
 import { useUserStore, type UserProfile } from '@/stores/userStore';
 import { toast } from 'sonner';
 
@@ -12,7 +12,7 @@ export default function UserManagementPage() {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'kasir' as 'admin' | 'kasir' });
+  const [formData, setFormData] = useState({ name: '', email: '', role: 'kasir' as 'admin_utama' | 'admin' | 'kasir' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -147,12 +147,14 @@ export default function UserManagementPage() {
                     </td>
                     <td className="px-5 py-3.5 text-center">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold capitalize ${
-                        user.role === 'admin' 
-                          ? 'bg-[#e6f4ea] text-[#137333]' 
-                          : 'bg-[#eff4ff] text-[#3755c3]'
+                        user.role === 'admin_utama'
+                          ? 'bg-amber-100 text-amber-700'
+                          : user.role === 'admin' 
+                            ? 'bg-[#e6f4ea] text-[#137333]' 
+                            : 'bg-[#eff4ff] text-[#3755c3]'
                       }`}>
-                        {user.role === 'admin' ? <Shield size={12} /> : <User size={12} />}
-                        {user.role}
+                        {user.role === 'admin_utama' ? <Crown size={12} /> : user.role === 'admin' ? <Shield size={12} /> : <User size={12} />}
+                        {user.role.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
@@ -231,11 +233,12 @@ export default function UserManagementPage() {
                 <label className="block text-sm font-semibold text-[#0b1c30] mb-1.5">Peran (Role)</label>
                 <select 
                   value={formData.role}
-                  onChange={e => setFormData({...formData, role: e.target.value as 'admin' | 'kasir'})}
+                  onChange={e => setFormData({...formData, role: e.target.value as 'admin_utama' | 'admin' | 'kasir'})}
                   className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:ring-2 focus:ring-[#3755c3]/20 focus:border-[#3755c3] focus:bg-white outline-none transition-all"
                 >
                   <option value="kasir">Kasir</option>
                   <option value="admin">Admin</option>
+                  <option value="admin_utama">Admin Utama</option>
                 </select>
               </div>
 
