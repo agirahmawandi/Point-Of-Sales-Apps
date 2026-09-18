@@ -14,6 +14,7 @@ import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useFinanceStore } from '@/stores/financeStore';
+import { useWriteOffStore } from '@/stores/writeOffStore';
 import { useDashboardStore, type DateFilterType } from '@/stores/dashboardStore';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
@@ -91,11 +92,15 @@ export default function DashboardPage() {
       clearCart();
       resetBankBalances();
       resetFinanceBalances();
+      useWriteOffStore.getState().resetWriteOffs();
 
       useFinanceStore.setState({
         investorDeposits: [],
         profitShares: [],
         balanceTransfers: [],
+        cashMutations: [],
+        cashBalance: 0,
+        qrisBalance: 0,
         investors: financeStore.investors.map(inv => ({
           ...inv,
           totalInvested: 0,

@@ -24,6 +24,9 @@ BEGIN
         RAISE EXCEPTION 'Transaction not found';
     END IF;
 
+    -- [NEW] Hapus mutasi kas lama jika ada (untuk transaksi ini)
+    DELETE FROM cash_mutations WHERE reference_id = p_transaction_id;
+
     -- 2. Kembalikan saldo berdasarkan pembayaran lama
     IF v_old_transaction.payment_status != 'tertunda' THEN
         v_old_payment := COALESCE(v_old_transaction.amount_paid, v_old_transaction.total, 0);
@@ -107,6 +110,10 @@ BEGIN
         ELSIF v_new_method = 'card' AND v_new_bank IS NOT NULL THEN
             UPDATE bank_accounts SET balance = COALESCE(balance, 0) + v_new_payment, updated_at = NOW() WHERE id = v_new_bank;
         END IF;
+
+        -- [NEW] Insert mutasi kas baru
+        INSERT INTO cash_mutations (type, reference_id, description, amount, direction, payment_method, bank_account_id)
+        VALUES ('sale', p_transaction_id, 'Penjualan (Edit) #' || COALESCE(v_old_transaction.invoice_number, 'INV-EDIT'), v_new_payment, 'in', v_new_method, v_new_bank);
     END IF;
 
     RETURN jsonb_build_object('success', true);

@@ -32,7 +32,8 @@ import {
   UserCheck,
   History,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  AlertTriangle
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
@@ -64,6 +65,7 @@ export default function Sidebar() {
         { title: 'Acuan Harga Jual', icon: Tags, path: '/products/price-reference' },
         { title: 'Kategori', icon: Tags, path: '/products/categories' },
         { title: 'Stok Opname', icon: ClipboardCheck, path: '/products/stock-opname' },
+        { title: 'Produk Rusak', icon: AlertTriangle, path: '/products/write-offs' },
       ]
     },
     {

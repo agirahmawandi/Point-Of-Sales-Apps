@@ -202,9 +202,10 @@ export default function InventoryReportPage() {
               <thead>
                 <tr className="bg-slate-50 text-[11px] font-bold text-[#76777d] uppercase tracking-wider">
                   <th className="py-3 px-5">Produk</th>
-                  <th className="py-3 px-5 text-center">Stok Pembelian</th>
-                  <th className="py-3 px-5 text-center">Stok Penjualan</th>
-                  <th className="py-3 px-5 text-center">Sisa Stok</th>
+                  <th className="py-4 px-5 text-center text-[11px] font-bold text-[#76777d] uppercase tracking-wider">Stok Pembelian</th>
+                  <th className="py-4 px-5 text-center text-[11px] font-bold text-[#76777d] uppercase tracking-wider">Stok Penjualan</th>
+                  <th className="py-4 px-5 text-center text-[11px] font-bold text-[#76777d] uppercase tracking-wider">Produk Rusak</th>
+                  <th className="py-4 px-5 text-center text-[11px] font-bold text-[#76777d] uppercase tracking-wider">Sisa Stok</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-[13px]">
@@ -221,6 +222,9 @@ export default function InventoryReportPage() {
                       <td className="px-5 py-3 text-center text-[#ba1a1a] font-medium">
                         {item.total_sold}
                       </td>
+                      <td className="px-5 py-3 text-center text-orange-600 font-medium">
+                        {item.total_write_offs || 0}
+                      </td>
                       <td className="px-5 py-3 text-center font-bold text-[#3755c3]">
                         {item.current_stock}
                       </td>
@@ -228,7 +232,7 @@ export default function InventoryReportPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="px-5 py-10 text-center text-slate-400">
+                    <td colSpan={5} className="px-5 py-10 text-center text-slate-400">
                       Data stok belum tersedia. (Jalankan query get_stock_report di database)
                     </td>
                   </tr>

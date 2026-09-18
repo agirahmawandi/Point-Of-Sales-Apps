@@ -15,6 +15,7 @@ DECLARE
     v_low_stock_count INT := 0;
     v_piutang NUMERIC := 0;
     v_hutang NUMERIC := 0;
+    v_write_offs NUMERIC := 0;
 BEGIN
     -- Hitung Omzet dan Total Transaksi
     SELECT COALESCE(SUM(total), 0), COUNT(id)
@@ -57,11 +58,17 @@ BEGIN
     FROM purchase_orders
     WHERE payment_status IN ('utang', 'sebagian') AND status != 'batal';
 
+    -- Hitung Kerugian Produk Rusak (Write-offs)
+    SELECT COALESCE(SUM(loss_amount), 0)
+    INTO v_write_offs
+    FROM product_write_offs
+    WHERE date >= p_start_date AND date <= p_end_date;
+
     RETURN jsonb_build_object(
         'omzet', v_omzet,
         'hpp', v_hpp,
-        'expense', v_expense,
-        'laba', v_omzet - v_hpp - v_expense,
+        'expense', v_expense + v_write_offs,
+        'laba', v_omzet - v_hpp - v_expense - v_write_offs,
         'totalTransactions', v_total_transactions,
         'lowStockCount', v_low_stock_count,
         'piutang', v_piutang,
@@ -106,6 +113,14 @@ BEGIN
         FROM expenses
         WHERE date >= (date_trunc('month', NOW()) - (p_months || ' months')::INTERVAL)::DATE
         GROUP BY 1
+    ),
+    monthly_write_offs AS (
+        SELECT 
+            date_trunc('month', date) AS month_start,
+            SUM(loss_amount) AS write_off
+        FROM product_write_offs
+        WHERE date >= (date_trunc('month', NOW()) - (p_months || ' months')::INTERVAL)
+        GROUP BY 1
     )
     SELECT jsonb_agg(
         jsonb_build_object(
@@ -113,13 +128,14 @@ BEGIN
             'date', m.month_start,
             'omzet', COALESCE(s.omzet, 0),
             'hpp', COALESCE(s.hpp, 0),
-            'expense', COALESCE(e.expense, 0),
-            'laba', COALESCE(s.omzet, 0) - COALESCE(s.hpp, 0) - COALESCE(e.expense, 0)
+            'expense', COALESCE(e.expense, 0) + COALESCE(w.write_off, 0),
+            'laba', COALESCE(s.omzet, 0) - COALESCE(s.hpp, 0) - COALESCE(e.expense, 0) - COALESCE(w.write_off, 0)
         ) ORDER BY m.month_start ASC
     ) INTO v_result
     FROM months m
     LEFT JOIN monthly_sales s ON m.month_start = s.month_start
-    LEFT JOIN monthly_expenses e ON m.month_start = e.month_start;
+    LEFT JOIN monthly_expenses e ON m.month_start = e.month_start
+    LEFT JOIN monthly_write_offs w ON m.month_start = w.month_start;
 
     RETURN v_result;
 END;

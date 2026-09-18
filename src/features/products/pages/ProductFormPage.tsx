@@ -42,7 +42,7 @@ export default function ProductFormPage() {
       purchasePrice: 0,
       sellingPrice: 0,
       stock: 0,
-      minStock: 10,
+      minStock: 5,
       unit: 'kg',
       description: '',
       imageUrl: '',
@@ -270,8 +270,8 @@ export default function ProductFormPage() {
                 {...register('purchasePrice')}
                 type="number"
                 min="0"
-                disabled={isLoading}
-                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all disabled:bg-slate-50"
+                disabled={true}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-sm text-[#0b1c30] shadow-sm focus:outline-none focus:border-[#3755c3] focus:ring-2 focus:ring-[#3755c3]/20 transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
               />
               {errors.purchasePrice && <p className="text-red-500 text-xs mt-1.5">{errors.purchasePrice.message}</p>}
             </div>

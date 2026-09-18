@@ -19,7 +19,8 @@ BEGIN
   -- 3. Hapus semua pengeluaran
   DELETE FROM expenses WHERE true;
   
-  -- 4. Reset stok semua produk menjadi 0
+  -- 4. Reset stok semua produk menjadi 0 dan hapus riwayat produk rusak
+  DELETE FROM product_write_offs WHERE true;
   UPDATE products SET stock = 0 WHERE true;
   
   -- 5. Reset akumulasi belanja pelanggan
@@ -33,6 +34,7 @@ BEGIN
   DELETE FROM investor_deposits WHERE true;
   DELETE FROM profit_share_distributions WHERE true;
   DELETE FROM profit_shares WHERE true;
+  DELETE FROM cash_mutations WHERE true;
   UPDATE investors SET total_invested = 0, total_withdrawn = 0 WHERE true;
   UPDATE cash_balances SET balance = 0 WHERE true;
   UPDATE bank_accounts SET balance = 0 WHERE true;

@@ -10,6 +10,7 @@ import { Download, TrendingUp, TrendingDown, DollarSign, Loader2 } from 'lucide-
 export default function ProfitLossReportPage() {
   const [filteredSales, setFilteredSales] = useState<Transaction[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
+  const [filteredWriteOffs, setFilteredWriteOffs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
@@ -38,13 +39,22 @@ export default function ProfitLossReportPage() {
           .gte('date', startDate.toISOString())
           .lte('date', endDate.toISOString());
 
-        const [salesRes, expensesRes] = await Promise.all([salesQuery, expensesQuery]);
+        // Fetch write-offs
+        let writeOffsQuery = supabase
+          .from('product_write_offs')
+          .select('*')
+          .gte('date', startDate.toISOString())
+          .lte('date', endDate.toISOString());
+
+        const [salesRes, expensesRes, writeOffsRes] = await Promise.all([salesQuery, expensesQuery, writeOffsQuery]);
         
         if (salesRes.error) throw salesRes.error;
         if (expensesRes.error) throw expensesRes.error;
+        if (writeOffsRes.error) throw writeOffsRes.error;
 
         setFilteredSales(salesRes.data as Transaction[] || []);
         setFilteredExpenses(expensesRes.data as Expense[] || []);
+        setFilteredWriteOffs(writeOffsRes.data || []);
       } catch (error) {
       } finally {
         setIsLoading(false);
@@ -73,7 +83,9 @@ export default function ProfitLossReportPage() {
   const grossMargin = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
 
   const operatingExpenses = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
-  const netProfit = grossProfit - operatingExpenses;
+  const totalWriteOffs = filteredWriteOffs.reduce((acc, w) => acc + Number(w.loss_amount), 0);
+  
+  const netProfit = grossProfit - operatingExpenses - totalWriteOffs;
   const netMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
 
   const formatCurrency = (value: number) => {
@@ -188,13 +200,19 @@ export default function ProfitLossReportPage() {
           {/* Pengeluaran Operasional */}
           <div className="p-5">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-bold text-[#0b1c30]">Pengeluaran Operasional</span>
-              <span className="font-bold text-red-600">({formatCurrency(operatingExpenses)})</span>
+              <span className="font-bold text-[#0b1c30]">Pengeluaran Operasional & Kerugian</span>
+              <span className="font-bold text-red-600">({formatCurrency(operatingExpenses + totalWriteOffs)})</span>
             </div>
-            <div className="flex items-center justify-between text-sm text-slate-500 pl-4">
+            <div className="flex items-center justify-between text-sm text-slate-500 pl-4 mb-1">
               <span>Beban Usaha & Operasional</span>
               <span>{formatCurrency(operatingExpenses)}</span>
             </div>
+            {totalWriteOffs > 0 && (
+              <div className="flex items-center justify-between text-sm text-slate-500 pl-4 border-t border-slate-100 pt-1 mt-1">
+                <span>Kerugian Barang Rusak (Write-offs)</span>
+                <span>{formatCurrency(totalWriteOffs)}</span>
+              </div>
+            )}
           </div>
 
           {/* Laba Bersih */}

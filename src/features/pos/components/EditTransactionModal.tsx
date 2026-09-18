@@ -38,8 +38,11 @@ export default function EditTransactionModal({
   onClose,
   onSaveSuccess,
 }: EditTransactionModalProps) {
-  const { addStock, reduceStock } = useProductStore();
-  const { bankAccounts, updateBankBalance } = useSettingsStore();
+  const { products } = useProductStore();
+  const { bankAccounts } = useSettingsStore();
+
+  const [searchProduct, setSearchProduct] = useState('');
+  const [showProductDropdown, setShowProductDropdown] = useState(false);
 
   // Basic transaction states
   const [transactionType, setTransactionType] = useState(transaction.transactionType || 'offline');
@@ -116,6 +119,46 @@ export default function EditTransactionModal({
       return item;
     }));
   };
+
+  const handleRemoveItem = (id: string) => {
+    setItems(prev => prev.filter(item => item.id !== id));
+  };
+
+  const handleAddProduct = (product: any) => {
+    setItems(prev => {
+      const existing = prev.find(p => p.productId === product.id);
+      if (existing) {
+        return prev.map(item => {
+          if (item.productId === product.id) {
+            const newQty = item.quantity + 1;
+            return { ...item, quantity: newQty, subtotal: item.price * newQty };
+          }
+          return item;
+        });
+      }
+      
+      const newItem: TransactionItem = {
+        id: crypto.randomUUID(), // Temp ID
+        productId: product.id,
+        name: product.name,
+        sku: product.sku,
+        price: product.sellingPrice || 0,
+        buyPrice: product.purchasePrice || 0,
+        quantity: 1,
+        subtotal: product.sellingPrice || 0,
+        unit: product.unit || 'pcs'
+      };
+      
+      return [...prev, newItem];
+    });
+    setSearchProduct('');
+    setShowProductDropdown(false);
+  };
+
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchProduct.toLowerCase()) || 
+    (p.sku && p.sku.toLowerCase().includes(searchProduct.toLowerCase()))
+  ).slice(0, 5);
 
   const handleFeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, '');
@@ -333,10 +376,56 @@ export default function EditTransactionModal({
 
           {/* Edit Item Pesanan */}
           <div>
-            <h3 className="text-xs font-bold text-[#254222] uppercase tracking-wider mb-2.5">
-              Item Produk ({items.length})
-            </h3>
+            <div className="flex justify-between items-end mb-2.5">
+              <h3 className="text-xs font-bold text-[#254222] uppercase tracking-wider">
+                Item Produk ({items.length})
+              </h3>
+            </div>
+            
+            <div className="relative mb-3">
+              <input
+                type="text"
+                placeholder="Cari nama produk / SKU untuk ditambahkan..."
+                value={searchProduct}
+                onChange={(e) => {
+                  setSearchProduct(e.target.value);
+                  setShowProductDropdown(true);
+                }}
+                onFocus={() => setShowProductDropdown(true)}
+                onBlur={() => setTimeout(() => setShowProductDropdown(false), 200)}
+                className="w-full h-10 px-3 pl-9 text-xs bg-white border border-[#cae4c5] rounded-xl focus:outline-none focus:border-[#99cc66]"
+              />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#76777d]">
+                <Plus size={15} />
+              </div>
+              
+              {showProductDropdown && searchProduct && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 shadow-lg rounded-xl z-10 max-h-48 overflow-y-auto">
+                  {filteredProducts.length > 0 ? (
+                    filteredProducts.map(prod => (
+                      <button
+                        key={prod.id}
+                        type="button"
+                        onClick={() => handleAddProduct(prod)}
+                        className="w-full text-left px-4 py-2 text-xs hover:bg-[#cae4c5]/20 border-b border-slate-100 last:border-0"
+                      >
+                        <div className="font-bold text-[#254222]">{prod.name}</div>
+                        <div className="text-[10px] text-slate-500">
+                          {prod.sku ? `SKU: ${prod.sku} | ` : ''} Harga: Rp {formatNumber(prod.sellingPrice || 0)} | Stok: {prod.stock}
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-xs text-slate-500 text-center">Produk tidak ditemukan</div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2 border border-[#cae4c5]/60 rounded-xl p-3 bg-slate-50/50">
+              {items.length === 0 && (
+                <div className="py-4 text-center text-xs text-slate-500">Tidak ada item di nota ini.</div>
+              )}
               {items.map((item) => (
                 <div key={item.id} className="bg-white p-3 rounded-lg border border-slate-100 flex items-center justify-between gap-3 shadow-xs">
                   <div className="flex-1 min-w-0">
@@ -359,34 +448,43 @@ export default function EditTransactionModal({
                     </div>
                   </div>
 
-                  {/* Quantity controls */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-[#cae4c5]/30 rounded-lg p-0.5">
-                      <button
-                        type="button"
-                        onClick={() => handleItemQtyChange(item.id!, -1)}
-                        className="p-1 hover:bg-white rounded text-[#254222] transition-colors"
-                      >
-                        <Minus size={12} />
-                      </button>
-                      <span className="w-8 text-center text-xs font-bold text-[#254222]">
-                        {item.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleItemQtyChange(item.id!, 1)}
-                        className="p-1 hover:bg-white rounded text-[#254222] transition-colors"
-                      >
-                        <Plus size={12} />
-                      </button>
-                    </div>
+                    {/* Quantity controls */}
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center bg-[#cae4c5]/30 rounded-lg p-0.5">
+                          <button
+                            type="button"
+                            onClick={() => handleItemQtyChange(item.id!, -1)}
+                            className="p-1 hover:bg-white rounded text-[#254222] transition-colors"
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <span className="w-8 text-center text-xs font-bold text-[#254222]">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleItemQtyChange(item.id!, 1)}
+                            className="p-1 hover:bg-white rounded text-[#254222] transition-colors"
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(item.id!)}
+                          className="p-1.5 text-slate-400 hover:text-[#ba1a1a] hover:bg-[#ffdad6] rounded-lg transition-colors"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
 
-                    {/* Subtotal Item */}
-                    <div className="w-24 text-right font-bold text-xs text-[#254222]">
-                      {formatCurrency(item.subtotal)}
+                      {/* Subtotal Item */}
+                      <div className="text-right font-bold text-xs text-[#254222]">
+                        {formatCurrency(item.subtotal)}
+                      </div>
                     </div>
                   </div>
-                </div>
               ))}
             </div>
           </div>

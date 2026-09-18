@@ -2,6 +2,12 @@
 
 File ini mencatat penyesuaian UI/UX dan alur kerja yang dilakukan di luar dari rancangan awal `implementation_plan.md`, dengan fokus utama pada **Optimasi Tampilan PC/Desktop**.
 
+## Fitur Produk Rusak (18 September 2026)
+- **Modul Baru**: Menambahkan sistem pencatatan produk rusak / write-off. Termasuk pembuatan halaman daftar (`WriteOffListPage.tsx`), form modal (`WriteOffFormModal.tsx`), store khusus (`writeOffStore.ts`), dan tipe data `ProductWriteOff`.
+- **Integritas Database**: Menambahkan SQL RPC `create_write_off` untuk mencatat log kerugian dan memotong stok fisik secara atomik dalam satu transaksi.
+- **Pembaruan Laporan Keuangan**: Memodifikasi algoritma laporan laba/rugi di `ProfitLossReportPage.tsx` serta RPC `get_dashboard_stats` dan `get_monthly_revenue` (`supabase_dashboard_rpc.sql`) untuk memastikan nilai "Kerugian Barang Rusak" memotong Laba Bersih.
+- **Pembaruan Laporan Stok**: Menambahkan kolom "Produk Rusak" pada `InventoryReportPage.tsx` dan memperbaiki ambiguitas alias pada RPC `get_stock_report` (`supabase_stock_report_rpc.sql`) agar stok akhir = Pembelian - Penjualan - Rusak.
+
 ## 1. Optimasi Navigasi Sidebar (Desktop)
 - **Penambahan Ikon Submenu**: Semua item submenu (seperti Daftar Produk, Kategori, Stok Opname, dll) kini memiliki ikon masing-masing yang spesifik. Hal ini bertujuan agar tata letak (alignment) ikon dari menu utama hingga submenu sejajar sempurna secara vertikal (pixel-perfect) pada mode Desktop.
 - **Dropdown Menu pada Mode Collapsed**: Pada mode sidebar tertutup (collapsed), mengklik ikon menu utama yang memiliki submenu kini akan membuka **Dropdown Popover** (menggunakan Radix UI). Ini adalah standar aplikasi desktop modern, menggantikan perilaku sebelumnya yang memaksa navigasi langsung atau mengharuskan sidebar dibuka penuh.

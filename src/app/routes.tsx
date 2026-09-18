@@ -20,6 +20,7 @@ import ProductFormPage from '@/features/products/pages/ProductFormPage';
 import CategoryPage from '@/features/products/pages/CategoryPage';
 import StockOpnamePage from '@/features/products/pages/StockOpnamePage';
 import PriceReferencePage from '@/features/products/pages/PriceReferencePage';
+import WriteOffListPage from '@/features/products/pages/WriteOffListPage';
 // POS
 import POSTerminalPage from '@/features/pos/pages/POSTerminalPage';
 import TransactionHistoryPage from '@/features/pos/pages/TransactionHistoryPage';
@@ -82,6 +83,7 @@ const router = createBrowserRouter([
           { path: 'products/price-reference', element: <PriceReferencePage /> },
           { path: 'products/categories', element: <CategoryPage /> },
           { path: 'products/stock-opname', element: <StockOpnamePage /> },
+          { path: 'products/write-offs', element: <WriteOffListPage /> },
 
           // Sales / List Penjualan (under Terminal POS)
           { path: 'sales', element: <SalesListPage /> },

@@ -1,6 +1,19 @@
-# 📝 Log Pekerjaan & Handover (17 September 2026)
+# 📝 Log Pekerjaan & Handover (18 September 2026)
 
-## ✅ Pekerjaan yang Diselesaikan Hari Ini (Sinkronisasi Arus Kas & Acuan Harga)
+## ✅ Pekerjaan yang Diselesaikan Hari Ini (Fitur Produk Rusak / Write-off)
+
+### 1. Pencatatan Produk Rusak
+- **Database (RPC & Tabel)**: Membuat tabel `product_write_offs` dan fungsi RPC `create_write_off` (`supabase_write_off_rpc.sql`) untuk mencatat produk rusak secara atomik (memotong stok fisik saat itu juga).
+- **Frontend & State**: Menambahkan state `writeOffStore.ts` dan antarmuka `WriteOffListPage.tsx` serta modal form input produk rusak pada submenu **Produk & Stok > Produk Rusak**.
+
+### 2. Akurasi Laporan Keuangan
+- **Laporan Laba / Rugi**: Memperbarui logika `ProfitLossReportPage.tsx` agar menarik data histori kerugian (Jumlah rusak × HPP) dan otomatis memotong kolom **Laba Bersih**.
+- **Dashboard Laba Bersih**: Memperbarui RPC `get_dashboard_stats` dan `get_monthly_revenue` (`supabase_dashboard_rpc.sql`) agar ringkasan *Card* "Laba Bersih" dan tren grafik di beranda juga memasukkan faktor produk rusak.
+- **Laporan Inventaris / Stok Barang**: Menambahkan kolom "Produk Rusak" (`total_write_offs`) pada antarmuka *InventoryReportPage* dan memperbarui RPC `get_stock_report` (`supabase_stock_report_rpc.sql`) agar rumus stok historis (Pembelian - Penjualan - Rusak = Sisa) lebih lengkap dan mudah dibaca.
+
+---
+
+# 📝 Log Pekerjaan Sebelumnya (17 September 2026)
 
 ### 1. Refactoring Arsitektur Histori Transaksi (Cash Mutations)
 - **Tabel Mutasi Kas Terpadu**: Membuat tabel `cash_mutations` (melalui script `supabase_cash_mutations.sql`) sebagai *source-of-truth* (sumber kebenaran tunggal) untuk mencatat semua aliran kas (pemasukan & pengeluaran) baik itu via tunai, QRIS, maupun Bank.
