@@ -5,6 +5,51 @@ import { Trash2, Plus, Minus, ShoppingCart, Globe, Edit2, User } from 'lucide-re
 import PaymentModal from './PaymentModal';
 import OfflineCustomerModal from './OfflineCustomerModal';
 
+function QuantityInput({ item, updateQuantity }: { item: any, updateQuantity: (id: string, qty: number) => void }) {
+  const [localValue, setLocalValue] = useState(item.quantity.toString());
+
+  // Sinkronisasi jika nilai quantity berubah dari luar (misal tekan tombol + atau -)
+  React.useEffect(() => {
+    if (parseFloat(localValue) !== item.quantity) {
+      setLocalValue(item.quantity.toString());
+    }
+  }, [item.quantity]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Izinkan angka, koma, dan titik
+    let val = e.target.value.replace(/[^0-9.,]/g, '');
+    setLocalValue(val);
+    
+    // Konversi koma jadi titik untuk parsing
+    const parsed = parseFloat(val.replace(',', '.'));
+    if (!isNaN(parsed) && parsed > 0) {
+      updateQuantity(item.id, parsed);
+    }
+  };
+
+  const handleBlur = () => {
+    // Saat blur, rapikan kembali angkanya
+    const parsed = parseFloat(localValue.replace(',', '.'));
+    if (isNaN(parsed) || parsed <= 0) {
+      setLocalValue(item.quantity.toString());
+    } else {
+      setLocalValue(parsed.toString());
+    }
+  };
+
+  return (
+    <input 
+      type="text"
+      inputMode="decimal"
+      value={localValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      onFocus={(e) => e.target.select()}
+      className="w-12 text-center text-xs font-bold bg-white text-[#254222] border border-slate-200 rounded mx-0.5 focus:outline-none focus:border-[#99cc66]"
+    />
+  );
+}
+
 interface CartPanelProps {
   onOpenOnlineModal?: () => void;
 }
@@ -172,18 +217,7 @@ export default function CartPanel({ onOpenOnlineModal }: CartPanelProps) {
                       >
                         <Minus size={13} />
                       </button>
-                      <input 
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        value={item.quantity}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          if (!isNaN(val)) updateQuantity(item.id!, val);
-                        }}
-                        className="w-12 text-center text-xs font-bold bg-white text-[#254222] border border-slate-200 rounded mx-0.5 hide-spin-button focus:outline-none focus:border-[#99cc66]"
-                        style={{ MozAppearance: 'textfield' }}
-                      />
+                      <QuantityInput item={item} updateQuantity={updateQuantity} />
                       <button 
                         onClick={() => updateQuantity(item.id!, item.quantity + 1)}
                         className="p-1 hover:bg-white rounded text-[#254222] transition-colors"

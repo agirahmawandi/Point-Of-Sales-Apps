@@ -107,8 +107,8 @@ BEGIN
     FOR v_item IN SELECT * FROM jsonb_array_elements(payload->'items')
     LOOP
         INSERT INTO transaction_items (transaction_id, product_id, product_name, sku, price, buy_price, quantity, subtotal)
-        VALUES (v_transaction_id, (v_item->>'product_id')::UUID, v_item->>'product_name', v_item->>'sku', (v_item->>'price')::NUMERIC, (v_item->>'buy_price')::NUMERIC, (v_item->>'quantity')::INTEGER, (v_item->>'subtotal')::NUMERIC);
-        UPDATE products SET stock = stock - (v_item->>'quantity')::INTEGER, updated_at = NOW() WHERE id = (v_item->>'product_id')::UUID;
+        VALUES (v_transaction_id, (v_item->>'product_id')::UUID, v_item->>'product_name', v_item->>'sku', (v_item->>'price')::NUMERIC, (v_item->>'buy_price')::NUMERIC, (v_item->>'quantity')::NUMERIC, (v_item->>'subtotal')::NUMERIC);
+        UPDATE products SET stock = stock - (v_item->>'quantity')::NUMERIC, updated_at = NOW() WHERE id = (v_item->>'product_id')::UUID;
     END LOOP;
 
     v_customer_id := NULLIF(payload->>'customer_id', '')::UUID;
