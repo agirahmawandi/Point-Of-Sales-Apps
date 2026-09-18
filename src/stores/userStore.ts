@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
+import type { UserRole } from '@/types';
 
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'kasir';
+  role: UserRole;
   avatar?: string;
   created_at?: string;
 }
