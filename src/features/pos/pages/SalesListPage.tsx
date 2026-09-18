@@ -21,9 +21,11 @@ import {
   ShoppingBag,
   DollarSign,
   Pencil,
-  Percent
+  Percent,
+  MoreHorizontal
 } from 'lucide-react';
 import type { Transaction, PaymentMethod } from '@/types';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import EditTransactionModal from '@/features/pos/components/EditTransactionModal';
 import TransactionDetailModal from '@/features/pos/components/TransactionDetailModal';
 
@@ -456,50 +458,59 @@ export default function SalesListPage() {
 
                       {/* Aksi */}
                       <td className="px-5 py-3.5 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* Tombol Edit */}
-                          {!isKasir && (
+                        <DropdownMenu.Root>
+                          <DropdownMenu.Trigger asChild>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingTransaction(trx);
-                              }}
-                              className="bg-white hover:bg-[#cae4c5]/30 text-[#254222] px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition-colors border border-[#cae4c5]"
-                              title="Edit data pesanan, item, potongan & status pembayaran"
+                              className="p-1.5 text-slate-500 hover:text-[#254222] bg-white hover:bg-[#cae4c5]/30 border border-slate-200 hover:border-[#cae4c5] shadow-sm rounded-lg transition-all outline-none inline-flex items-center justify-center"
+                              title="Pilihan Aksi"
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              <Pencil size={12} />
-                              <span>Edit</span>
+                              <MoreHorizontal size={18} />
                             </button>
-                          )}
+                          </DropdownMenu.Trigger>
 
-                          {/* Tombol Tandai Lunas (Jika Tertunda) */}
-                          {isPending && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setConfirmModalId(trx.id);
-                              }}
-                              className="bg-[#cae4c5] hover:bg-[#b8d8b2] text-[#254222] px-2.5 py-1 rounded-lg text-[11px] font-bold inline-flex items-center gap-1 transition-colors border border-[#cae4c5]"
-                              title="Tandai pembayaran telah lunas/cair"
+                          <DropdownMenu.Portal>
+                            <DropdownMenu.Content
+                              align="end"
+                              className="min-w-[140px] bg-white rounded-xl shadow-lg border border-slate-100 p-1.5 z-50 animate-in fade-in zoom-in duration-200"
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              <CheckCircle size={13} />
-                              <span>Lunas</span>
-                            </button>
-                          )}
+                              {/* Tombol Lihat Struk (Selalu Ada) */}
+                              <DropdownMenu.Item
+                                onClick={() => navigate(`/pos/receipt/${trx.id}`)}
+                                className="flex items-center gap-2.5 px-3 py-2 text-[12px] font-semibold text-[#254222] rounded-lg cursor-pointer hover:bg-[#cae4c5]/30 outline-none transition-colors"
+                              >
+                                <ArrowUpRight size={14} />
+                                <span>Lihat Struk</span>
+                              </DropdownMenu.Item>
 
-                          {/* Tombol Lihat Struk */}
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/pos/receipt/${trx.id}`);
-                            }}
-                            className="text-[#254222] hover:bg-[#cae4c5]/30 px-2 py-1 rounded-lg text-[11px] font-bold uppercase inline-flex items-center gap-1 transition-colors"
-                            title="Lihat / Cetak Struk"
-                          >
-                            <span>Struk</span>
-                            <ArrowUpRight size={14} />
-                          </button>
-                        </div>
+                              {/* Tombol Edit */}
+                              {!isKasir && (
+                                <DropdownMenu.Item
+                                  onClick={() => setEditingTransaction(trx)}
+                                  className="flex items-center gap-2.5 px-3 py-2 text-[12px] font-semibold text-[#254222] rounded-lg cursor-pointer hover:bg-[#cae4c5]/30 outline-none transition-colors"
+                                >
+                                  <Pencil size={14} />
+                                  <span>Edit Transaksi</span>
+                                </DropdownMenu.Item>
+                              )}
+
+                              {/* Tombol Tandai Lunas (Jika Tertunda) */}
+                              {isPending && (
+                                <>
+                                  <DropdownMenu.Separator className="h-px bg-slate-100 my-1 mx-2" />
+                                  <DropdownMenu.Item
+                                    onClick={() => setConfirmModalId(trx.id)}
+                                    className="flex items-center gap-2.5 px-3 py-2 text-[12px] font-bold text-[#137333] rounded-lg cursor-pointer hover:bg-[#e6f4ea] outline-none transition-colors"
+                                  >
+                                    <CheckCircle size={14} />
+                                    <span>Tandai Lunas</span>
+                                  </DropdownMenu.Item>
+                                </>
+                              )}
+                            </DropdownMenu.Content>
+                          </DropdownMenu.Portal>
+                        </DropdownMenu.Root>
                       </td>
                     </tr>
                   );

@@ -17,6 +17,11 @@ File ini mencatat penyesuaian UI/UX dan alur kerja yang dilakukan di luar dari r
 - **Pembaruan Laporan Keuangan**: Memodifikasi algoritma laporan laba/rugi di `ProfitLossReportPage.tsx` serta RPC `get_dashboard_stats` dan `get_monthly_revenue` (`supabase_dashboard_rpc.sql`) untuk memastikan nilai "Kerugian Barang Rusak" memotong Laba Bersih.
 - **Pembaruan Laporan Stok**: Menambahkan kolom "Produk Rusak" pada `InventoryReportPage.tsx` dan memperbaiki ambiguitas alias pada RPC `get_stock_report` (`supabase_stock_report_rpc.sql`) agar stok akhir = Pembelian - Penjualan - Rusak.
 
+## Perbaikan Bug Desimal & UI Kasir (18 September 2026)
+- **Database (RPC)**: Memperbaiki bug pada fungsi `process_checkout` dan `edit_transaction` (di `supabase_cash_mutations.sql` & `supabase_edit_transaction_rpc.sql`) di mana input `quantity` salah di-casting sebagai `INTEGER`. Sekarang diubah menjadi `NUMERIC` agar mendukung kuantitas pecahan/desimal.
+- **UI Input Kuantitas Kasir**: Mengganti input bawaan HTML pada komponen `CartPanel.tsx` dan `EditTransactionModal.tsx` dengan komponen `QuantityInput` kustom berbasis *string state*. Ini memudahkan pengetikan desimal koma (`,`) maupun titik (`.`) tanpa gangguan.
+- **Dropdown Aksi List Penjualan**: Mengonversi deretan tombol aksi (Edit, Lunas, Struk) pada tabel List Penjualan (`SalesListPage.tsx`) menjadi satu tombol menu *Dropdown* (titik tiga) yang ringkas dengan `@radix-ui/react-dropdown-menu`, serta memberikan sentuhan gaya (*styling*) pada tombol tersebut agar terlihat lebih tegas sebagai tombol interaktif.
+
 ## 1. Optimasi Navigasi Sidebar (Desktop)
 - **Penambahan Ikon Submenu**: Semua item submenu (seperti Daftar Produk, Kategori, Stok Opname, dll) kini memiliki ikon masing-masing yang spesifik. Hal ini bertujuan agar tata letak (alignment) ikon dari menu utama hingga submenu sejajar sempurna secara vertikal (pixel-perfect) pada mode Desktop.
 - **Dropdown Menu pada Mode Collapsed**: Pada mode sidebar tertutup (collapsed), mengklik ikon menu utama yang memiliki submenu kini akan membuka **Dropdown Popover** (menggunakan Radix UI). Ini adalah standar aplikasi desktop modern, menggantikan perilaku sebelumnya yang memaksa navigasi langsung atau mengharuskan sidebar dibuka penuh.

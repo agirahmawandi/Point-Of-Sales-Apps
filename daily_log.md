@@ -15,6 +15,11 @@
 - **Penyelesaian Bug Profil**: Memperbaiki masalah arsitektur pada `authStore.ts` di mana pembuatan profil baru dari UI bertabrakan dengan Supabase Auth (constraint email unik), yang menyebabkan profil kasir hilang atau ter-reset ke peran default. Kode kini men-sinkronkan profil yatim (*orphaned profiles*) secara rapi.
 - **Form Reset Password**: Membuat modal `ResetPasswordModal.tsx` yang mendeteksi token URL (mode *Recovery*) secara instan sebelum tertimpa React Router. Modal ini memungkinkan kasir mengganti kata sandi secara mandiri setelah menekan link dari email Supabase.
 
+### 4. Perbaikan Bug Desimal & UI Kasir
+- **Database (RPC)**: Memperbaiki bug pada fungsi `process_checkout` dan `edit_transaction` (di `supabase_cash_mutations.sql` & `supabase_edit_transaction_rpc.sql`) di mana input `quantity` sebelumnya salah di-casting sebagai `INTEGER`. Sekarang sudah diubah menjadi `NUMERIC` agar kasir bisa memasukkan kuantitas pecahan/desimal (misal 0.5) tanpa memicu error dari database.
+- **UI Input Kuantitas**: Mengganti input kuantitas bawaan HTML dengan komponen `QuantityInput` kustom berbasis *string state* pada layar **Keranjang Kasir (`CartPanel.tsx`)** dan **Edit Transaksi (`EditTransactionModal.tsx`)**. Komponen ini memudahkan pengetikan angka desimal dengan koma (`,`) maupun titik (`.`) tanpa gangguan *auto-formatting* React.
+- **Dropdown Aksi Penjualan**: Mengganti deretan tombol aksi (Edit, Lunas, Struk) yang terlalu lebar pada **List Penjualan (`SalesListPage.tsx`)** menjadi satu tombol menu *Dropdown* (titik tiga) menggunakan pustaka `@radix-ui/react-dropdown-menu`. Tampilan tombol aksi (titik tiga) juga sudah diberi *border* dan efek *hover* agar lebih mudah dikenali secara visual.
+
 ---
 
 # 📝 Log Pekerjaan Sebelumnya (17 September 2026)
