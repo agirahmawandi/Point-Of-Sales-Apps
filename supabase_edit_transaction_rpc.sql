@@ -92,11 +92,11 @@ BEGIN
             v_new_item->>'sku',
             (v_new_item->>'price')::NUMERIC,
             (v_new_item->>'buyPrice')::NUMERIC,
-            (v_new_item->>'quantity')::INTEGER,
+            (v_new_item->>'quantity')::NUMERIC,
             (v_new_item->>'subtotal')::NUMERIC
         );
 
-        UPDATE products SET stock = stock - (v_new_item->>'quantity')::INTEGER, updated_at = NOW() WHERE id = (v_new_item->>'productId')::UUID;
+        UPDATE products SET stock = stock - (v_new_item->>'quantity')::NUMERIC, updated_at = NOW() WHERE id = (v_new_item->>'productId')::UUID;
     END LOOP;
 
     -- 6. Tambahkan saldo berdasarkan pembayaran baru

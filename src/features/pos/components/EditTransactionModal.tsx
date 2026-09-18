@@ -18,6 +18,46 @@ import {
   AlertCircle 
 } from 'lucide-react';
 
+function QuantityInput({ value, onChange }: { value: number, onChange: (val: number) => void }) {
+  const [localValue, setLocalValue] = useState(value.toString());
+
+  React.useEffect(() => {
+    if (parseFloat(localValue) !== value) {
+      setLocalValue(value.toString());
+    }
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/[^0-9.,]/g, '');
+    setLocalValue(val);
+    const parsed = parseFloat(val.replace(',', '.'));
+    if (!isNaN(parsed) && parsed > 0) {
+      onChange(parsed);
+    }
+  };
+
+  const handleBlur = () => {
+    const parsed = parseFloat(localValue.replace(',', '.'));
+    if (isNaN(parsed) || parsed <= 0) {
+      setLocalValue(value.toString());
+    } else {
+      setLocalValue(parsed.toString());
+    }
+  };
+
+  return (
+    <input 
+      type="text"
+      inputMode="decimal"
+      value={localValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      onFocus={(e) => e.target.select()}
+      className="w-10 text-center text-xs font-bold bg-white text-[#254222] border border-slate-200 rounded mx-0.5 focus:outline-none focus:border-[#99cc66]"
+    />
+  );
+}
+
 interface EditTransactionModalProps {
   transaction: Transaction;
   onClose: () => void;
@@ -110,14 +150,18 @@ export default function EditTransactionModal({
     }));
   };
 
-  const handleItemQtyChange = (id: string, delta: number) => {
-    setItems(prev => prev.map(item => {
+  const handleItemQtyChange = (id: string, newQty: number) => {
+    const newItems = items.map(item => {
       if (item.id === id) {
-        const newQty = Math.max(1, item.quantity + delta);
-        return { ...item, quantity: newQty, subtotal: item.price * newQty };
+        return {
+          ...item,
+          quantity: newQty,
+          subtotal: newQty * item.price
+        };
       }
       return item;
-    }));
+    });
+    setItems(newItems);
   };
 
   const handleRemoveItem = (id: string) => {
@@ -454,17 +498,15 @@ export default function EditTransactionModal({
                         <div className="flex items-center bg-[#cae4c5]/30 rounded-lg p-0.5">
                           <button
                             type="button"
-                            onClick={() => handleItemQtyChange(item.id!, -1)}
+                            onClick={() => handleItemQtyChange(item.id!, Math.max(0.01, item.quantity - 1))}
                             className="p-1 hover:bg-white rounded text-[#254222] transition-colors"
                           >
                             <Minus size={12} />
                           </button>
-                          <span className="w-8 text-center text-xs font-bold text-[#254222]">
-                            {item.quantity}
-                          </span>
+                          <QuantityInput value={item.quantity} onChange={(val) => handleItemQtyChange(item.id!, val)} />
                           <button
                             type="button"
-                            onClick={() => handleItemQtyChange(item.id!, 1)}
+                            onClick={() => handleItemQtyChange(item.id!, item.quantity + 1)}
                             className="p-1 hover:bg-white rounded text-[#254222] transition-colors"
                           >
                             <Plus size={12} />
