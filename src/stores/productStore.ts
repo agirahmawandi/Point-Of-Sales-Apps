@@ -16,7 +16,6 @@ interface ProductState {
   fetchProducts: () => Promise<void>;
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
-  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   batchUpdateProducts: (updates: Partial<Product>[]) => Promise<void>;
   

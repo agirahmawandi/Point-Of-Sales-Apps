@@ -161,10 +161,10 @@ export default function TransactionDetailModal({ transaction, onClose }: Transac
               <span>Rp {formatNumber(transaction.subtotal)}</span>
             </div>
             
-            {transaction.discount > 0 && (
+            {(transaction.discount || 0) > 0 && (
               <div className="flex justify-between text-[13px] text-white/70">
                 <span>Diskon</span>
-                <span>-Rp {formatNumber(transaction.discount)}</span>
+                <span>-Rp {formatNumber(transaction.discount || 0)}</span>
               </div>
             )}
             
@@ -173,10 +173,10 @@ export default function TransactionDetailModal({ transaction, onClose }: Transac
                 <span>Potongan Marketplace</span>
                 <span>-Rp {formatNumber(transaction.marketplaceFee || 0)}</span>
               </div>
-            ) : transaction.tax > 0 ? (
+            ) : (transaction.tax || 0) > 0 ? (
               <div className="flex justify-between text-[13px] text-white/70">
                 <span>Pajak PPN</span>
-                <span>Rp {formatNumber(transaction.tax)}</span>
+                <span>Rp {formatNumber(transaction.tax || 0)}</span>
               </div>
             ) : null}
 
