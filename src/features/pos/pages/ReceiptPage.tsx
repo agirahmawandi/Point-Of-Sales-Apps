@@ -36,10 +36,10 @@ export default function ReceiptPage() {
   const methodLabel: Record<string, string> = {
     cash: 'Tunai',
     tunai: 'Tunai',
-    qris: 'QRIS',
-    card: 'Kartu',
-    kartu: 'Kartu',
-    piutang: 'Piutang',
+    qris: 'QR',
+    card: 'Transfer bank',
+    kartu: 'Transfer bank',
+    piutang: 'Pending',
     marketplace: 'Marketplace',
   };
 
@@ -77,6 +77,15 @@ export default function ReceiptPage() {
 
   return (
     <div className="min-h-screen bg-slate-100 py-8 px-4 flex flex-col items-center justify-start print:bg-white print:p-0">
+      <style>
+        {`
+          @media print {
+            @page { margin: 0; }
+            body { margin: 1cm; }
+          }
+        `}
+      </style>
+      
       {/* Top Action Toolbar */}
       <div className="w-full max-w-md mb-6 flex gap-3 print:hidden">
         <button
@@ -121,19 +130,18 @@ export default function ReceiptPage() {
         {/* Store Info */}
         <div className="px-6 pt-6 pb-4 border-b border-dashed border-slate-200 text-center">
           <h2 className="text-xl font-black text-[#254222] tracking-tight">Frema Mart</h2>
-          <p className="text-[#76777d] text-xs mt-1">Supermarket & Retail Groceries</p>
-          <p className="text-[#76777d] text-xs">Customer Service: (021) 7890-1234</p>
+          <p className="text-[#76777d] text-xs mt-1">Customer Service: 0895-1543-6690</p>
         </div>
 
         {/* Transaction Info */}
         <div className="px-6 py-4 border-b border-dashed border-slate-200 space-y-1.5 text-sm">
           <div className="flex justify-between">
             <span className="text-[#76777d]">No. Struk</span>
-            <span className="font-mono font-bold text-[#254222]">{trx.invoiceNumber || trx.id}</span>
+            <span className="text-[#254222]">{trx.invoiceNumber || trx.id}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#76777d]">Tipe Pesanan</span>
-            <span className="font-bold text-xs uppercase">
+            <span className="text-xs uppercase">
               {trx.transactionType === 'online' ? (
                 <span className="px-2 py-0.5 rounded-md bg-[#cae4c5] text-[#254222]">
                   Online ({trx.onlineDetails?.marketplace || 'Marketplace'})
@@ -149,21 +157,21 @@ export default function ReceiptPage() {
             <>
               <div className="flex justify-between">
                 <span className="text-[#76777d]">Toko Online</span>
-                <span className="font-semibold text-[#254222]">{trx.onlineDetails.storeName}</span>
+                <span className="text-[#254222]">{trx.onlineDetails.storeName}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#76777d]">No. Pesanan</span>
-                <span className="font-mono font-bold text-[#254222]">{trx.onlineDetails.orderNumber}</span>
+                <span className="text-[#254222]">{trx.onlineDetails.orderNumber}</span>
               </div>
               {trx.onlineDetails.trackingNumber && (
                 <div className="flex justify-between">
                   <span className="text-[#76777d]">No. Resi</span>
-                  <span className="font-mono font-bold text-[#254222]">{trx.onlineDetails.trackingNumber}</span>
+                  <span className="text-[#254222]">{trx.onlineDetails.trackingNumber}</span>
                 </div>
               )}
               <div className="flex justify-between">
                 <span className="text-[#76777d]">Nama Pembeli</span>
-                <span className="font-semibold text-[#254222]">{trx.onlineDetails.customerName}</span>
+                <span className="text-[#254222]">{trx.onlineDetails.customerName}</span>
               </div>
               {trx.onlineDetails.customerAddress && (
                 <div className="text-xs pt-1 border-t border-dashed border-slate-100">
@@ -175,17 +183,17 @@ export default function ReceiptPage() {
           )}
           <div className="flex justify-between">
             <span className="text-[#76777d]">Waktu</span>
-            <span className="font-medium text-[#254222]">
+            <span className="text-[#254222]">
               {format(new Date(trx.date || trx.createdAt || Date.now()), 'dd MMM yyyy, HH:mm', { locale: localeId })}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#76777d]">Kasir</span>
-            <span className="font-medium text-[#254222]">{trx.cashierName}</span>
+            <span className="text-[#254222]">{trx.cashierName}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-[#76777d]">Metode Bayar</span>
-            <span className="font-semibold text-[#254222] uppercase">
+            <span className="text-[#254222] uppercase">
               {methodLabel[trx.paymentMethod] || trx.paymentMethod}
             </span>
           </div>
@@ -246,7 +254,7 @@ export default function ReceiptPage() {
             <span className={`font-bold px-2 py-0.5 rounded text-xs uppercase ${
               isPending ? 'bg-[#ece2b1] text-[#254222] border border-[#ece2b1]' : 'bg-[#cae4c5] text-[#254222] border border-[#cae4c5]'
             }`}>
-              {isPending ? 'Tertunda' : 'Lunas'}
+              {isPending ? 'Pending' : 'Lunas'}
             </span>
           </div>
           {!isPending && (
@@ -265,9 +273,8 @@ export default function ReceiptPage() {
 
         {/* Footer Note */}
         <div className="px-6 py-6 text-center text-xs text-[#76777d] space-y-1">
-          <p className="font-semibold text-[#254222]">Barang yang dibeli tidak dapat ditukar/dikembalikan</p>
-          <p>Kecuali dengan perjanjian tertulis & struk resmi</p>
-          <p className="pt-2 text-[10px] text-slate-400 font-mono">Powered by Frema Mart POS</p>
+          <p className="font-semibold text-[#254222]">Jl. Rajamantri Kulon No.14, Kota Bandung</p>
+          <p className="pt-2 text-[10px] text-slate-400 font-mono">Powered by : Frema mart</p>
         </div>
       </div>
     </div>
