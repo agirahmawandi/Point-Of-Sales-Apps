@@ -27,6 +27,7 @@ export interface Product {
   packingCost?: number;
   marketplaceFeePercentage?: number;
   marketplacePrice?: number;
+  showOnWeb?: boolean;
   imageUrl?: string;
   unit?: string;
   isActive?: boolean;

@@ -12,6 +12,18 @@ export interface TaxSettings {
   defaultTaxPercentage: number;
 }
 
+export interface WebBanner {
+  id: string;
+  imageUrl: string;
+  linkUrl?: string;
+  isActive: boolean;
+}
+
+export interface WebSettings {
+  banners: WebBanner[];
+  description: string;
+}
+
 export interface BankAccount {
   id: string;
   bank: string;
@@ -23,12 +35,14 @@ export interface BankAccount {
 interface SettingsState {
   storeProfile: StoreProfile;
   taxSettings: TaxSettings;
+  webSettings: WebSettings;
   bankAccounts: BankAccount[];
   isLoading: boolean;
   
   fetchStoreSettings: () => Promise<void>;
   updateStoreProfile: (profile: Partial<StoreProfile>) => Promise<void>;
   updateTaxSettings: (settings: Partial<TaxSettings>) => Promise<void>;
+  updateWebSettings: (settings: Partial<WebSettings>) => Promise<void>;
   
   fetchBankAccounts: () => Promise<void>;
   addBankAccount: (account: Omit<BankAccount, 'id'>) => Promise<void>;
@@ -49,6 +63,10 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   taxSettings: {
     defaultTaxPercentage: 0,
   },
+  webSettings: {
+    banners: [],
+    description: 'Selamat datang di Frema Mart Online!',
+  },
   bankAccounts: [],
   isLoading: false,
 
@@ -68,6 +86,10 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
           },
           taxSettings: {
             defaultTaxPercentage: Number(data.default_tax_percentage) || 0,
+          },
+          webSettings: {
+            banners: data.web_banners || [],
+            description: data.web_description || 'Selamat datang di Frema Mart Online!',
           }
         });
       } else {
@@ -87,6 +109,10 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
             },
             taxSettings: {
               defaultTaxPercentage: Number(newData.default_tax_percentage) || 0,
+            },
+            webSettings: {
+              banners: newData.web_banners || [],
+              description: newData.web_description || 'Selamat datang di Frema Mart Online!',
             }
           });
         }
@@ -143,6 +169,31 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       // Optimistic update
       set((state) => ({
         taxSettings: { ...state.taxSettings, ...settings }
+      }));
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  updateWebSettings: async (settings) => {
+    try {
+      const { data: existingData } = await supabase.from('store_settings').select('id').limit(1).maybeSingle();
+      
+      const payload: any = {};
+      if (settings.banners !== undefined) payload.web_banners = settings.banners;
+      if (settings.description !== undefined) payload.web_description = settings.description;
+
+      if (existingData) {
+        const { error } = await supabase.from('store_settings').update(payload).eq('id', existingData.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('store_settings').insert(payload);
+        if (error) throw error;
+      }
+      
+      // Optimistic update
+      set((state) => ({
+        webSettings: { ...state.webSettings, ...settings }
       }));
     } catch (err) {
       throw err;

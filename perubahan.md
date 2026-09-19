@@ -2,6 +2,12 @@
 
 File ini mencatat penyesuaian UI/UX dan alur kerja yang dilakukan di luar dari rancangan awal `implementation_plan.md`, dengan fokus utama pada **Optimasi Tampilan PC/Desktop**.
 
+## Persiapan Panel Admin Toko Online (19 September 2026)
+- **Database & State**: Penambahan flag `show_on_web` di produk dan setup JSONB `web_banners` dan teks `web_description` di tabel `store_settings`. Update tipe data dan sinkronisasi store Zustand masing-masing.
+- **WebSettingsPage.tsx**: Pembuatan halaman dengan dua antarmuka spesifik (Tab Etalase Produk dengan pencarian dan sakelar toggle, serta Tab Banner & Tampilan dengan sistem input multi-URL interaktif berbasis state lokal).
+- **Konsistensi UI (Lucide Icons)**: Memastikan penggunaan icon hanya menggunakan `lucide-react` (sesuai standar proyek), karena penggunaan `@phosphor-icons/react` sempat menimbulkan error build Vite akibat ketiadaan paket.
+- **Tampilan Cetak Struk (Receipt)**: Penghapusan teks dummy "Supermarket & Retail Groceries", penggantian format dan alamat footer, standarisasi jenis font (non-bold), serta penyembunyian header/footer browser saat mencetak menggunakan blok CSS media print.
+
 ## Pembagian Hak Akses 3-Tingkat (18 September 2026)
 - **Tipe Data Global**: Memperbarui tipe `UserRole` dari 2 tingkat menjadi 3 tingkat: `admin_utama`, `admin`, dan `kasir` (`src/types/common.ts`).
 - **Pembatasan Dashboard**: Fitur Reset Data dan metrik sensitif (HPP, Laba Bersih, Hutang) sekarang disembunyikan untuk Kasir, menyisakan Peringatan Stok, Omzet, dan Piutang (`DashboardPage.tsx`, `KPICards.tsx`).

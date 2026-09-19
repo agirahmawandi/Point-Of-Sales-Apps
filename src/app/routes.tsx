@@ -33,6 +33,7 @@ import StoreProfilePage from '@/features/settings/pages/StoreProfilePage';
 import TaxSettingsPage from '@/features/settings/pages/TaxSettingsPage';
 import PaymentMethodsPage from '@/features/settings/pages/PaymentMethodsPage';
 import UserManagementPage from '@/features/settings/pages/UserManagementPage';
+import WebSettingsPage from '@/features/settings/pages/WebSettingsPage';
 // Reports (Phase 4)
 import SalesReportPage from '@/features/reports/pages/SalesReportPage';
 import PurchaseReportPage from '@/features/reports/pages/PurchaseReportPage';
@@ -115,6 +116,7 @@ const router = createBrowserRouter([
           // Note: /settings/payments is redirected to /finance/banks
           { path: 'settings/payments', element: <PaymentMethodsPage /> },
           { path: 'settings/users', element: <UserManagementPage /> },
+          { path: 'settings/web', element: <WebSettingsPage /> },
 
           // Finance / Keuangan module
           { path: 'finance/history', element: <FinanceHistoryPage /> },

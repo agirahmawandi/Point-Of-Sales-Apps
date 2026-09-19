@@ -108,9 +108,10 @@ Mohon konfirmasi ketersediaan dan metode pembayaran. Terima kasih 🙏
 
 | Data | Sumber Supabase | Filter |
 |------|----------------|--------|
-| Produk | Tabel `products` | `is_active = true` |
+| Produk | Tabel `products` | `is_active = true` DAN `show_on_web = true` |
 | Kategori | Tabel `categories` | — |
 | Info toko & WA | Tabel `store_settings` | — |
+| Tampilan Web | Tabel `store_settings` | Kolom `web_banners` dan `web_description` |
 | Gambar produk | Kolom `image_url` di `products` | Fallback ke placeholder jika null |
 
 > **Penting:** Web Display hanya READ data. Update RLS Supabase agar role `anon` bisa SELECT tabel `products`, `categories`, `store_settings`.

@@ -25,6 +25,7 @@ interface ProductState {
   updatePurchasePrice: (id: string, newPrice: number) => void;
   resetAllProductStocks: (toQuantity?: number) => void;
   updateStock: (id: string, newStock: number, reason?: string) => Promise<void>;
+  toggleWebVisibility: (id: string, isVisible: boolean) => Promise<void>;
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({
@@ -179,6 +180,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         packingCost: item.packing_cost || 0,
         marketplaceFeePercentage: item.marketplace_fee_percentage || 0,
         marketplacePrice: item.marketplace_price || 0,
+        showOnWeb: item.show_on_web !== false, // default true
         createdAt: item.created_at,
         updatedAt: item.updated_at,
       }));
@@ -226,6 +228,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
           packing_cost: productData.packingCost || 0,
           marketplace_fee_percentage: productData.marketplaceFeePercentage || 0,
           marketplace_price: productData.marketplacePrice || 0,
+          show_on_web: productData.showOnWeb !== false,
         }])
         .select()
         .single();
@@ -277,6 +280,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       if (productData.packingCost !== undefined) updatePayload.packing_cost = productData.packingCost;
       if (productData.marketplaceFeePercentage !== undefined) updatePayload.marketplace_fee_percentage = productData.marketplaceFeePercentage;
       if (productData.marketplacePrice !== undefined) updatePayload.marketplace_price = productData.marketplacePrice;
+      if (productData.showOnWeb !== undefined) updatePayload.show_on_web = productData.showOnWeb;
 
       const { error } = await supabase
         .from('products')
@@ -365,6 +369,32 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set((state) => ({
         products: state.products.map(p => 
           p.id === id ? { ...p, stock: newStock, updatedAt: new Date().toISOString() } : p
+        )
+      }));
+    } catch (err: any) {
+      set({ error: err.message });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  toggleWebVisibility: async (id: string, isVisible: boolean) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ 
+          show_on_web: isVisible, 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      set((state) => ({
+        products: state.products.map(p => 
+          p.id === id ? { ...p, showOnWeb: isVisible, updatedAt: new Date().toISOString() } : p
         )
       }));
     } catch (err: any) {

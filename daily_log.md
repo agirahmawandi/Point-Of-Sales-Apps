@@ -1,6 +1,24 @@
-# 📝 Log Pekerjaan & Handover (18 September 2026)
+# 📝 Log Pekerjaan & Handover (19 September 2026)
 
-## ✅ Pekerjaan yang Diselesaikan Hari Ini (Fitur Produk Rusak / Write-off)
+## ✅ Pekerjaan yang Diselesaikan Hari Ini (Persiapan Web Display)
+
+### 1. Panel Admin Web Display
+- **Database (SQL)**: Membuat script SQL `supabase_web_display_admin.sql` untuk menambahkan kolom `show_on_web` di tabel `products` dan `web_banners`, `web_description` di tabel `store_settings`.
+- **Frontend & State**: Menambahkan state untuk Web Settings di `settingsStore.ts` dan fungsi toggle `showOnWeb` di `productStore.ts`.
+- **UI & Routing**: Membuat antarmuka `WebSettingsPage.tsx` yang dibagi ke dalam 2 tab: **Etalase Produk** (untuk mengatur visibilitas produk) dan **Banner & Tampilan** (untuk mengatur kata sambutan dan banner URL).
+- **Sidebar**: Menambahkan tautan **Toko Online** di bawah kategori "Pengaturan" di `Sidebar.tsx`.
+- **Icon Fix**: Menyesuaikan import icon yang sebelumnya dari `@phosphor-icons/react` menjadi `lucide-react`.
+
+### 2. Penyesuaian UI Struk Kasir
+- Menghapus tulisan "Supermarket & Retail Groceries" pada header.
+- Mengubah nomor Customer Service menjadi `0895-1543-6690`.
+- Memperbarui label metode pembayaran: Kartu -> "Transfer bank", Tunai -> "Tunai", QRIS -> "QR", Piutang/Pending -> "Pending".
+- Mengganti footer default bawaan browser saat diprint menjadi alamat toko (Jl. Rajamantri Kulon No.14, Kota Bandung) dan teks "Powered by : Frema mart".
+- Menghilangkan bold pada font struk (`font-normal`).
+
+---
+
+# 📝 Log Pekerjaan Sebelumnya (18 September 2026)
 
 ### 1. Pencatatan Produk Rusak
 - **Database (RPC & Tabel)**: Membuat tabel `product_write_offs` dan fungsi RPC `create_write_off` (`supabase_write_off_rpc.sql`) untuk mencatat produk rusak secara atomik (memotong stok fisik saat itu juga).
